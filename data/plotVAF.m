@@ -1,8 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 [your operation]
-1. Go to the directory named 'new_nmf_result(directory where this file exists)''
-2. Please change parameters
+1. Change some parameters (please refer to 'set param' section)
+2. Please run this code
 
 [role of this code]
 Visualize the VAF value of synergy obtained by NNMF and save it as a figure
@@ -23,14 +23,18 @@ clear;
 term_type = 'pre'; %pre / post / all 
 monkeyname = 'F';
 use_style = 'test'; % test/train
-VAF_plot_type = 'stack'; %'stack' or 'mean'
+VAF_plot_type = 'mean'; %'stack' or 'mean'
 VAF_threshold = 0.8; % param to draw threshold_line
 font_size = 20; % Font size of text in the figure
 surgery_day = 20170530;
+nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
 %% code section
+[realname] = get_real_name(monkeyname);
+base_dir = fullfile(pwd, realname, nmf_fold_name);
+
 % Create a list of folders containing the synergy data for each date.
-data_folders = dir(pwd);
+data_folders = dir(base_dir);
 folderList = {data_folders([data_folders.isdir]).name};
 Allfiles_S = folderList(startsWith(folderList, monkeyname));
 
@@ -52,7 +56,7 @@ day_num = length(Allfiles_S);
 VAF_data_list = cell(1, day_num);
 shuffle_data_list = cell(1, day_num);
 for ii = 1:day_num
-    VAF_data_path = fullfile(pwd, Allfiles_S{ii}, [Allfiles_S{ii} '.mat']);
+    VAF_data_path = fullfile(base_dir, Allfiles_S{ii}, [Allfiles_S{ii} '.mat']);
 
     % load VAF data & shuffle data
     VAF_data = load(VAF_data_path, use_style);
@@ -125,7 +129,7 @@ grid on;
 hold off
 
 %% save figure(as .fig & .png)
-save_fold = fullfile(pwd, 'VAF_result');
+save_fold = fullfile(base_dir, 'VAF_result');
 makefold(save_fold);
 saveas(gcf, fullfile(save_fold, ['VAF_result(' term_type '_' num2str(day_num) 'days_' VAF_plot_type ').png']))
 saveas(gcf, fullfile(save_fold, ['VAF_result(' term_type '_' num2str(day_num) 'days_' VAF_plot_type ').fig']))

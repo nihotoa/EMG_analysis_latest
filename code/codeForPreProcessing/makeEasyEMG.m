@@ -13,6 +13,9 @@ real_name: [char], full name of monkey
 AllData_EMG: [double array], concatenated raw EMG data
 TimeRange: [double array], time of start and end of recording
 EMG_Hz: sampling frequency of EMG data 
+
+[Improvement points(Japanese)]
+pwdじゃなくて,  inputにbase_dir指定してそれを使った方がいいかも
 %}
 
 function [AllData_EMG, TimeRange, EMG_Hz] = makeEasyEMG(monkeyname, xpdate, file_num, real_name)

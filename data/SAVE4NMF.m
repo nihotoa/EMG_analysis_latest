@@ -1,9 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 [your operation]
-1. Go to the directory named 'data' (directory where this code exists)
-2. Change some parameters (please refer to 'set param' section)
-3. Please run this code
+1. Change some parameters (please refer to 'set param' section)
+2. Please run this code & select data by following guidance (which is displayed in command window after Running this code)
 
 [role of this code]
 concatenate & create one-day EMG data (with resampling(5000Hz)) & save individual muscle data as '(uv).mat' 

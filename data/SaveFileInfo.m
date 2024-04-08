@@ -1,8 +1,7 @@
 %{ 
 [your operation]
-1. Go to the directory named 'Yachimun' (directory where this code exists)
-2. Change some parameters (please refer to 'set param' section)
-3. Please run this code
+1. Change some parameters (please refer to 'set param' section)
+2. Please run this code
 
 [role of this code]
 get the information which is used for merge data
@@ -26,7 +25,12 @@ taskname = 'standard'; %you don't need to change
 save_fold = 'easyData'; %you don't need to change
 
 %% code section
-file_list = dir([monkeyname '*.mat']);
+% get the real monkey name
+[realname] = get_real_name(monkeyname);
+base_dir = fullfile(pwd, realname);
+
+% get the name of files  which exists in base_dir
+file_list = dir(fullfile(base_dir, [monkeyname '*.mat']));
 
 % Extract oonly 'date' part from file name
 for ii = 1:length(file_list)
@@ -36,11 +40,11 @@ end
 tarsessions = unique(tarsessions);
 
 % save each date's fileInfo(including imformation on monkeyname, xpdate, file_num) to a .mat file
-common_save_fold_path = fullfile(pwd, save_fold);
+common_save_fold_path = fullfile(base_dir, save_fold);
 for tarN = 1:length(tarsessions)
     fileInfo.monkeyname = monkeyname;
     fileInfo.xpdate = tarsessions(tarN);
-    ref_file = dir([monkeyname num2str(tarsessions(tarN)) '*.mat']);
+    ref_file = dir(fullfile(base_dir, [monkeyname num2str(tarsessions(tarN)) '*.mat']));
     temp_start = regexp(ref_file(1).name, '\d+', 'match');
     temp_end = regexp(ref_file(end).name, '\d+', 'match');
     tarfiles = [str2double(temp_start{2}) str2double(temp_end{2})];

@@ -18,6 +18,7 @@ Y3ave: [double array], Array containing the values of the cross-correlation coef
 [points of improvement(Japanese)]   
 筋電にしても、3階微分値にしても相互相関関数の絶対値の最大値をとっているがそれでいいのか?
 (その時間の位相は保存されてない? & 絶対値だったら-1の可能性もあるのでは?)
+pwdを使わない方がいい(bsse_dirをimportして使う)
 %}
 
 function [Yave,Y3ave] = CTcheck(monkeyname, xpdate_num, save_fold, save_CTR, task, real_name)

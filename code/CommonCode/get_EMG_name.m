@@ -1,9 +1,4 @@
 function EMGs = get_EMG_name(TargetName)
-%{
-explanation of this func:
-removing the string common to all elements from the 'TargetName' (cell array)
-& retrun it as 'EMGs'
-%}
 
 %{
 explanation of this func:

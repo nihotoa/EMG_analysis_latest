@@ -16,6 +16,9 @@ task: [char], 'standard' (don't need to change)
 EMGs:[cell array], The name of each EMF is stored in a char type.
 Tp: [double array], Data for each timing in each trial is stored.
 Tp3: [double array], Data for each timing in each trial is stored.
+
+[Improvement points(Japanese)]
+pwd‚¶‚á‚È‚­‚Ä,  input‚Ébase_dirŽw’è‚µ‚Ä‚»‚ê‚ðŽg‚Á‚½•û‚ª‚¢‚¢‚©‚à
 %}
 
 function [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, real_name, xpdate_num, file_num, save_fold, mE, task)

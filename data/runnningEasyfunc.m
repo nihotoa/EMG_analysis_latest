@@ -4,10 +4,8 @@ coded by Naoki Uchida
 modified by Naohito Ota
 
 [your operation]
-1. Please complete the steps up to pre-procedure (refer to below ([procedure]))
-2. Go to the directory named 'data' (directory where this code exists)
-3. Change some parameters (please refer to 'set param' section)
-4. Please run this code & select data by following guidance (which is displayed in command window after Running this code)
+1. Change some parameters (please refer to 'set param' section)
+2. Please run this code & select data by following guidance (which is displayed in command window after Running this code)
 
 [role of this code]
 the role of this code is to perform various processing(trimming for each task-trials, filtering, etc...) to raw EMG data

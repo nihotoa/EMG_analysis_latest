@@ -1,8 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 [your operation]
-1. Go to the directory named monkey name (directory in which this file exists.) (ex.) if you want to analyze Yachimun's data, please go to 'EMG_analysis_tutorial/data/Yachimun'
-2. Please change parameters
+1. Please change parameters
+2. Please run this code & select data by following guidance (which is displayed in command window after Running this code)
 
 [role of this code]
 Plot muscle synergies extracted from EMG for each exoerimental day
@@ -37,9 +37,13 @@ save_setting.save_data = 1; % whether you want to save data about synergy W & sy
 
      
 %% code section
+% get the real monkey name
+[realname] = get_real_name(monkeyname);
+base_dir = fullfile(pwd, realname);
+
 % get the list of day
 disp('Please select all date folder you want to analyze')
-InputDirs   = uiselect(dirdir(fullfile(pwd, 'new_nmf_result')), 1, 'Please select all date folder you want to analyze');
+InputDirs   = uiselect(dirdir(fullfile(base_dir, 'new_nmf_result')), 1, 'Please select all date folder you want to analyze');
 days = get_days(InputDirs);
 
 % loop for each experimental day
@@ -49,7 +53,7 @@ for ii = 1:length(days)
     % loop for each number of synergies 
     for jj = 1:length(synergy_num_list)
         synergy_num = synergy_num_list(jj);
-        plotSynergyAll_uchida(fold_name, synergy_num, nmf_fold_name, each_plot, save_setting);
+        plotSynergyAll_uchida(fold_name, synergy_num, nmf_fold_name, each_plot, save_setting, base_dir);
     end
     close all
 end

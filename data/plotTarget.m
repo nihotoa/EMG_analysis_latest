@@ -7,9 +7,8 @@
 plot EMG (or activty pattern of muslcle Synergy) around each timing and save as figure 
 
 [your operation]
-1. Go to the directory named 'data' (directory where this code exists)
-2. Change some parameters (please refer to 'set param' section)
-3. Please run this code & select data by following guidance (which is displayed in command window after Running this code)
+1. Change some parameters (please refer to 'set param' section)
+2. Please run this code
 
 [role of this code]
 Plot muscle synergies extracted from EMG for each exoerimental day
@@ -45,11 +44,10 @@ post: nothing
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-realname = 'Yachimun'; % monkey name 'Yachimun'/'SesekiL'/'Wasa'
 monkeyname = 'F'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa' 
 plot_all = 1; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
-plot_type = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
+plot_type = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
 pColor = 'K';  % select 'K'(black plot) or 'C'(color plot) 
 normalizeAmp = 0; % normalize Amplitude a
 YL = Inf; % (if nomalize Amp == 0) ylim of graph
@@ -59,9 +57,10 @@ row_num = 4; % how many rows to display in one subplot figure
 fig_type_array = {'stack', 'std'}; % you don't  need to change
 
 %% code section
+% get the real name from monkeyname
+realname = get_real_name(monkeyname);
 
-%% Get the plotWindow at each timing and list of the filenames of the files to be read.
-
+% Get the plotWindow at each timing and list of the filenames of the files to be read.
 % set the date list of data to be used as control data & the cutout range around each timing
 switch realname
    case 'Yachimun'

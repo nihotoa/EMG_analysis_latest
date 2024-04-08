@@ -1,8 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 [your operation]
-1. Go to the directory named 'new_nmf_result(directory where this file exists)''
-2. Please change parameters
+1. Change some parameters (please refer to 'set param' section)
+2. Please run this code & select data by following guidance (which is displayed in command window after Running this code)
 
 [role of this code]
 ÅEcut out the temporal pattern of muscle synergy for each trial and put it into array
@@ -27,11 +27,13 @@ In order to use the function 'resample', 'signal processing toolbox' must be ins
 ÇªÇÍÇì«Ç›çûÇÒÇ≈égÇ§ÇÊÇ§Ç…ïœçXÇ∑ÇÈ
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clear;
 %% set param
 monkeyname = 'F';  % Name prefix of the folder containing the synergy data for each date
 term_type = 'pre';  % Which period synergies do you want to plot?
 synergy_num = 4; % number of synergy you want to analyze
 save_data = 1; % whether you want to save data (basically, set 1)
+nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
 %  Specifying ranges in data cut-outs. (Basically, don't change it)
 D.trig1_per = [50 50];
@@ -41,9 +43,11 @@ D.trig4_per = [50 50];
 D.task_per = [25,105];
 
 %% code section
+[realname] = get_real_name(monkeyname);
+base_dir = fullfile(pwd, realname, nmf_fold_name);
 
 % Create a list of folders containing the synergy data for each date.
-data_folders = dir(pwd);
+data_folders = dir(base_dir);
 folderList = {data_folders([data_folders.isdir]).name};
 Allfiles_S = folderList(startsWith(folderList, monkeyname));
 
@@ -60,16 +64,14 @@ Allfiles = strrep(Allfiles_S, '_standard','');
 AllDays = strrep(Allfiles, monkeyname, '');
 
 % Find the number of EMGs used in the synergy analysis
-load(fullfile(pwd, Allfiles_S{1}, [Allfiles_S{1} '.mat']), 'TargetName'); 
+load(fullfile(base_dir, Allfiles_S{1}, [Allfiles_S{1} '.mat']), 'TargetName'); 
 EMG_num = length(TargetName);
-
-%% code section
 
 % Create an empty array to store the synergy time pattern (synergy H)
 allH = cell(S);
 
 % load order information (as OD)
-order_fold_path = fullfile(pwd, 'order_tim_list', [Allfiles{1} 'to' AllDays{end} '_' num2str(length(Allfiles))]);
+order_fold_path = fullfile(base_dir, 'order_tim_list', [Allfiles{1} 'to' AllDays{end} '_' num2str(length(Allfiles))]);
 
 disp("Please select the file related to order created with 'dispNMF_W.m'");
 [fName] = uigetfile(order_fold_path, ['*_' sprintf('%d',synergy_num) '.mat']); 
@@ -80,7 +82,7 @@ OD = load(fullfile(order_fold_path, fName));
 day_length = S(2);
 for ii =1:day_length %session loop
     % Get the path of the data to be accessed.
-    synergy_data_fold_path = fullfile(pwd, [Allfiles{ii} '_standard']);
+    synergy_data_fold_path = fullfile(base_dir, [Allfiles{ii} '_standard']);
     synergy_data_file_path = ['t_' Allfiles_S{ii} '.mat'];
 
     H_synergy_data_fold_path = fullfile(synergy_data_fold_path, [Allfiles{ii} '_syn_result_' sprintf('%02d',EMG_num)], [Allfiles{ii} '_H']);
@@ -113,7 +115,7 @@ ResAVE.tData4_AVE = cell(1,synergy_num);
 ResAVE.tDataTask_AVE = cell(1,synergy_num);
 
 % Get the path of the previous level.
-[monkey_dir_path, ~, ~] = fileparts(pwd);
+[monkey_dir_path, ~, ~] = fileparts(base_dir);
 
 % Cutting out synergy H data for each date.
 for ii = 1:day_length 
@@ -156,7 +158,7 @@ for ii = 1:day_length
        xpdate = AllDays(ii);
 
        % Specify the path of the directory to save
-       save_data_fold_path = fullfile(pwd, 'synData');
+       save_data_fold_path = fullfile(base_dir, 'synData');
        save_data_file_name = [monkeyname '_Syn' sprintf('%d',synergy_num) '_' AllDays{ii} '_Pdata.mat'];
        
        % save data
@@ -164,6 +166,7 @@ for ii = 1:day_length
        save(fullfile(save_data_fold_path, save_data_file_name), 'monkeyname','xpdate','D',...
                                                          'alignedDataAVE','ResAVE',...
                                                          'AllT','TIME_W','Timing_ave','taskRange');
+       disp(['Pdata is saved as: ' fullfile(save_data_fold_path, save_data_file_name)]);
    end
 end
 

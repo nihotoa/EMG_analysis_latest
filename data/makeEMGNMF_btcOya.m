@@ -1,8 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 [your operation]
-1. Go to the directory named monkey name (ex.) if you want to analyze Yachimun's data, please go to 'EMG_analysis/data/Yachimun'
-2. Please run this code
+1. Change some parameters (please refer to 'set param' section)
+2. Please run this code & select data by following guidance (which is displayed in command window after Running this code)
 
 [role of this code]
 Perform muscle synergy analysis and save the results (as .mat file)
@@ -20,64 +20,36 @@ post: plotVAF.m
 [Improvement points(Japanaese)]
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clear;
+%% set param
+monkeyname = 'F'; % prefix of recorded data
+nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
-function makeEMGNMF_btcOya(TimeRange,kf,nrep,nshuffle,alg)
-% setting parameters
-if nargin<1
-    TimeRange   = [0 Inf];
-    kf          = 4; % How many parts of data to divide in cross-validation
-    nrep        = 20; % repetition number of synergy search
-    nshuffle    = 1; % whether you want to confirm shuffle
-    alg         = 'mult'; % algorism of nnmf (mult: Multiplicative Update formula, als: Alternating Least Squares formula)
-elseif nargin<2
-    kf          = 4;
-    nrep        = 20;
-    nshuffle    = 1;
-    alg         = 'mult';
-elseif nargin<3
-    nrep        = 20;                    
-    nshuffle    = 1;
-    alg         = 'mult';
-elseif nargin<4
-    nshuffle    = 1;
-    alg         = 'mult';
-elseif nargin<5
-    alg         = 'mult';
-end
+% about algorithm & threshold
+kf          = 4; % How many parts of data to divide in cross-validation
+nrep        = 20; % repetition number of synergy search
+nshuffle    = 1; % whether you want to confirm shuffle
+alg         = 'mult'; % algorism of nnmf (mult: Multiplicative Update formula, als: Alternating Least Squares formula)
 
+%% code section
 warning('off');
 
-% Determine ParentDir
-ParentDir    = getconfig(mfilename,'ParentDir');
-try
-    if(~exist(ParentDir,'dir'))
-        ParentDir    = pwd;
-    end
-catch
-    ParentDir    = pwd;
-end
-disp('yPlease select nmf_result fold (data/Yachimun/new_nmf_resultz)')
-ParentDir   = uigetdir(ParentDir,'?e?t?H???_???I???????????????B');
-
-if(ParentDir==0)
-    disp('User pressed cancel.')
-    return;
-else
-    setconfig(mfilename,'ParentDir',ParentDir);
-end
+% get the real monkey name
+[realname] = get_real_name(monkeyname);
+base_dir = fullfile(pwd, realname, nmf_fold_name);
 
 % get info about dates of analysis data and used EMG
 disp('yPlease select all day folders you want to analyze (Multiple selections are possible)z)')
-InputDirs   = uiselect(dirdir(ParentDir),1,'??????????Experiments???I??????????????');
+InputDirs   = uiselect(dirdir(base_dir),1,'Please select folders which contains the data you want to analyze');
 
 InputDir    = InputDirs{1};
 % Assign all file names contained in InputDirs{1} to Tarfiles
-Tarfiles = sortxls(dirmat(fullfile(ParentDir,InputDir)));
+Tarfiles = sortxls(dirmat(fullfile(base_dir,InputDir)));
 disp('yPlease select used EMG Dataz')
-Tarfiles    = uiselect(Tarfiles,1,'Target?');
+Tarfiles    = uiselect(Tarfiles,1,'Please select all filtered muscle data');
 
 % determine OutputDirs(where to save the result data)
-OutputDir   = fullfile(ParentDir, InputDir);
+OutputDir   = fullfile(base_dir, InputDir);
 day_part = regexp(InputDir, '\d+', 'match');
 prev_day = day_part{1};
 if(OutputDir==0)
@@ -101,23 +73,22 @@ for iDir=1:nDir
         for iTar=1:nTar % each muscle
             clear('Tar')
             Tarfile     = Tarfiles{iTar};
-            Inputfile   = fullfile(ParentDir,InputDir,Tarfile);
+            Inputfile   = fullfile(base_dir,InputDir,Tarfile);
 
             % load filtered EMG (and assign it to Tar)
             Tar     = load(Inputfile);
             XData   = ((1:length(Tar.Data))-1)/Tar.SampleRate;
-            ind     = (XData >= TimeRange(1) & XData <= TimeRange(2));
-
+            
+            % make the empty double matrix to store all selected EMG (which is filtered)
             if(iTar==1)
-                X   = zeros(nTar,size(Tar.Data(ind), 2));
+                X   = zeros(nTar,size(Tar.Data, 2));
                 Name = cell(nTar,1);
             end
-            X(iTar,:)   = Tar.Data(ind);
+            X(iTar,:)   = Tar.Data;
             Name{iTar}  = deext(Tar.Name);
         end
 
         % Preprocessing for matrix of EMG dataset (X)
-
         % 1. offset so that the minimum value is 0
         X   = offset(X,'min');
         
@@ -136,7 +107,6 @@ for iDir=1:nDir
         Y.Name          = InputDir;
         Y.AnalysisType  = 'EMGNMF';
         Y.TargetName    = Name;
-        Y.TimeRange     = TimeRange;
         Y.Info.Class        = Tar.Class;
         Y.Info.SampleRate   = Tar.SampleRate;
         Y.Info.Unit         = Tar.Unit;
@@ -163,4 +133,3 @@ end
 %MailClient;
 %sendmail('toya@ncnp.go.jp',InputDir,'makeEMGNMF_btc Analysis Done!!!');
 warning('on');
-end

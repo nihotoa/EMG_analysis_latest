@@ -1,8 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 [your operation]
-1. Go to the directory named monkey name (ex.) if you want to analyze Yachimun's data, please go to 'EMG_analysis/data/Yachimun'
-2. Please run this code
+1. Change some parameters (please refer to 'set param' section)
+2. Please run this code & select data by following guidance (which is displayed in command window after Running this code)
 
 [role of this code]
 Preform preprocessing on EMG data and save these filtered data (as .mat file).
@@ -21,28 +21,19 @@ post:makeEMGNMFbtc_Oya.m
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
+
+%% set param
+monkeyname = 'F'; % prefix of the recorded file
+nmf_fold_name = 'new_nmf_result'; % name of nmf folder
+
 %% code section
-% get folder path of monkey fold
-ParentDir   = getconfig(mfilename,'ParentDir');
-try
-    if(~exist(ParentDir,'dir'))
-        ParentDir   = pwd;
-    end
-catch
-    ParentDir   = pwd;
-end
-disp('【Please select nmf_result fold (Yachimun/new_nmf_result】)')
-ParentDir   = uigetdir(ParentDir,'?e?t?H???_???I???????????????B');
-if(ParentDir==0)
-    disp('User pressed cancel.')
-    return;
-else
-    setconfig(mfilename,'ParentDir',ParentDir);
-end
+[realname] = get_real_name(monkeyname);
+base_dir = fullfile(pwd, realname, nmf_fold_name);
+
 % get the name of the floder that exists directly under 'Parent dir'
-InputDirs   = dirdir(ParentDir);
+InputDirs   = dirdir(base_dir);
 disp('【Plese select all day fold (which contains the data you want to filter】)')
-InputDirs   = uiselect(InputDirs,1,'??????????Experiment???I???????????????B');
+InputDirs   = uiselect(InputDirs,1,'Please select folders which contains the data you want to analyze');
 
 if(isempty(InputDirs))
     disp('User pressed cancel.')
@@ -50,9 +41,9 @@ if(isempty(InputDirs))
 end
 InputDir    = InputDirs{1};
 
-Tarfiles    = sortxls(dirmat(fullfile(ParentDir,InputDir)));
+Tarfiles    = sortxls(dirmat(fullfile(base_dir,InputDir)));
 disp('【Please select all muscle data(<muscle name>(uV).mat) which you want to filter】')
-Tarfiles    = uiselect(Tarfiles,1,'Target?t?@?C?????I???????????????i?????I?????j?B');
+Tarfiles    = uiselect(Tarfiles,1,'Please select all muscle data');
 if(isempty(Tarfiles))
     disp('User pressed cancel.')
     return;
@@ -62,8 +53,8 @@ for jj=1:length(InputDirs)  % each day
     try
         InputDir    = InputDirs{jj};
          for kk =1:length(Tarfiles)
-             Tar = loaddata(fullfile(ParentDir,InputDir,Tarfiles{kk}));
-              OutputDir   = fullfile(ParentDir,InputDir);
+             Tar = loaddata(fullfile(base_dir,InputDir,Tarfiles{kk}));
+             OutputDir   = fullfile(base_dir,InputDir);
 
              %highpass filtering
              Tar = makeContinuousChannel([Tar.Name,'-hp50Hz'],'butter',Tar,'high',6,50,'both');

@@ -10,15 +10,16 @@ pcNum: [double], number of synergies to focus on
 nmf_fold_name: [char], 
 each_plot: [0 or 1], Parameter for changing the layout of diagram.
 save_setting:[struct], structure containing parameters for whether the output diagram should be saved or not.
+base_dir: [char], base path for specifying folder path. (basically, this is correspond to monkeyname folder)
 
 output arguments:
 
 %}
 
-function plotSynergyAll_uchida(fold_name, pcNum,nmf_fold_name, each_plot, save_setting)
+function plotSynergyAll_uchida(fold_name, pcNum,nmf_fold_name, each_plot, save_setting, base_dir)
 %% set para & get nmf result
 task = 'standard';
-fold_path = fullfile(pwd, nmf_fold_name, [fold_name '_' task]);
+fold_path = fullfile(base_dir, nmf_fold_name, [fold_name '_' task]);
 
 % get the file details which is related to synergy analysis
 synergy_files = get_synergy_files_name(fold_path, fold_name) ;
@@ -177,7 +178,7 @@ end
 
 %% plot H (temporal pattern of synergy)
 % load timing data (which is created by )
-easyData_path = fullfile(pwd, 'easyData', [fold_name '_' task]);
+easyData_path = fullfile(base_dir, 'easyData', [fold_name '_' task]);
 easyData_file_name = [fold_name '_EasyData.mat'];
 easyData_file_path = fullfile(easyData_path, easyData_file_name);
 try

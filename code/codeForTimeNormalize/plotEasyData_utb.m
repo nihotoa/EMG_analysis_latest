@@ -19,6 +19,9 @@ Timing_ave: [double array(vector)], average number of samples it takes from 'lev
 TIME_W: [double], average sample size of trial
 Res: [struct], this contains EMG data cenreted on each timing
 D: [struct], this contains information about cutout range centered on each timing.
+
+[Improvement points(Japanese)]
+pwdじゃなくて,  inputにbase_dir指定してそれを使った方がいいかも
 %}
 
 function [alignedDataAVE,alignedData,taskRange,AllT,Timing_ave,TIME_W,Res,D] = plotEasyData_utb( monkeyname, xpdate_num, save_fold, task ,real_name)
