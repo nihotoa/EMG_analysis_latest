@@ -11,7 +11,7 @@ location: Yachimun/easyData/
 file name: ~_standard.mat (ex.) F170516_standard.mat
 
 [procedure]
-pre: Nothing
+pre: (if you want to Nibali's data) generateRawData.m
 post : (if you want to conduct synergy analysis) SAVE4NMF.m
        (if you want to conduct EMG analysis) runnningEasyfunc.m
 
