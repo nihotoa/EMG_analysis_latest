@@ -31,10 +31,10 @@ function [] = plot_stack_figures(data_str, m)
             case 'C'
                 % datect days_id
                 ref_day = days_double(d);
-                day_id = find(ref_day == PostDays);
+                day_id = find(ref_day == TermDays);
                 if isempty(day_id) 
                     close all;
-                    error([num2str(ref_day) ' is not included in "PostDays" and cannot be used. Please change "pColor" and run again!'])
+                    error([num2str(ref_day) ' is not included in "TermDays" and cannot be used. Please change "pColor" and run again!'])
                 end
                 
                 % plot

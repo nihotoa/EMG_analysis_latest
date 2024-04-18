@@ -30,7 +30,7 @@ post: nothing
 [caution!!]
 1. Sometimes the function 'uigetfile' is not executed and an error occurs
 -> please reboot MATLAB
-2. Do not select date belong to 'PreDays' when you use pColor as 'C'
+2. Do not select date before 'TT_day' when you use pColor as 'C'
 
 [Improvement points(Japanaese)]
 
@@ -44,15 +44,15 @@ post: nothing
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkeyname = 'F'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa' 
+monkeyname = 'Ni'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'
 plot_all = 1; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
-plot_type = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
-pColor = 'K';  % select 'K'(black plot) or 'C'(color plot) 
+plot_type = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
+pColor = 'C';  % select 'K'(black plot) or 'C'(color plot) 
 normalizeAmp = 0; % normalize Amplitude a
 YL = Inf; % (if nomalize Amp == 0) ylim of graph
 LineW = 1.5; %0.1;a % width of plot line 
-timing_name_list = ["Lever1 on ", "Lever1 off ", "Lever2 on ", "Lever2 off"]; % this is used for titling
+timing_name_list = ["Task start ", "Grasp on ", "Grasp off ", "Task End"]; % this is used for titling  (ex.) ["Lever1 on ", "Lever1 off ", "Lever2 on ", "Lever2 off"]
 row_num = 4; % how many rows to display in one subplot figure
 fig_type_array = {'stack', 'std'}; % you don't  need to change
 
@@ -63,33 +63,38 @@ realname = get_real_name(monkeyname);
 % Get the plotWindow at each timing and list of the filenames of the files to be read.
 % set the date list of data to be used as control data & the cutout range around each timing
 switch realname
-   case 'Yachimun'
-      PreDays = [170516, 170517, 170524, 170526];
-      % plot window (Xcorr data will be made in this range)
-      plotWindow_cell{1} = [-25 5];
-      plotWindow_cell{2} = [-15 15];
-      plotWindow_cell{3} = [-15 15];
-      plotWindow_cell{4} = [95 125];
+    case 'Yachimun'
+        TT_day=  170530;
+        % plot window (Xcorr data will be made in this range)
+        plotWindow_cell{1} = [-25 5];
+        plotWindow_cell{2} = [-15 15];
+        plotWindow_cell{3} = [-15 15];
+        plotWindow_cell{4} = [95 125];
     case 'SesekiL'
-      PreDays = [200117, 200119, 200120];
-      % plot window (Xcorr data will be made in this range)
-      plotWindow_cell{1} = [-30 15];
-      plotWindow_cell{2} = [-10 15];
-      plotWindow_cell{3} = [-15 15];
-      plotWindow_cell{4} = [98 115];
-  case 'Wasa'
-      PreDays = []; % to be decided
-      % plot window (Xcorr data will be made in this range)
-      plotWindow_cell{1} = [-25 5];
-      plotWindow_cell{2} = [-15 15];
-      plotWindow_cell{3} = [-15 15];
-      plotWindow_cell{4} = [95 125];
+        TT_day=  200121;
+        % plot window (Xcorr data will be made in this range)
+        plotWindow_cell{1} = [-30 15];
+        plotWindow_cell{2} = [-10 15];
+        plotWindow_cell{3} = [-15 15];
+        plotWindow_cell{4} = [98 115];
+    case 'Wasa'
+        % plot window (Xcorr data will be made in this range)
+        plotWindow_cell{1} = [-25 5];
+        plotWindow_cell{2} = [-15 15];
+        plotWindow_cell{3} = [-15 15];
+        plotWindow_cell{4} = [95 125];
+    case 'Nibali'
+        TT_day=  220530;
+        % plot window (Xcorr data will be made in this range)
+        plotWindow_cell{1} = [-25 5];
+        plotWindow_cell{2} = [-15 15];
+        plotWindow_cell{3} = [-15 15];
+        plotWindow_cell{4} = [95 125];
 end
 
 % compile a list of names of files containing data to be plotted
 [Allfiles_S, select_folder_path] = getFileName(plot_type, realname);
 [~, session_num] = size(Allfiles_S);
-
 
 % make array containing folder name
 Allfiles = strrep(Allfiles_S,'_Pdata.mat',''); % just used for folder name
@@ -191,17 +196,23 @@ end
 
 % make array of colormap for plot
 if strcmp(pColor, 'C')
-    % get PostDays(get dates from the file name of 'Pdtata' & exclude dates of PreDays from it)
-    PostDays =  transpose(extract_post_days(PreDays, select_folder_path, plot_type));
+    % get TermDays(get dates from the file name of 'Pdtata' and exclude dates before 'TT_day' from this file name list)
+    selected_first_Pdata_name = Allfiles_S{1};
+    [TermDays, term_type] = extract_post_days(TT_day, select_folder_path, plot_type, selected_first_Pdata_name);
 
     % decision of base color(RGB)
-    switch realname
-        case 'SesekiL'
+    switch term_type
+        case 'pre'
             color_id = 2;
-        otherwise
-            color_id = 1;
+        case 'post'
+            switch realname
+                case 'SesekiL'
+                    color_id = 2;
+                otherwise
+                    color_id = 1;
+            end
     end
-    PostLength = length(PostDays);
+    PostLength = length(TermDays);
     Csp = zeros(PostLength, 3);
     Csp(:, color_id) = ones(PostLength, 1).*linspace(0.3, 1, PostLength)';
 end
@@ -225,7 +236,7 @@ Pall.x = linspace(taskRange(1), taskRange(2), Pall.AllT_AVE);
 
 % add variables which is used in plot function in 'data_struct'
 data_str = struct();
-use_variable_name_list = {'element_num', 'session_num', 'pColor', 'LineW', 'normalizeAmp', 'YL', 'EMGs', 'plot_type', 'PostDays', 'days_double', 'Csp', 'row_num', 'timing_num'};
+use_variable_name_list = {'element_num', 'session_num', 'pColor', 'LineW', 'normalizeAmp', 'YL', 'EMGs', 'plot_type', 'TermDays', 'days_double', 'Csp', 'row_num', 'timing_num'};
 
 % store data in a struct
 not_exist_variables = {};
@@ -345,22 +356,36 @@ end
 
 %% define local function
 
-% make dates array of post as 'PostDays'
-function [PostDays] = extract_post_days(PreDays, folder_path, plot_type)
+% make dates array of post as 'TermDays'(eliminate only Pre days from '_Pdata.mat' name list)
+function [TermDays, term_type] = extract_post_days(TT_day, folder_path, plot_type, first_Pdata_name)
     files_struct = dir(fullfile(folder_path, '*_Pdata.mat'));
     file_names = {files_struct.name};
-    count = 1;
-    for i = 1:numel(file_names)
-        num_parts = regexp(file_names{i}, '\d+', 'match'); %extract number part
+    day_num = length(file_names);
+    date_list = zeros(day_num, 1);
+    for day_id = 1:day_num
+        num_parts = regexp(file_names{day_id}, '\d+', 'match'); %extract number part
         switch plot_type
             case  'EMG'
-                ref_day = num_parts{1};
+                exp_day = num_parts{1};
             case 'Synergy'
-                ref_day = num_parts{2};
+                exp_day = num_parts{2};
         end
-        if ~ismember(str2double(ref_day), PreDays)
-            PostDays(count) = str2double(ref_day);
-            count = count + 1;
-        end
+        date_list(day_id) = str2double(exp_day);
     end
+
+    % determine which term applies
+    num_parts = regexp(first_Pdata_name, '\d+', 'match'); %extract number part
+    switch plot_type
+        case  'EMG'
+            first_day = num_parts{1};
+        case 'Synergy'
+            first_day = num_parts{2};
+    end
+    elapsed_day = CountElapsedDate(first_day, TT_day);
+    if elapsed_day < 0
+        term_type = 'pre';
+    else
+        term_type = 'post';
+    end
+    TermDays = get_specific_term(date_list, term_type, TT_day);
 end

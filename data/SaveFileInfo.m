@@ -20,7 +20,7 @@ made 'makefold.m' & add this function berore saving
 %}
 clear;
 %% set param
-monkeyname = 'F' ; % prefix of recorded file(ex. F1710516-0002)
+monkeyname = 'Ni' ; % prefix of recorded file(ex. F1710516-0002)
 taskname = 'standard'; %you don't need to change
 save_fold = 'easyData'; %you don't need to change
 

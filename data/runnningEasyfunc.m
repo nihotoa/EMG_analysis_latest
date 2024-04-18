@@ -51,7 +51,7 @@ mE.make_EMG = 1; % whether you want to make EMG data
 mE.save_E = 1; % wheter you want to save EMG data
 mE.down_E = 1; % whether you want to perform down sampling
 mE.make_Timing = 1; % whether you want to make timing data
-mE.downdata_to = 5000; % (if down_E ==1)sampling rate of after resampling
+mE.downdata_to = 1375; % (if down_E ==1)sampling rate of after resampling
 
 % which save pttern?(if you set all of them to 1, there is basically no problem.)
 saveP = 1; 
@@ -60,7 +60,7 @@ saveS = 1;
 saveE_filt = 1; 
 
 % which monkey?
-realname = 'Yachimun';  % 'Wasa', 'Yachimun', 'SesekiL', 'SesekiR', 'Matatabi', 'Nibali' 
+realname = 'Nibali';  % 'Wasa', 'Yachimun', 'SesekiL', 'SesekiR', 'Matatabi', 'Nibali' 
 
 %% code section
 % get target files(select standard.mat files which contain file information, e.g. file numbers)
@@ -83,72 +83,64 @@ S = size(Allfiles_S);
 Allfiles = strrep(Allfiles_S,['_' task '.mat'],'');
 %% RUNNING FUNC LIST (make data)
 for i = 1:S(2)
-   try
-        load(fullfile(easyData_fold_path, Allfiles_S{i}), 'fileInfo');
-        monkeyname = fileInfo.monkeyname;
-        xpdate = fileInfo.xpdate;
-        file_num = fileInfo.file_num;
-        
-        % Perform all preprocessing with 3 functions
+    load(fullfile(easyData_fold_path, Allfiles_S{i}), 'fileInfo');
+    monkeyname = fileInfo.monkeyname;
+    xpdate = fileInfo.xpdate;
+    file_num = fileInfo.file_num;
+    
+    % Perform all preprocessing with 3 functions
 
-        % 1. Perform data concatenation & filtering processing & Obtain information on each timing for EMG trial-by-trial extraction
-        [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, realname, xpdate, file_num, save_fold, mE, task); 
+    % 1. Perform data concatenation & filtering processing & Obtain information on each timing for EMG trial-by-trial extraction
+    [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, realname, xpdate, file_num, save_fold, mE, task); 
 
-        % 2. Check for cross-talk between measured EMGs
-        [Yave,Y3ave] = CTcheck(monkeyname, xpdate, save_fold, 1, task, realname);
+    % 2. Check for cross-talk between measured EMGs
+    [Yave,Y3ave] = CTcheck(monkeyname, xpdate, save_fold, 1, task, realname);
 
-        % 3. Cut out EMG for each trial & Focusing on various timings and cut out EMG around them
-        [alignedDataAVE,alignedData_all,taskRange,AllT,Timing_ave,TIME_W,Res,D] = plotEasyData_utb(monkeyname, xpdate, save_fold, task, realname);
-        
-        % create struct(Store the EMG trial average data around each timing in another structure)
-        ResAVE.tData1_AVE = Res.tData1_AVE;
-        ResAVE.tData2_AVE = Res.tData2_AVE;
-        ResAVE.tData3_AVE = Res.tData3_AVE;
-        ResAVE.tData4_AVE = Res.tData4_AVE;
-        ResAVE.tDataTask_AVE = Res.tDataTask_AVE;
-        alignedData_trial.tData1 = Res.tData1;
-        alignedData_trial.tData2 = Res.tData2;
-        alignedData_trial.tData3 = Res.tData3;
-        alignedData_trial.tData4 = Res.tData4;
-        alignedData_trial.tDataTask = Res.tDataTask;
-        %% save data(location: easyData/P-Data)
-
-        % get folder path & make folder
-        P_Data_fold_path = fullfile(easyData_fold_path, 'P-DATA');
-        makefold(P_Data_fold_path);
-        % save data as .mat file
-        if saveP == 1
-            % dataset for synergy analysis 
-            save(fullfile(P_Data_fold_path, [monkeyname sprintf('%d',xpdate) '_Pdata.mat']), 'monkeyname', 'xpdate', 'file_num','EMGs',...
-                                                   'Tp','Tp3',... 
-                                                   'Yave','Y3ave',...
-                                                   'alignedDataAVE','taskRange','AllT','Timing_ave','TIME_W','ResAVE','D'...,
-                                                   );
-        end
-        if saveE == 1
-            %dataset for synergy analysis after'trig data' filtered by TakeiMethod same as his paper
-            save(fullfile(P_Data_fold_path, [monkeyname sprintf('%d',xpdate) '_dataTrigEMG.mat']), ...
-                                                   'alignedData_trial','alignedData_all',...
-                                                   'D'...
-                                                   );
-        end
-        if saveE_filt == 1
-            %dataset for synergy analysis after'trig data' filtered by Uchida same as his paper
-            save(fullfile(P_Data_fold_path, [monkeyname sprintf('%d',xpdate) '_dataTrigEMG_NDfilt.mat']), ...
-                                                   'alignedData_trial','alignedData_all',...
-                                                   'D'...
-                                                   );
-        end
-        if saveS == 1
-            %dataset for synergy analysis after'trig data' filtered by TakeiMethod same as his paper
-            save(fullfile(P_Data_fold_path, [monkeyname sprintf('%d',xpdate) '_dataTrigSyn.mat']), ...
-                                                   'alignedData_trial','D'...
-                                                   );
-        end
-   catch exception
-      disp(['****** Error occured in ',Allfiles_S{i}]) ; 
-      print_error_message(exception)
-   end
+    % 3. Cut out EMG for each trial & Focusing on various timings and cut out EMG around them
+    [alignedDataAVE,alignedData_all,taskRange,AllT,Timing_ave,TIME_W,Res,D, focus_timing_num] = plotEasyData_utb(monkeyname, xpdate, save_fold, task, realname);
+    
+    % create struct(Store the EMG trial average data around each timing in another structure)
+    ResAVE = struct();
+    for timing_id = 1:focus_timing_num
+        ResAVE.(['tData' num2str(timing_id) '_AVE']) = Res.(['tData' num2str(timing_id) '_AVE']);
+        alignedData_trial.(['tData' num2str(timing_id)]) = Res.(['tData' num2str(timing_id)]);
+    end
+    ResAVE.tDataTask_AVE = Res.tDataTask_AVE;
+    alignedData_trial.tDataTask = Res.tDataTask;
+    
+    %% save data(location: easyData/P-Data)
+    % get folder path & make folder
+    P_Data_fold_path = fullfile(easyData_fold_path, 'P-DATA');
+    makefold(P_Data_fold_path);
+    % save data as .mat file
+    if saveP == 1
+        % dataset for synergy analysis 
+        save(fullfile(P_Data_fold_path, [monkeyname sprintf('%d',xpdate) '_Pdata.mat']), 'monkeyname', 'xpdate', 'file_num','EMGs',...
+                                               'Tp','Tp3',... 
+                                               'Yave','Y3ave',...
+                                               'alignedDataAVE','taskRange','AllT','Timing_ave','TIME_W','ResAVE','D'...,
+                                               );
+    end
+    if saveE == 1
+        %dataset for synergy analysis after'trig data' filtered by TakeiMethod same as his paper
+        save(fullfile(P_Data_fold_path, [monkeyname sprintf('%d',xpdate) '_dataTrigEMG.mat']), ...
+                                               'alignedData_trial','alignedData_all',...
+                                               'D'...
+                                               );
+    end
+    if saveE_filt == 1
+        %dataset for synergy analysis after'trig data' filtered by Uchida same as his paper
+        save(fullfile(P_Data_fold_path, [monkeyname sprintf('%d',xpdate) '_dataTrigEMG_NDfilt.mat']), ...
+                                               'alignedData_trial','alignedData_all',...
+                                               'D'...
+                                               );
+    end
+    if saveS == 1
+        %dataset for synergy analysis after'trig data' filtered by TakeiMethod same as his paper
+        save(fullfile(P_Data_fold_path, [monkeyname sprintf('%d',xpdate) '_dataTrigSyn.mat']), ...
+                                               'alignedData_trial','D'...
+                                               );
+    end
 end
 
 %% define local functon

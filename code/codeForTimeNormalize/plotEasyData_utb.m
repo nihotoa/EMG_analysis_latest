@@ -24,7 +24,7 @@ D: [struct], this contains information about cutout range centered on each timin
 pwdじゃなくて,  inputにbase_dir指定してそれを使った方がいいかも
 %}
 
-function [alignedDataAVE,alignedData,taskRange,AllT,Timing_ave,TIME_W,Res,D] = plotEasyData_utb( monkeyname, xpdate_num, save_fold, task ,real_name)
+function [alignedDataAVE,alignedData,taskRange,AllT,Timing_ave,TIME_W,Res,D, focus_timing_num] = plotEasyData_utb(monkeyname, xpdate_num, save_fold, task ,real_name)
 %% get informations(path of save_folder, EMG data, timing data ,etc...)
 xpdate = sprintf('%d',xpdate_num);
 disp(['START TO MAKE & SAVE ' monkeyname xpdate '_Plot Data']);
@@ -33,14 +33,14 @@ disp(['START TO MAKE & SAVE ' monkeyname xpdate '_Plot Data']);
 save_fold_path = fullfile(pwd, real_name, save_fold, [monkeyname xpdate '_' task]);
 
 %load EasyData
-S = load(fullfile(save_fold_path, [monkeyname xpdate '_EasyData.mat'])); 
+EMG_data_struct = load(fullfile(save_fold_path, [monkeyname xpdate '_EasyData.mat'])); 
 
 % get EMG data & timing data & SamplingRate 
-EMGd = S.AllData_EMG;
-TimingT1 = S.Tp;
-SR = S.SampleRate;
+EMGd = EMG_data_struct.AllData_EMG;
+TimingT1 = EMG_data_struct.Tp;
+SR = EMG_data_struct.SampleRate;
 
-EMGs = S.EMGs; % name list of EMG
+EMGs = EMG_data_struct.EMGs; % name list of EMG
 EMG_num = length(EMGs);% the number of EMGs
 TimingT1 = TimingT1(1:end-1,:);
 [trial_num, ~] = size(TimingT1);  % number of success trial 
@@ -56,29 +56,36 @@ pre_per = 50; % How long do you want to see the signals before 'lever1 on' start
 post_per = 50; % How long do you want to see the signals after 'lever2 off' starts.
 
 % Trim EMG data for each trial & perform time normalization for each trial
-[alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(filtData_EMG, Timing_EMG,trial_num,pre_per,post_per, EMG_num);
+[alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(filtData_EMG, Timing_EMG,trial_num,pre_per,post_per, EMG_num, monkeyname);
 
 % Setting the range to be cut out around each timing
 taskRange = [-1*pre_per, 100+post_per];
-D.trig1_per = [50 50];
-D.trig2_per = [50 50];
-D.trig3_per = [50 50];
-D.trig4_per = [50 50];
-D.task_per = [25,105];
+D = struct();
+
+% change the range of trimming for each monkey
+switch monkeyname
+    case 'Nibali'
+        D.trig1_per = [50 50];
+        D.trig2_per = [50 50];
+        D.trig3_per = [50 50];
+        D.trig4_per = [50 50];
+        D.task_per = [25,105];
+    otherwise
+        D.trig1_per = [50 50];
+        D.trig2_per = [50 50];
+        D.trig3_per = [50 50];
+        D.trig4_per = [50 50];
+        D.task_per = [25,105];
+end
 
 % Centering on each timing, trim & get EMG data around it
-[Res] = alignDataEX(alignedData,Timing_EMG, D,pre_per,TIME_W,EMG_num);
+[Res, focus_timing_num] = alignDataEX(alignedData,Timing_EMG, D,pre_per,TIME_W,EMG_num, monkeyname);
 
 % Summary of trimming details(length of trimmed data, cut out range around each timing)
-D.Ld1 = length(Res.tData1_AVE{1});
-D.Range1 = D.trig1_per;
-D.Ld2 = length(Res.tData2_AVE{1});
-D.Range2 = D.trig2_per;
-D.Ld3 = length(Res.tData3_AVE{1});
-D.Range3 = D.trig3_per;
-D.Ld4 = length(Res.tData4_AVE{1});
-D.Range4 = D.trig4_per;
-D.LdTask = length(Res.tDataTask_AVE{1});
+for timing_id = 1:focus_timing_num
+    D.(['Ld' num2str(timing_id)]) = length(Res.(['tData' num2str(timing_id) '_AVE']){1});
+    D.(['Range' num2str(timing_id)]) = D.(['trig' num2str(timing_id) '_per']);
+end
 D.RangeTask = D.task_per;
 D.filtP = filtP;
 
@@ -125,7 +132,6 @@ switch filt_mode
         end
 
         for i = 1:EMG_num
-    %     filtData = smooth(filtData,1,'movmean',smooth_num);
             filtData(:,i) = conv2(filtData(:,i),kernel,'same');
         end
 
@@ -186,8 +192,9 @@ end
 
 % --------------------------------------------------------------------------------------------------------------------------------------------
 
-function [alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(Data_in, Timing,trial_num,pre_per,post_per, EMG_num)
+function [alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(Data_in, Timing,trial_num,pre_per,post_per, EMG_num, monkeyname)
 %{
+[In case of Yachimun]
 this function estimate that Timing is constructed by 6 kinds of timing.
 1:start trial
 2:lever1 on 
@@ -195,17 +202,35 @@ this function estimate that Timing is constructed by 6 kinds of timing.
 4:lever2 on
 5:lever2 off
 6:success
+
+[In case of Nibali]
+this function estimate that Timing is constructed by 5 kinds of timing.
+1: start trial
+2: grasp on 
+3: grasp off
+4. end trial
+5: success
 %}
+
+% Tie id and timing of attention to each monkey
+switch monkeyname
+    case 'Ni'
+        task_start_id = 1;
+        task_end_id = 4;
+    otherwise
+        task_start_id = 2;
+        task_end_id = 5;
+end
 
 %Please comfirm this construction is correct.  
 Data = Data_in';
 per1 = pre_per / 100;
 per2 = post_per / 100;
 
-TIME_W = round(sum(Timing(:,5)-Timing(:,2) + 1)/trial_num); % Find mean number of sample in 1 trial
-pre1_TIME = round(per1*sum(Timing(:,5)-Timing(:,2) + 1)/trial_num); % Mean number of samples in pre direction
-post2_TIME = round(per2*sum(Timing(:,5)-Timing(:,2) + 1)/trial_num);
-trialData = cell(trial_num,3);
+TIME_W = round(sum(Timing(:,task_end_id)-Timing(:,task_start_id) + 1)/trial_num); % Find mean number of sample in 1 trial
+pre1_TIME = round(per1*sum(Timing(:,task_end_id)-Timing(:,task_start_id) + 1)/trial_num); % Mean number of samples in pre direction
+post2_TIME = round(per2*sum(Timing(:,task_end_id)-Timing(:,task_start_id) + 1)/trial_num);
+trialData = cell(trial_num,3); %3 means range of each section(pre-trial, trial, post-trial)
 AllT = pre1_TIME+TIME_W+post2_TIME; % Average number of samples in the range to be trimmed ((pre_per + 100 + post_per)%)
 
 % Create an empty array for the output argument
@@ -218,23 +243,23 @@ for j = 1:EMG_num
     DataA = zeros(trial_num,AllT);
     for i = 1:trial_num
         % Find the number of samples for each trial.
-        time_w = round(Timing(i,5) - Timing(i,2) +1);
+        time_w = round(Timing(i,task_end_id) - Timing(i,task_start_id) +1);
 
         % Resampling from average frames of all task (time_w) to the frames of this task(time_W)
         if time_w == TIME_W
-            trialData{i,1} = Data(j,floor(Timing(i,2)-time_w*per1):floor(Timing(i,2)-1)); % pre trial data
-            trialData{i,2} = Data(j,floor(Timing(i,2)):floor(Timing(i,5))); % trial_data
-            trialData{i,3} = Data(j,floor(Timing(i,5)+1):floor(Timing(i,5)+time_w*per2)); % post trial data
+            trialData{i,1} = Data(j,floor(Timing(i,task_start_id)-time_w*per1):floor(Timing(i,task_start_id)-1)); % pre trial data
+            trialData{i,2} = Data(j,floor(Timing(i,task_start_id)):floor(Timing(i,task_end_id))); % trial_data
+            trialData{i,3} = Data(j,floor(Timing(i,task_end_id)+1):floor(Timing(i,task_end_id)+time_w*per2)); % post trial data
         
         elseif time_w<TIME_W 
-            trialData{i,1} = interpft(Data(j,floor(Timing(i,2)-time_w*per1):floor(Timing(i,2)-1)),pre1_TIME);
-            trialData{i,2} = interpft(Data(j,floor(Timing(i,2)):floor(Timing(i,5))),TIME_W);
-            trialData{i,3} = interpft(Data(j,floor(Timing(i,5)+1):floor(Timing(i,5)+time_w*per2)),post2_TIME);
+            trialData{i,1} = interpft(Data(j,floor(Timing(i,task_start_id)-time_w*per1):floor(Timing(i,task_start_id)-1)),pre1_TIME);
+            trialData{i,2} = interpft(Data(j,floor(Timing(i,task_start_id)):floor(Timing(i,task_end_id))),TIME_W);
+            trialData{i,3} = interpft(Data(j,floor(Timing(i,task_end_id)+1):floor(Timing(i,task_end_id)+time_w*per2)),post2_TIME);
         
         else
-            trialData{i,1} = resample(Data(j,floor(Timing(i,2)-time_w*per1):floor(Timing(i,2)-1)),pre1_TIME,round(time_w*per1));
-            trialData{i,2} = resample(Data(j,floor(Timing(i,2)):floor(Timing(i,5))),TIME_W,time_w);
-            trialData{i,3} = resample(Data(j,floor(Timing(i,5)+1):floor(Timing(i,5)+time_w*per2)),post2_TIME,round(time_w*per2));
+            trialData{i,1} = resample(Data(j,floor(Timing(i,task_start_id)-time_w*per1):floor(Timing(i,task_start_id)-1)),pre1_TIME,round(time_w*per1));
+            trialData{i,2} = resample(Data(j,floor(Timing(i,task_start_id)):floor(Timing(i,task_end_id))),TIME_W,time_w);
+            trialData{i,3} = resample(Data(j,floor(Timing(i,task_end_id)+1):floor(Timing(i,task_end_id)+time_w*per2)),post2_TIME,round(time_w*per2));
         end
         
         % Concatenate pre_trial, trial, post_trial data and save in list
@@ -255,107 +280,121 @@ for j = 1:EMG_num
     alignedDataAVE{1,j} = mean(DataA,1);
 end
 
-% Calculate the average number of samples elapsed from the 'lever1 on' (timing2) to each timing
-Ti = [Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2)];
+% Calculate the average number of samples elapsed from the 'lever1 on' (task_start_id) to each timing
+[~, timing_num] = size(Timing);
+Ti = [];
+for ii = 1:timing_num
+    Ti = [Ti Timing(:,task_start_id)];
+end
 Timing_ave = mean(Timing - Ti);
 end
 
 %------------------------------------------------------------------------------
-function [Re] = alignDataEX(Data_in,Timing,Da,pre_per,TIME_W,EMG_num)
+function [Re, focus_timing_num] = alignDataEX(Data_in,Timing,range_struct,pre_per,TIME_W,EMG_num, monkeyname)
 %{
-% this function estimate that Timing is constructed by 6 kinds of timing.
-%1:start trial
-%2:lever1 on
-%3:lever1 off
-%4:lever2 on
-%5:lever2 off
-%6:success
+[In case of Yachimun]
+this function estimate that Timing is constructed by 6 kinds of timing.
+1:start trial
+2:lever1 on 
+3:lever1 off
+4:lever2 on
+5:lever2 off
+6:success
+
+[In case of Nibali]
+this function estimate that Timing is constructed by 5 kinds of timing.
+1: start trial
+2: grasp on 
+3: grasp off
+4. end trial
+5: success
 %}
 
-% Acquisition of data and determination of cropping range
+% Tie id and timing of attention to each monkey
+switch monkeyname
+    case 'Ni'
+        task_start_id = 1;
+        task_end_id = 4;
+    otherwise
+        task_start_id = 2;
+        task_end_id = 5;
+end
+% count the number of timing which is focused on analysis
+focus_timing_num = (task_end_id - task_start_id)+1;
+
+% Acquisition of EMG data and fieldnames of range_struct
 D = Data_in;
-pre_per = pre_per/100;
-per1 = Da.trig1_per/100;
-per2 = Da.trig2_per/100;
-per3 = Da.trig3_per/100;
-per4 = Da.trig4_per/100;
-pertask = Da.task_per/100;
+fieldname_list = fieldnames(range_struct);
 
 % Formatting timing data
-trial_num = length(Timing(:,1));
-Ti = [Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2)];
+[trial_num, timing_num] = size(Timing);
+Ti = [];
+for ii = 1:timing_num
+    Ti = [Ti Timing(:,task_start_id)];
+end
 Timing = Timing - Ti;
 
-% Creating an empty array to store data
-TimingPer = zeros(trial_num,6);
-centerP1 = zeros(trial_num,2);
-centerP2 = zeros(trial_num,2);
-centerP3 = zeros(trial_num,2);
-centerP4 = zeros(trial_num,2);
-centerPTask = zeros(trial_num,2);
+% Creating an empty array to store data & Creating a structure for output arguments
+per_struct = struct();
+center_struct = struct();
+Re = struct();
+Re_sel = struct();
+TimingPer = zeros(trial_num, timing_num);
 
-% Creating a structure for output arguments
-Re.tData1 = cell(1,EMG_num);
-Re.tData2 = cell(1,EMG_num);
-Re.tData3 = cell(1,EMG_num);
-Re.tData4 = cell(1,EMG_num);
+per_struct.pre_per = pre_per/100;
+for timing_id = 1:focus_timing_num
+    % prepare empty array
+    center_struct.(['centerP' num2str(timing_id)]) = zeros(trial_num,2);
+    Re.(['tData' num2str(timing_id)]) = cell(1,EMG_num);
+    Re.(['tData' num2str(timing_id) '_AVE']) = cell(1,EMG_num);
+    Re_sel.(['tD' num2str(timing_id)]) = cell(trial_num, 1);
+
+    % change from percentage to ratio
+    per_struct.(['per' num2str(timing_id)]) = range_struct.(fieldname_list{timing_id}) / 100;
+end
+center_struct.centerPTask = zeros(trial_num,2);
 Re.tDataTask = cell(1,EMG_num);
-Re.tData1_AVE = cell(1,EMG_num);
-Re.tData2_AVE = cell(1,EMG_num);
-Re.tData3_AVE = cell(1,EMG_num);
-Re.tData4_AVE = cell(1,EMG_num);
 Re.tDataTask_AVE = cell(1,EMG_num);
+per_struct.pertask = range_struct.task_per/100;
+Re_sel.tDTask = cell(trial_num,1);
 
-
-for m = 1:EMG_num
-    tD1 = cell(trial_num,1);
-    tD2 = cell(trial_num,1);
-    tD3 = cell(trial_num,1);
-    tD4 = cell(trial_num,1);
-    tDTask = cell(trial_num,1);
-
-    % For each trial, extract the EMG value centered at each timing.
-    for i = 1:trial_num
+for muscle_id = 1:EMG_num
+    for trial_id = 1:trial_num
         % Time elapsed from 'lever1 on' to each timing, assuming time elapsed from 'lever1 on' to 'lever2 off' as 1
-        TimingPer(i,:) = Timing(i,:)./Timing(i,5);
+        TimingPer(trial_id,:) = Timing(trial_id,:)./Timing(trial_id, task_end_id);
+        
+        ref_struct = struct();
+        for timing_id = 1:focus_timing_num
+            % Find the reference point for each timing (note that pre_per + TimingPer(trial_id,j) is the center of timing j in trial trial_id)
+            ref_timing_id = (task_start_id + timing_id) - 1;
+            ref_struct.(['ref_P' num2str(timing_id)]) = per_struct.pre_per + TimingPer(trial_id, ref_timing_id);
 
-        % Find the reference point for each timing (note that pre_per + TimingPer(i,j) is the center of timing j in trial i)
-        ref_P1 = pre_per + TimingPer(i,2); % 
-        ref_P2 = pre_per + TimingPer(i,3);
-        ref_P3 = pre_per + TimingPer(i,4);
-        ref_P4 = pre_per + TimingPer(i,5);
+            % Setting the cropping range around each timing(P1(timing1) ~ P4(timing4))
+            center_struct.(['centerP' num2str(timing_id)])(trial_id, :) = [round((ref_struct.(['ref_P' num2str(timing_id)]) - per_struct.(['per' num2str(timing_id)])(1)) * TIME_W + 1), floor((ref_struct.(['ref_P' num2str(timing_id)]) + per_struct.(['per' num2str(timing_id)])(2)) * TIME_W - 1)]; % Centered around 'timing_id' timing
 
-        % Setting the cropping range around each timing(P1(lever1 on) ~ P4(lever2 off))
-        centerP1(i,:) = [round((ref_P1 - per1(1)) * TIME_W + 1), floor((ref_P1 + per1(2)) * TIME_W - 1)]; % Centered around 'lever1 on'
-        centerP2(i,:) = [round((ref_P2 - per2(1)) * TIME_W + 1), floor((ref_P2 + per2(2)) * TIME_W - 1)]; % Centered around 'lever1 off'
-        centerP3(i,:) = [round((ref_P3 - per3(1)) * TIME_W + 1), floor((ref_P3 + per3(2)) * TIME_W - 1)]; % Centered around 'lever2 on'
-        centerP4(i,:) = [round((ref_P4 - per4(1)) * TIME_W + 1), floor((ref_P4 + per4(2)) * TIME_W - 1)]; % Centered around 'lever2 off'
-        centerPTask(i,:) = [round((ref_P1-pertask(1)) * TIME_W + 1), floor((ref_P1 + pertask(2)) * TIME_W - 1)]; % Centered around 'lever1 on'
-
-        % Cut out EMG according to the set range
-        tD1{i,1} = D{1,m}(i, centerP1(i,1):centerP1(i,2));
-        tD2{i,1} = D{1,m}(i, centerP2(i,1):centerP2(i,2));
-        tD3{i,1} = D{1,m}(i, centerP3(i,1):centerP3(i,2));
-        tD4{i,1} = D{1,m}(i, centerP4(i,1):centerP4(i,2));
-        tDTask{i,1} = D{1, m}(i, centerPTask(i, 1):centerPTask(i, 2));
+            % Cut out EMG according to the set range
+            Re_sel.(['tD' num2str(timing_id)]){trial_id,1} = D{1,muscle_id}(trial_id, center_struct.(['centerP' num2str(timing_id)])(trial_id,1): center_struct.(['centerP' num2str(timing_id)])(trial_id,2));
+        end
+        center_struct.centerPTask(trial_id, :) = [round((ref_struct.ref_P1 - per_struct.pertask(1)) * TIME_W + 1), floor((ref_struct.ref_P1 + per_struct.pertask(2)) * TIME_W - 1)]; % Centered around 'task_start_id' timing
+        Re_sel.tDTask{trial_id,1} = D{1, muscle_id}(trial_id, center_struct.centerPTask(trial_id, 1):center_struct.centerPTask(trial_id, 2));
     end
 
-    Re.slct = cell(5,1);
-    [tD1]=AlignDatasets(tD1,round(TIME_W*sum(per1)));
-    [tD2]=AlignDatasets(tD2,round(TIME_W*sum(per2)));
-    [tD3]=AlignDatasets(tD3,round(TIME_W*sum(per3)));
-    [tD4]=AlignDatasets(tD4,round(TIME_W*sum(per4)));
-    [tDTask]=AlignDatasets(tDTask,round(TIME_W*sum(pertask)));
-    Re.tData1{m} = cell2mat(tD1);
-    Re.tData1_AVE{m} = mean(Re.tData1{m});
-    Re.tData2{m} = cell2mat(tD2);
-    Re.tData2_AVE{m} = mean(Re.tData2{m});
-    Re.tData3{m} = cell2mat(tD3);
-    Re.tData3_AVE{m} = mean(Re.tData3{m});
-    Re.tData4{m} = cell2mat(tD4);
-    Re.tData4_AVE{m} = mean(Re.tData4{m});
-    Re.tDataTask{m} = cell2mat(tDTask);
-    Re.tDataTask_AVE{m} = mean(Re.tDataTask{m});
+    for timing_id = 1:focus_timing_num
+        data_name = ['tD' num2str(timing_id)];
+        per_data = per_struct.(['per' num2str(timing_id)]);
+
+        % align length between each trial
+        [Re_sel.(data_name)]=AlignDatasets(Re_sel.(data_name), round(TIME_W*sum(per_data)));
+
+        % store TimeNormalized data
+        Re.(['tData' num2str(timing_id)]){muscle_id} = cell2mat(Re_sel.(data_name));
+        
+        % store average data of all trials
+        Re.(['tData' num2str(timing_id) '_AVE']){muscle_id} = mean(Re.(['tData' num2str(timing_id)]){muscle_id});
+    end
+    [Re_sel.tDTask]=AlignDatasets(Re_sel.tDTask,round(TIME_W*sum(per_struct.pertask)));
+    Re.tDataTask{muscle_id} = cell2mat(Re_sel.tDTask);
+    Re.tDataTask_AVE{muscle_id} = mean(Re.tDataTask{muscle_id});
 end
 
 end
