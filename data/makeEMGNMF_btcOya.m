@@ -26,10 +26,10 @@ monkeyname = 'F'; % prefix of recorded data
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
 % about algorithm & threshold
-kf          = 4; % How many parts of data to divide in cross-validation
-nrep        = 20; % repetition number of synergy search
-nshuffle    = 1; % whether you want to confirm shuffle
-alg         = 'mult'; % algorism of nnmf (mult: Multiplicative Update formula, als: Alternating Least Squares formula)
+kf = 4; % How many parts of data to divide in cross-validation
+nrep = 20; % repetition number of synergy search
+nshuffle = 1; % whether you want to confirm shuffle
+alg = 'mult'; % algorism of nnmf (mult: Multiplicative Update formula, als: Alternating Least Squares formula)
 
 %% code section
 warning('off');

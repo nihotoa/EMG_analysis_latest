@@ -56,7 +56,7 @@ pre_per = 50; % How long do you want to see the signals before 'lever1 on' start
 post_per = 50; % How long do you want to see the signals after 'lever2 off' starts.
 
 % Trim EMG data for each trial & perform time normalization for each trial
-[alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(filtData_EMG, Timing_EMG,trial_num,pre_per,post_per, EMG_num, monkeyname);
+[alignedData, alignedDataAVE, AllT, Timing_ave, Timing_std, Timing_std_diff,TIME_W] = alignData(filtData_EMG, Timing_EMG,trial_num,pre_per,post_per, EMG_num, monkeyname);
 
 % Setting the range to be cut out around each timing
 taskRange = [-1*pre_per, 100+post_per];
@@ -79,7 +79,7 @@ switch monkeyname
 end
 
 % Centering on each timing, trim & get EMG data around it
-[Res, focus_timing_num] = alignDataEX(alignedData,Timing_EMG, D,pre_per,TIME_W,EMG_num, monkeyname);
+[Res, focus_timing_num, Timing_ave_ratio] = alignDataEX(alignedData,Timing_EMG, D,pre_per,TIME_W,EMG_num, monkeyname);
 
 % Summary of trimming details(length of trimmed data, cut out range around each timing)
 for timing_id = 1:focus_timing_num
@@ -88,11 +88,13 @@ for timing_id = 1:focus_timing_num
 end
 D.RangeTask = D.task_per;
 D.filtP = filtP;
+down_Hz = filtP.down;
 
 % save data
 save(fullfile(save_fold_path, [monkeyname xpdate '_alignedData_' filtP.whose '.mat']), 'monkeyname', 'xpdate','EMGs', ...
-                                          'alignedData', 'alignedDataAVE','filtP','trial_num','taskRange','Timing_ave'...
-                                                  );
+                                          'alignedData', 'alignedDataAVE','filtP','trial_num','taskRange', 'down_Hz', 'TIME_W', 'Timing_ave', 'Timing_std', 'Timing_std_diff','Timing_ave_ratio');
+
+
 disp(['END TO MAKE & SAVE ' monkeyname xpdate '_Plot Data']);
 end
 
@@ -192,7 +194,7 @@ end
 
 % --------------------------------------------------------------------------------------------------------------------------------------------
 
-function [alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(Data_in, Timing,trial_num,pre_per,post_per, EMG_num, monkeyname)
+function [alignedData, alignedDataAVE,AllT,Timing_ave, Timing_std, Timing_std_diff, TIME_W] = alignData(Data_in, Timing,trial_num,pre_per,post_per, EMG_num, monkeyname)
 %{
 [In case of Yachimun]
 this function estimate that Timing is constructed by 6 kinds of timing.
@@ -286,11 +288,15 @@ Ti = [];
 for ii = 1:timing_num
     Ti = [Ti Timing(:,task_start_id)];
 end
-Timing_ave = mean(Timing - Ti);
+offset_Timing = Timing - Ti;
+ 
+Timing_ave = mean(offset_Timing);
+Timing_std = std(offset_Timing);
+Timing_std_diff = std(diff(offset_Timing, 1, 2));
 end
 
 %------------------------------------------------------------------------------
-function [Re, focus_timing_num] = alignDataEX(Data_in,Timing,range_struct,pre_per,TIME_W,EMG_num, monkeyname)
+function [Re, focus_timing_num, Timing_ave_ratio] = alignDataEX(Data_in,Timing,range_struct,pre_per,TIME_W,EMG_num, monkeyname)
 %{
 [In case of Yachimun]
 this function estimate that Timing is constructed by 6 kinds of timing.
@@ -396,5 +402,5 @@ for muscle_id = 1:EMG_num
     Re.tDataTask{muscle_id} = cell2mat(Re_sel.tDTask);
     Re.tDataTask_AVE{muscle_id} = mean(Re.tDataTask{muscle_id});
 end
-
+Timing_ave_ratio = mean(TimingPer);
 end

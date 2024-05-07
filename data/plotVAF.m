@@ -21,12 +21,11 @@ post: SYNERGYPLOT.m
 clear;
 %% set param
 term_type = 'pre'; %pre / post / all 
-monkeyname = 'F';
+monkeyname = 'Ni';
 use_style = 'test'; % test/train
-VAF_plot_type = 'mean'; %'stack' or 'mean'
+VAF_plot_type = 'stack'; %'stack' or 'mean'
 VAF_threshold = 0.8; % param to draw threshold_line
 font_size = 20; % Font size of text in the figure
-surgery_day = 20170530;
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
 %% code section
@@ -39,11 +38,20 @@ folderList = {data_folders([data_folders.isdir]).name};
 Allfiles_S = folderList(startsWith(folderList, monkeyname));
 
 % Further refinement by term_type
+switch monkeyname
+    case {'Ya', 'F'}
+        TT_day = '20170530';
+    case 'Ni'
+        TT_day = '20220530';
+end
+
+[prev_last_idx, post_first_idx] = get_term_id(Allfiles_S, 1, TT_day);
+
 switch term_type
     case 'pre'
-        Allfiles_S = Allfiles_S(1:4);
+        Allfiles_S = Allfiles_S(1:prev_last_idx);
     case 'post'
-        Allfiles_S = Allfiles_S(5:end);
+        Allfiles_S = Allfiles_S(5:post_first_idx);
     case 'all'
         % no processing
 end
@@ -96,9 +104,9 @@ switch VAF_plot_type
             plot(plot_VAF,'LineWidth',2, 'Color', color_matrix(ii, :), HandleVisibility='off');
             plot(plot_VAF,'o','LineWidth',2, 'Color', color_matrix(ii, :), HandleVisibility='off');
             if ii==1
-                day_range(1) = CountElapsedDate(AllDays{ii}, surgery_day);
+                day_range(1) = CountElapsedDate(AllDays{ii}, TT_day);
             elseif ii==day_num
-                day_range(2) = CountElapsedDate(AllDays{ii}, surgery_day);
+                day_range(2) = CountElapsedDate(AllDays{ii}, TT_day);
             end
         end
         % setting of color bar

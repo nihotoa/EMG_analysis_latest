@@ -185,7 +185,8 @@ try
     load(easyData_file_path, 'Tp', 'SampleRate');
 catch
     stack = dbstack;
-    error(['(Error occured: line ' num2str(stack(1).line + 1) ') EasyData(' easyData_file_path ') is not found. Please run "runnningEasyfunc.m" first!']);
+    disp(['(Error occured: line ' num2str(stack(1).line + 1) ') EasyData(' easyData_file_path ') is not found. Please run "runnningEasyfunc.m" first!']);
+    return;
 end
 
 % 

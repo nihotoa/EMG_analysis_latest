@@ -188,7 +188,11 @@ if make_Timing == 1
          end
         
        case 'Ni'
-            [Timing,Tp,Tp3] = makeEasyTiming_Nibali(real_name, monkeyname, xpdate, file_num, downdata_to);
+           try
+               [Timing,Tp,Tp3] = makeEasyTiming_Nibali(real_name, monkeyname, xpdate, file_num, downdata_to);
+           catch
+               warning([real_name '-' xpdate ' does not have "CTTL_003" signal']);
+           end
        otherwise %if reference monkey is not SesekiR or WasaÅAÅiif you don't have to chage to fotocellÅj
             [Timing,Tp,Tp3] = makeEasyTiming(monkeyname,xpdate,file_num,downdata_to,TimeRange_EMG);
    end

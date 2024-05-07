@@ -22,14 +22,14 @@ post:filterBat_SynNMFPre.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-real_name = 'Yachimun'; % Name of the directory containing the data you want to analyze
+real_name = 'Nibali'; % Name of the directory containing the data you want to analyze
 task = 'standard'; % you don't need to change this parameter
 
 % parameters used in local function(MakeData4nmf)
 param_struct = struct();
 param_struct.save_fold = 'new_nmf_result'; % not need to change
 param_struct.downsample = 1; % whether you want to perform down sampling(1 or 0)
-param_struct.downdata_to =5000; % Sampling frequency after down sapling
+param_struct.downdata_to =1375; % Sampling frequency after down sapling
 param_struct.save_EMG = 1; % whether you want to save EMG data(1 or 0)
 
 %% code section
@@ -42,7 +42,7 @@ prefix = string_parts{1};
 
 %  get the file name list of  '~standard.mat'
 standard_fold_path = fullfile(pwd, real_name, 'easyData');
-disp('Please select all "F~_standard.mat"');
+disp(['Please select all "' prefix '~_standard.mat"']);
 standard_file_list = uigetfile(standard_fold_path, 'Select One or More Files', 'MultiSelect', 'on');
 
 % count the number of sessions
@@ -159,6 +159,25 @@ switch monkeyname
            EMGs{7,1}= 'FDPr';
            EMGs{8,1}= 'FDPu';
         end
+   case 'Ni'
+        % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
+        EMGs=cell(16,1) ;
+        EMGs{1,1}= 'EDCdist';
+        EMGs{2,1}= 'EDCprox';
+        EMGs{3,1}= 'ED23';
+        EMGs{4,1}= 'ED45';
+        EMGs{5,1}= 'ECR';
+        EMGs{6,1}= 'ECU';
+        EMGs{7,1}= 'BRD';
+        EMGs{8,1}= 'EPL';
+        EMGs{9,1}= 'FDSdist';
+        EMGs{10,1}= 'FDSprox';
+        EMGs{11,1}= 'FDP';
+        EMGs{12,1}= 'FCR';
+        EMGs{13,1}= 'FCU';
+        EMGs{14,1}= 'FPL';
+        EMGs{15,1}= 'Biceps';
+        EMGs{16,1}= 'Triceps';
 end
 EMG_num = length(EMGs);
 
@@ -169,7 +188,7 @@ downdata_to =param_struct.downdata_to;
 save_EMG = param_struct.save_EMG ;
 
 % concanenate EMG data
-[AllData_EMG, TimeRange, EMG_Hz] = makeEasyEMG(monkeyname, xpdate, file_num, real_name);
+[AllData_EMG, TimeRange, EMG_Hz] = makeEasyEMG(monkeyname, xpdate, file_num, real_name, EMG_num);
 
 % Down sample these EMG data (from 'EMG_Hz'[Hz] to 'down_data_to'[Hz])
 if downsample==1
