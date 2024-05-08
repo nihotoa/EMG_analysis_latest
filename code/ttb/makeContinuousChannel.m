@@ -233,7 +233,15 @@ switch command
             case 'both'
                 Y.Data  = filtfilt(B,A,Y.Data);
         end
-       
+
+    case 'band-pass'           % Name, 'butter', refchan(continuous),,filter_type('low','high','stop'), filter_order, filter_w
+        Y = varargin{1};
+        band_pass_freq = varargin{2};
+        
+        % peform band-pass filter
+        Y.Data = bandpass(Y.Data, band_pass_freq, Y.SampleRate);
+        Y.Name  = Name; 
+
     case 'cheby2'           % Name, 'butter', refchan(continuous),,filter_type('low','high','stop'), filter_order, filter_w
         Y               = varargin{1};
         filter_type     = varargin{2};

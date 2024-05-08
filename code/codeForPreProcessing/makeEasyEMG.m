@@ -1,5 +1,6 @@
 %{
 [explanation of this func]:
+this func is used in 'SAVE4NMF.m'
 concanenate EMG data for 1 experiment day.
 Extract information necessary for EMG analysis(ex. TimeRange, EMG_Hz etc...) from recorded data
 
@@ -18,102 +19,7 @@ EMG_Hz: sampling frequency of EMG data
 pwdじゃなくて,  inputにbase_dir指定してそれを使った方がいいかも
 %}
 
-function [AllData_EMG, TimeRange, EMG_Hz] = makeEasyEMG(monkeyname, xpdate, file_num, real_name)
-%% Make EMG set(define muscle names for each electrode)
-switch monkeyname
-    case 'Wa'%Wasa
-        % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
-        EMGs=cell(14,1) ;
-        EMGs{1,1}= 'Delt';
-        EMGs{2,1}= 'Biceps';
-        EMGs{3,1}= 'Triceps';
-        EMGs{4,1}= 'BRD';
-        EMGs{5,1}= 'cuff';
-        EMGs{6,1}= 'ED23';
-        EMGs{7,1}= 'ED45';
-        EMGs{8,1}= 'ECR';
-        EMGs{9,1}= 'ECU';
-        EMGs{10,1}= 'EDC';
-        EMGs{11,1}= 'FDS';
-        EMGs{12,1}= 'FDP';
-        EMGs{13,1}= 'FCU';
-        EMGs{14,1}= 'FCR';
-    case 'Ya'%Yachimun
-        % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
-        EMGs=cell(12,1) ;
-        EMGs{1,1}= 'FDP';
-        EMGs{2,1}= 'FDSprox';
-        EMGs{3,1}= 'FDSdist';
-        EMGs{4,1}= 'FCU';
-        EMGs{5,1}= 'PL';
-        EMGs{6,1}= 'FCR';
-        EMGs{7,1}= 'BRD';
-        EMGs{8,1}= 'ECR';
-        EMGs{9,1}= 'EDCprox';
-        EMGs{10,1}= 'EDCdist';
-        EMGs{11,1}= 'ED23';
-        EMGs{12,1}= 'ECU';
-    case 'F' %Yachimun
-        % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
-        EMGs=cell(12,1) ;
-        EMGs{1,1}= 'FDP';
-        EMGs{2,1}= 'FDSprox';
-        EMGs{3,1}= 'FDSdist';
-        EMGs{4,1}= 'FCU';
-        EMGs{5,1}= 'PL';
-        EMGs{6,1}= 'FCR';
-        EMGs{7,1}= 'BRD';
-        EMGs{8,1}= 'ECR';
-        EMGs{9,1}= 'EDCprox';
-        EMGs{10,1}= 'EDCdist';
-        EMGs{11,1}= 'ED23';
-        EMGs{12,1}= 'ECU';
-    case 'Su'%Suruku
-        % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
-        EMGs=cell(12,1) ;
-        EMGs{1,1}= 'FDS';
-        EMGs{2,1}= 'FDP';
-        EMGs{3,1}= 'FCR';
-        EMGs{4,1}= 'FCU';
-        EMGs{5,1}= 'PL';
-        EMGs{6,1}= 'BRD';
-        EMGs{7,1}= 'EDC';
-        EMGs{8,1}= 'ED23';
-        EMGs{9,1}= 'ED45';
-        EMGs{10,1}= 'ECU';
-        EMGs{11,1}= 'ECR';
-        EMGs{12,1}= 'Deltoid';
-   case 'Se'%Seseki
-        % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
-        EMGs=cell(12, 1) ;
-        EMGs{1,1}= 'EDC';
-        EMGs{2,1}= 'ED23';
-        EMGs{3,1}= 'ED45';
-        EMGs{4,1}= 'ECU';
-        EMGs{5,1}= 'ECR';
-        EMGs{6,1}= 'Deltoid';
-        EMGs{7,1}= 'FDS';
-        EMGs{8,1}= 'FDP';
-        EMGs{9,1}= 'FCR';
-        EMGs{10,1}= 'FCU';
-        EMGs{11,1}= 'PL';
-        EMGs{12,1}= 'BRD';
-    case 'Ma'
-        Mn = 8;
-        EMGs=cell(Mn,1) ;
-        EMGs{1,1}= 'EDC';
-        EMGs{2,1}= 'ECR';
-        EMGs{3,1}= 'BRD_1';
-        EMGs{4,1}= 'FCU';
-        EMGs{5,1}= 'FCR';
-        EMGs{6,1}= 'BRD_2';
-        if Mn == 8
-           EMGs{7,1}= 'FDPr';
-           EMGs{8,1}= 'FDPu';
-        end
-end
-EMG_num = length(EMGs);
-
+function [AllData_EMG, TimeRange, EMG_Hz] = makeEasyEMG(monkeyname, xpdate, file_num, real_name, EMG_num)
 %% create EMG All Data matrix
 file_count = (file_num(end) - file_num(1)) + 1;
 AllData_EMG_sel = cell(file_count,1);

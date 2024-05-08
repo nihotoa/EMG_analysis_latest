@@ -29,9 +29,9 @@ In order to use the function 'resample', 'signal processing toolbox' must be ins
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkeyname = 'F';  % Name prefix of the folder containing the synergy data for each date
+monkeyname = 'Ni';  % Name prefix of the folder containing the synergy data for each date
 term_type = 'pre';  % Which period synergies do you want to plot?
-synergy_num = 4; % number of synergy you want to analyze
+synergy_num = 3; % number of synergy you want to analyze
 save_data = 1; % whether you want to save data (basically, set 1)
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
@@ -52,11 +52,22 @@ folderList = {data_folders([data_folders.isdir]).name};
 Allfiles_S = folderList(startsWith(folderList, monkeyname));
 
 % Further refinement by term_type
+switch monkeyname
+    case {'Ya', 'F'}
+        TT_day = '20170530';
+    case 'Ni'
+        TT_day = '20220530';
+end
+
+[prev_last_idx, post_first_idx] = get_term_id(Allfiles_S, 1, TT_day);
+
 switch term_type
     case 'pre'
-        Allfiles_S = Allfiles_S(1:4);
+        Allfiles_S = Allfiles_S(1:prev_last_idx);
     case 'post'
-        Allfiles_S = Allfiles_S(5:end);
+        Allfiles_S = Allfiles_S(5:post_first_idx);
+    case 'all'
+        % no processing
 end
 
 S = size(Allfiles_S);
@@ -90,7 +101,12 @@ for ii =1:day_length %session loop
 
     % Load data based on PATH.
     % K is the order data required for the linkage of 'test' data to each other.
-    K = load(fullfile(H_synergy_data_fold_path, H_synergy_data_file_name), 'k'); 
+    try 
+        K = load(fullfile(H_synergy_data_fold_path, H_synergy_data_file_name), 'k'); 
+    catch
+        disp([Allfiles_S{ii} 'does not have trimmed H_synergy data']);
+        continue;
+    end
 
     % Get 'test' data on the number of synergies of the target & Concatenate all 'test' data for each synergy.
     synergyData = load(fullfile(synergy_data_fold_path, synergy_data_file_path), 'test'); 

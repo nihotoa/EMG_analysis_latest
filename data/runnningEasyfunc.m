@@ -30,18 +30,26 @@ file_name: ~_Pdata.mat:  contains some data for synergy analysis (timing_data, t
 pre: SaveFileInfo.m
 post: plotTarget.m(EMG analysis) or SYNERGYPLOT.m(synergy analysis)
 
+(If you want to get the information shown below, you can get it by executing following function)
+・if you want to visually confirm the difference of filtered EMG which is caused by the difference of filtering
+    => PerformFFT.m
+・If you want to confirm the effect of time normalization on activity pattern
+    => ConfirmError.m
+
 [caution!!]
 Sometimes the function 'uigetfile' is not executed and an error occurs
 -> please reboot MATLAB
 
 [Improvement points(Japanaese)]
 makeEasyData_all/makeEasyTiming内のSu, Seの条件分岐の意味を把握していない => Sesekiで試す or チュートリアル用のリポジトリを作った後に消す
-・この関数自体も、この関数の中で使われている関数も,タイミングの数が4つであることを前提としているので、可変長にも対応できるように変更する
 ・この関数の中で使われている関数の中で使われているplotEasyData_utbとMakeDataForPlot_H_utb.mが激似なので関数ファイルを作って外から呼び出すように変更する
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear 
 %% set param
+% which monkey?
+realname = 'Yachimun';  % 'Wasa', 'Yachimun', 'SesekiL', 'SesekiR', 'Matatabi', 'Nibali' 
+
 task = 'standard'; % you don't need to change
 save_fold = 'easyData'; % you don't need to change
 
@@ -58,9 +66,6 @@ saveP = 1;
 saveE = 1;  
 saveS = 1; 
 saveE_filt = 1; 
-
-% which monkey?
-realname = 'Nibali';  % 'Wasa', 'Yachimun', 'SesekiL', 'SesekiR', 'Matatabi', 'Nibali' 
 
 %% code section
 % get target files(select standard.mat files which contain file information, e.g. file numbers)
@@ -89,9 +94,13 @@ for i = 1:S(2)
     file_num = fileInfo.file_num;
     
     % Perform all preprocessing with 3 functions
-
-    % 1. Perform data concatenation & filtering processing & Obtain information on each timing for EMG trial-by-trial extraction
-    [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, realname, xpdate, file_num, save_fold, mE, task); 
+    
+    try 
+        % 1. Perform data concatenation & filtering processing & Obtain information on each timing for EMG trial-by-trial extraction
+        [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, realname, xpdate, file_num, save_fold, mE, task); 
+    catch
+        continue
+    end
 
     % 2. Check for cross-talk between measured EMGs
     [Yave,Y3ave] = CTcheck(monkeyname, xpdate, save_fold, 1, task, realname);
@@ -141,21 +150,4 @@ for i = 1:S(2)
                                                'alignedData_trial','D'...
                                                );
     end
-end
-
-%% define local functon
-
-% Function to describe the error contents when an error occurs
-function [] = print_error_message(exception)
-disp(['error message: ', exception.message]);
-string_cell = cell(length(exception.stack),1);
-count = 1;
-for ii = length(exception.stack):-1:1
-    elements = exception.stack(ii);
-    string_cell{count} = [elements.name '.m line ' num2str(elements.line)];
-    count = count + 1;
-end
-delimiter = ' -> ';
-result = strjoin(string_cell, delimiter);
-disp(['Error location : ' result]);
 end

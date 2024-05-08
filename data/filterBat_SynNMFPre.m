@@ -6,6 +6,11 @@
 
 [role of this code]
 Preform preprocessing on EMG data and save these filtered data (as .mat file).
+(sequence of filter)
+1. high-pass-filter
+2. rectify
+3. low-pass-filter
+4. down sample
 
 [Saved data location]
 location: Yachimun/new_nmf_result/'~_standard' (ex.) F170516_standard
@@ -25,6 +30,19 @@ clear;
 %% set param
 monkeyname = 'F'; % prefix of the recorded file
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
+
+% setting of filter 
+band_pass_on = 0;
+high_pass_on = 1;
+rect_on = 1;
+low_pass_on = 1;
+resample_on = 1;
+
+% setting of cut off frequency
+band_pass_freq = [50 200]; % cut off frequency[Hz] of band pass filter
+high_pass_freq = 50; % cut off frequency[Hz] of high pass filter
+low_pass_freq = 50; % cut off frequency[Hz] of high pass filter
+resample_freq = 100; % sampling Rate[Hz] after downsampling
 
 %% code section
 [realname] = get_real_name(monkeyname);
@@ -55,18 +73,30 @@ for jj=1:length(InputDirs)  % each day
          for kk =1:length(Tarfiles)
              Tar = loaddata(fullfile(base_dir,InputDir,Tarfiles{kk}));
              OutputDir   = fullfile(base_dir,InputDir);
+            
+             if band_pass_on
+                 Tar = makeContinuousChannel([Tar.Name,'-bandpass-' num2str(band_pass_freq(1)) 'Hz_to_' num2str(band_pass_freq(2)) 'Hz'], 'band-pass', Tar, band_pass_freq);
+             end
 
-             %highpass filtering
-             Tar = makeContinuousChannel([Tar.Name,'-hp50Hz'],'butter',Tar,'high',6,50,'both');
+             if high_pass_on
+                 %highpass filtering
+                 Tar = makeContinuousChannel([Tar.Name, '-hp' num2str(high_pass_freq) 'Hz'], 'butter', Tar, 'high', 6, high_pass_freq, 'both');
+             end
 
-             %full wave rectification
-             Tar = makeContinuousChannel([Tar.Name,'-rect'],'rectify',Tar);
+             if rect_on
+                 %full wave rectification
+                 Tar = makeContinuousChannel([Tar.Name,'-rect'], 'rectify', Tar);
+             end
 
-             %lowpass filtering
-             Tar = makeContinuousChannel([Tar.Name,'-lp20Hz'], 'butter', Tar, 'low',6,20,'both');
-
-             %down sampling at 100Hz
-             Tar = makeContinuousChannel([Tar.Name,'-ds100Hz'], 'resample', Tar, 100,0);
+             if low_pass_on
+                 %lowpass filtering
+                 Tar = makeContinuousChannel([Tar.Name,'-lp' num2str(low_pass_freq) 'Hz'], 'butter', Tar, 'low', 6, low_pass_freq, 'both');
+             end
+            
+             if resample_on
+                 %down sampling at 100Hz
+                 Tar = makeContinuousChannel([Tar.Name,'-ds' num2str(resample_freq) 'Hz'], 'resample', Tar, resample_freq, 0);
+             end
              
              % save data
              save(fullfile(OutputDir,[Tar.Name,'.mat']),'-struct','Tar');
