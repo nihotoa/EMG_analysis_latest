@@ -26,6 +26,7 @@ pre: SYNERGYPLOT.m
 post: MakeDataForPlot_H_utb.m
 
 [Improvement points(Japanaese)]
+SynergyOrderの中身が冗長(特にヒートマップの図の作成のところはもっときれいにできるはず)
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -61,15 +62,15 @@ switch term_type
     case 'pre'
         Allfiles_S = Allfiles_S(1:prev_last_idx);
     case 'post'
+        pre_file_list = Allfiles_S(1:prev_last_idx);
         Allfiles_S = Allfiles_S(post_first_idx:end);
 end
 
-S = size(Allfiles_S);
-Allfiles = strrep(Allfiles_S, '_standard','');
-days = strrep(Allfiles, monkeyname, '');
-days = cellfun(@str2double, days);
-days = transpose(days);
-day_num = length(days);
+% extract only date portion from 'Allfiles_S' and store it into a list
+[days, day_num] = extract_date(Allfiles_S, monkeyname);
+if strcmp(term_type, 'post')
+    [pre_days, ~] = extract_date(pre_file_list, monkeyname);
+end
 
 %% Get the name of the EMG used for the synergy analysis
 first_date_fold_name = Allfiles_S{1};
@@ -86,12 +87,12 @@ EMG_num = length(EMGs);
 %% Reorder the synergies to match the synergies on the first day.
 
 % align the order of synergies
-[Wt, k_arr] = OrderSynergy(EMG_num, syn_num, monkeyname, days, base_dir);
+[Wt, k_arr] = OrderSynergy(EMG_num, syn_num, monkeyname, days, base_dir, term_type);
 
 if strcmp(term_type, 'post')
     % align the order of synergies with the 1st day of 'pre'
     compair_days = [pre_days(1); days(1)];
-    [~, order_list] = OrderSynergy(EMG_num, syn_num, monkeyname, compair_days,  base_dir);
+    [~, order_list] = OrderSynergy(EMG_num, syn_num, monkeyname, compair_days, base_dir);
     synergy_order = order_list(:, 2);
 
     % align with using 'synergy_order'
@@ -102,9 +103,9 @@ end
 % Expand Wt & rearrange columns
 Walt = cell2mat(Wt);
 Wall = Walt;
-for s_id = 1:syn_num
-    for d_id=1:day_num
-        Wall(:,(s_id-1)*day_num+d_id) = Walt(:,(d_id-1)*syn_num+s_id);
+for synergy_id = 1:syn_num
+    for date_id=1:day_num
+        Wall(:,(synergy_id-1)*day_num+date_id) = Walt(:,(date_id-1)*syn_num+synergy_id);
     end
 end
 
@@ -119,14 +120,14 @@ zeroBar = zeros(EMG_num,1);
 save_figure_folder_path = fullfile(base_dir, 'syn_figures', [monkeyname mat2str(days(1)) 'to' mat2str(days(end)) '_' sprintf('%d',day_num)]);
 makefold(save_figure_folder_path);
 
-for s_id=1:syn_num 
-    f1 = figure('Position',[300,250*s_id,750,400]);
+for synergy_id=1:syn_num 
+    f1 = figure('Position',[300,250*synergy_id,750,400]);
     hold on;
     
     % create plotted_W
     plotted_W = nan(EMG_num, day_num);
-    for d_id = 1:day_num
-        plotted_W(:, d_id) = Wt{d_id}(:, s_id);
+    for date_id = 1:day_num
+        plotted_W(:, date_id) = Wt{date_id}(:, synergy_id);
     end
     bar(x,[zeroBar plotted_W],'b','EdgeColor','none');
 
@@ -137,7 +138,7 @@ for s_id=1:syn_num
     a.FontWeight = 'bold';
     a.FontName = 'Arial';
     if save_fig == 1
-        figure1_name = ['W' sprintf('%d',syn_num) '_' mat2str(days(1)) 'to' mat2str(days(end)) '_' sprintf('%d',day_num) '_syn' sprintf('%d',s_id)];
+        figure1_name = ['W' sprintf('%d',syn_num) '_' mat2str(days(1)) 'to' mat2str(days(end)) '_' sprintf('%d',day_num) '_syn' sprintf('%d',synergy_id)];
         saveas(f1, fullfile(save_figure_folder_path, [figure1_name '.fig']));
         saveas(f1, fullfile(save_figure_folder_path, [figure1_name '.png']));
     end
@@ -150,9 +151,9 @@ if save_WDaySynergy == 1
 
     % Changing the structure of an array
     WDaySynergy = cell(1,syn_num);
-    for s_id = 1:syn_num
-        for d_id = 1:day_num
-            WDaySynergy{s_id}(:, d_id) = Wt{d_id}(:, s_id);
+    for synergy_id = 1:syn_num
+        for date_id = 1:day_num
+            WDaySynergy{synergy_id}(:, date_id) = Wt{date_id}(:, synergy_id);
         end
     end
     
@@ -165,24 +166,24 @@ end
 %% Plot the average value of synergy_W for all selected dates
 aveWt = Wt{1};
 % calcrate the average of synergy W
-for d_id=1:day_num
-    aveWt = (aveWt.*(d_id-1) + Wt{d_id})./d_id;
+for date_id=1:day_num
+    aveWt = (aveWt.*(date_id-1) + Wt{date_id})./date_id;
 end
 
 % plot figure of averarge synergyW
 errt = zeros(EMG_num,syn_num);
-for s_id=1:syn_num
-    f2 = figure('Position',[900,250*s_id,750,400]);
+for synergy_id=1:syn_num
+    f2 = figure('Position',[900,250*synergy_id,750,400]);
 
     % Calculate standard deviation
-    errt(:,s_id) = std(Wall(:,(s_id-1)*day_num+1:s_id*day_num),1,2)./sqrt(day_num);
+    errt(:,synergy_id) = std(Wall(:,(synergy_id-1)*day_num+1:synergy_id*day_num),1,2)./sqrt(day_num);
 
     % plot
-    bar(x,aveWt(:,s_id));
+    bar(x,aveWt(:,synergy_id));
     hold on;
 
     % decoration
-    e1 =errorbar(x, aveWt(:,s_id), errt(:,s_id), 'MarkerSize',1);
+    e1 =errorbar(x, aveWt(:,synergy_id), errt(:,synergy_id), 'MarkerSize',1);
     ylim([-1 4])
     e1.Color = 'r';
     e1.LineWidth = 2;
@@ -195,7 +196,7 @@ for s_id=1:syn_num
     
     % save figure
     if save_fig == 1
-        figure_average_name = ['aveW' sprintf('%d',syn_num) '_' mat2str(days(1)) 'to' mat2str(days(end)) '_' sprintf('%d',day_num) '_syn' sprintf('%d',s_id)];
+        figure_average_name = ['aveW' sprintf('%d',syn_num) '_' mat2str(days(1)) 'to' mat2str(days(end)) '_' sprintf('%d',day_num) '_syn' sprintf('%d',synergy_id)];
         saveas(f2, fullfile(save_figure_folder_path, [figure_average_name '.fig']));
         saveas(f2, fullfile(save_figure_folder_path, [figure_average_name '.png']));
     end
@@ -220,44 +221,204 @@ end
 
 
 %% define local function
-function [Wt, k_arr] = OrderSynergy(EMG_num, syn_num, monkeyname, days, base_dir)
+%{
+[explanation of this func]:
+extract only date portion from 'file_name_list' and store it into a list
+
+[input arguments]
+Allfiles_S: [cell array], the list of name of files
+monkeyname: [char], prefix of raw file
+
+[output arguments]
+days: [double array], the list of experiment date
+day_num: [double], how may days included in the list
+%}
+function [days, day_num] = extract_date(file_name_list, monkeyname)
+% S = size(file_name_list);
+Allfiles = strrep(file_name_list, '_standard','');
+days = strrep(Allfiles, monkeyname, '');
+days = cellfun(@str2double, days);
+days = transpose(days);
 day_num = length(days);
-
-% Create an empty array to store synergy W values
-W_data =  cell(1,day_num);
-
-% Read the daily synergy W values & create an array.
-for d_id = 1:day_num
-    % Load the W synergy data created in the previous phase
-    synergy_W_file_path = fullfile(base_dir, [monkeyname mat2str(days(d_id)) '_standard'], [monkeyname mat2str(days(d_id)) '_syn_result_' sprintf('%d',EMG_num)], [monkeyname mat2str(days(d_id)) '_W'], [monkeyname mat2str(days(d_id)) '_aveW_' sprintf('%d',syn_num) '.mat']);
-    load(synergy_W_file_path, 'aveW');
-    W_data{d_id} = aveW;
 end
 
-% prepare empty array to store data
-Wcom = zeros(EMG_num, syn_num);
-m = zeros(day_num,syn_num);
-Wt = W_data;
-k_arr = ones(syn_num, day_num);
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% next local function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{
+[explanation of this func]:
+this local function is used to provide the information about sort of synergies
 
-% sort data
-for s_id = 1:syn_num
-    k_arr(s_id, 1) = s_id; % first day
-    for d_id = 2:day_num
-        % calcurate the error with s_id synergy
-        for l = 1:syn_num
-            Wcom(:,l) = (W_data{1,1}(:, s_id) - W_data{1, d_id}(:, l)).^ 2; % Square the difference between synergy I on day 1 and synergy l on day d_id
-            m(d_id,l) = sum(Wcom(:, l)); % Add the values together (the smallest one should be the corresponding synergy).
-        end
+[input arguments]
 
-        [~, ref_s_id] = min(m(d_id,:));
+[output arguments]
 
-        % perform sorting with reference to the error
-        Wt{1,d_id}(:,s_id) = W_data{1,d_id}(:, ref_s_id);
-        k_arr(s_id,d_id) = ref_s_id;
+[caution!!]
+%}
 
-        % assign large value to the used synergy index
-        W_data{1, d_id}(:,ref_s_id) = ones(EMG_num,1).*1000;
+function [Wt, k_arr] = OrderSynergy(EMG_num, syn_num, monkeyname, days, base_dir, term_type)
+if not(exist('term_type', 'var'))
+    plot_setting = 0;
+else
+    plot_setting = 1;
+end
+% setting of save_folder
+hierarchical_cluster_result_path = fullfile(base_dir, 'hierarchical_cluster_result');
+makefold(hierarchical_cluster_result_path);
+
+day_num = length(days);
+% Create an empty array to store synergy W values
+W_data =  cell(1,day_num);
+labels = {};
+alphabet_string = 'A':'Z';
+% Read the daily synergy W values & create an array.
+for date_id = 1:day_num
+    % Load the W synergy data created in the previous phase
+    synergy_W_file_path = fullfile(base_dir, [monkeyname mat2str(days(date_id)) '_standard'], [monkeyname mat2str(days(date_id)) '_syn_result_' sprintf('%d',EMG_num)], [monkeyname mat2str(days(date_id)) '_W'], [monkeyname mat2str(days(date_id)) '_aveW_' sprintf('%d',syn_num) '.mat']);
+    load(synergy_W_file_path, 'aveW');
+    W_data{date_id} = aveW;
+    
+    % % append name of synergies for labeling
+    [~, synergy_num] = size(aveW);
+    use_alphabet_str = alphabet_string(1:synergy_num);
+    for synergy_id = 1:length(use_alphabet_str)
+        labels{end+1} = [use_alphabet_str(synergy_id) num2str(date_id)];
     end
+end
+
+W_data_for_Wt = W_data;
+W_data = cell2mat(W_data);
+[~, condition_num] = size(W_data);
+
+% calcurate cosine distance of all pairs of spatial pattern vectors and sotre them in a square matrix
+cosine_distance_matrix = zeros(condition_num, condition_num);
+for ref1_id = 1:condition_num
+    ref1_W_vector = W_data(:, ref1_id);
+    for ref2_id = 1:condition_num
+        ref2_W_vector = W_data(:, ref2_id);
+
+        % calcurate_cosine distance
+        denumerator_value = dot(ref1_W_vector, ref2_W_vector);
+        denomitor_value = norm(ref1_W_vector) * norm(ref2_W_vector);
+        cosine_distance_value = 1 - (denumerator_value / denomitor_value);
+        cosine_distance_value = round(cosine_distance_value, 5);
+        cosine_distance_matrix(ref1_id, ref2_id) = cosine_distance_value;
+    end
+end
+
+if plot_setting == 1
+    figure('position', [100, 100, 1200, 800])
+    colormap(jet);
+    imagesc(cosine_distance_matrix);
+    colorbar;
+    h = colorbar;
+    ylabel(h, 'cosine distance', 'FontSize', 25)
+    axis xy;
+
+    %decoration
+    if condition_num <= 50
+        xticks(1:condition_num); yticks(1:condition_num);
+        xticklabels(labels);
+        yticklabels(labels);
+        xtickangle(90);
+    end
+    set(gca, 'FontSize', 15)
+    title_str = sprintf(['cosine distance between each synergies' '\n' 'original order (' term_type ' ' num2str(day_num) 'days)']);
+    title(title_str, 'FontSize', 25)
+
+    % save
+    saveas(gcf, fullfile(hierarchical_cluster_result_path, ['original_order_heatmap(' term_type ').fig']))
+    saveas(gcf, fullfile(hierarchical_cluster_result_path, ['original_order_heatmap(' term_type ').png']))
+    close all;
+end
+
+% transform cosine_distance_matrix into pairwize_distance_vector
+paiwise_distance_vector = [];
+for row_id = 1:condition_num-1
+    ref_vector = cosine_distance_matrix(row_id, :);
+    start_index = find(ref_vector==0) + 1;
+    insert_vector = ref_vector(start_index:end);
+    paiwise_distance_vector = [paiwise_distance_vector insert_vector];
+end
+
+% perform hierarchical clustering
+Z = linkage(paiwise_distance_vector);
+cluster_idx_list = cluster(Z, "maxclust", synergy_num);
+k_arr = zeros(synergy_num, day_num);
+sort_idx = cell(1, synergy_num);
+for synergy_idx = 1:synergy_num
+    correspond_idx_list = find(cluster_idx_list == synergy_idx);
+    stored_idx_list = mod(correspond_idx_list, synergy_num);
+    
+    % change 0 value in 'stored_idx_list' to 'synergy_num'
+    changed_idx_list = find(stored_idx_list==0);
+    stored_idx_list(changed_idx_list) = synergy_num;
+    first_date_synergy_num = stored_idx_list(1);
+    
+    % store the data
+    sort_idx{first_date_synergy_num} = correspond_idx_list';
+    k_arr(first_date_synergy_num, :) = stored_idx_list;
+end
+
+if plot_setting == 1
+    % make dendrogram(argument2 is involved in the number of data to display)
+    figure('position', [100, 100, 1200, 800])
+    if condition_num < 50
+        dendrogram_fig = dendrogram(Z, 0, 'labels', labels);
+    else
+        dendrogram_fig = dendrogram(Z, 50, 'labels', labels);
+    end
+
+    % decoration of dendrogram
+    hold on;
+    grid on;
+    set(dendrogram_fig, 'LineWidth', 1.5)
+    dendrogram_axes = gca;
+    dendrogram_axes.XTickLabelRotation = 90;
+    dendrogram_axes.FontSize = 15;
+    c = cophenet(Z, paiwise_distance_vector);
+    title_str = sprintf(['cosine distance between synergies(' term_type ' ' num2str(day_num) 'days)' '\n' '(cophenetic correlation coefficient = ' num2str(c) ')']);
+    title(title_str, 'FontSize', 25);
+
+    % save
+    saveas(gcf, fullfile(hierarchical_cluster_result_path, ['dendrogram(' term_type ').png']));
+    saveas(gcf, fullfile(hierarchical_cluster_result_path, ['dendrogram(' term_type ').fig']));
+    close all;
+end
+
+% sort synergy and make heatmap
+if plot_setting==1
+    sort_idx = cell2mat(sort_idx);
+    sorted_cosine_distance_matrix = cosine_distance_matrix(sort_idx, sort_idx);
+
+    % ここ1回目と全く一緒だから関数化する
+    figure('position', [100, 100, 1200, 800])
+    colormap(jet);
+    imagesc(sorted_cosine_distance_matrix);
+    colorbar;
+    h = colorbar;
+    ylabel(h, 'cosine distance', 'FontSize', 25)
+    axis xy;
+
+    %decoration
+    if condition_num <= 50
+        xticks(1:condition_num); yticks(1:condition_num);
+        xticklabels(labels);
+        yticklabels(labels);
+        xtickangle(90);
+    end
+    set(gca, 'FontSize', 15)
+    title_str = sprintf(['cosine distance between each synergies' '\n' 'sorted (' term_type ' ' num2str(day_num) 'days)']);
+    title(title_str, 'FontSize', 25)
+
+    % save
+    saveas(gcf, fullfile(hierarchical_cluster_result_path, ['ordered_heatmap(' term_type ').fig']))
+    saveas(gcf, fullfile(hierarchical_cluster_result_path, ['ordered_heatmap(' term_type ').png']))
+    close all;
+end
+
+% make Wt
+Wt = cell(1, day_num);
+for day_id = 1:day_num
+    Wt{day_id} = W_data_for_Wt{day_id}(:, k_arr(:, day_id));
 end
 end
