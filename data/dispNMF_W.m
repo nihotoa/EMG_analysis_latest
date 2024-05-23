@@ -26,15 +26,16 @@ pre: SYNERGYPLOT.m
 post: MakeDataForPlot_H_utb.m
 
 [Improvement points(Japanaese)]
-SynergyOrderの中身が冗長(特にヒートマップの図の作成のところはもっときれいにできるはず)
+cosine distanceとclusteringは他の関数でも使うので、localじゃなくて、外部関数としてまとめたほうがいいかも
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 
 %% set param
 monkeyname = 'F';  % Name prefix of the folder containing the synergy data for each date
-term_type = 'pre';  % Which period synergies do you want to plot?
+term_type = 'post';  % Which period synergies do you want to plot?
 syn_num = 4; % number of synergy you want to analyze
+plot_clustering_result = 1; % whether to plot cosine distance & dendrogram of hierarcical clustering
 save_WDaySynergy = 1;% Whether to save synergy W (to be used for ANOVA)
 save_data = 1; % Whether to store data on synergy orders in 'order_tim_list' folder (should basically be set to 1).
 save_fig = 1; % Whether to save the plotted synergy W figure
@@ -87,12 +88,12 @@ EMG_num = length(EMGs);
 %% Reorder the synergies to match the synergies on the first day.
 
 % align the order of synergies
-[Wt, k_arr] = OrderSynergy(EMG_num, syn_num, monkeyname, days, base_dir, term_type);
+[Wt, k_arr] = OrderSynergy(EMG_num, syn_num, [], monkeyname, days, base_dir, plot_clustering_result, term_type);
 
 if strcmp(term_type, 'post')
     % align the order of synergies with the 1st day of 'pre'
     compair_days = [pre_days(1); days(1)];
-    [~, order_list] = OrderSynergy(EMG_num, syn_num, monkeyname, compair_days, base_dir);
+    [~, order_list] = OrderSynergy(EMG_num, syn_num, [], monkeyname, compair_days, base_dir, plot_clustering_result);
     synergy_order = order_list(:, 2);
 
     % align with using 'synergy_order'
@@ -240,185 +241,4 @@ days = strrep(Allfiles, monkeyname, '');
 days = cellfun(@str2double, days);
 days = transpose(days);
 day_num = length(days);
-end
-
-%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% next local function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%{
-[explanation of this func]:
-this local function is used to provide the information about sort of synergies
-
-[input arguments]
-
-[output arguments]
-
-[caution!!]
-%}
-
-function [Wt, k_arr] = OrderSynergy(EMG_num, syn_num, monkeyname, days, base_dir, term_type)
-if not(exist('term_type', 'var'))
-    plot_setting = 0;
-else
-    plot_setting = 1;
-end
-% setting of save_folder
-hierarchical_cluster_result_path = fullfile(base_dir, 'hierarchical_cluster_result');
-makefold(hierarchical_cluster_result_path);
-
-day_num = length(days);
-% Create an empty array to store synergy W values
-W_data =  cell(1,day_num);
-labels = {};
-alphabet_string = 'A':'Z';
-% Read the daily synergy W values & create an array.
-for date_id = 1:day_num
-    % Load the W synergy data created in the previous phase
-    synergy_W_file_path = fullfile(base_dir, [monkeyname mat2str(days(date_id)) '_standard'], [monkeyname mat2str(days(date_id)) '_syn_result_' sprintf('%d',EMG_num)], [monkeyname mat2str(days(date_id)) '_W'], [monkeyname mat2str(days(date_id)) '_aveW_' sprintf('%d',syn_num) '.mat']);
-    load(synergy_W_file_path, 'aveW');
-    W_data{date_id} = aveW;
-    
-    % % append name of synergies for labeling
-    [~, synergy_num] = size(aveW);
-    use_alphabet_str = alphabet_string(1:synergy_num);
-    for synergy_id = 1:length(use_alphabet_str)
-        labels{end+1} = [use_alphabet_str(synergy_id) num2str(date_id)];
-    end
-end
-
-W_data_for_Wt = W_data;
-W_data = cell2mat(W_data);
-[~, condition_num] = size(W_data);
-
-% calcurate cosine distance of all pairs of spatial pattern vectors and sotre them in a square matrix
-cosine_distance_matrix = zeros(condition_num, condition_num);
-for ref1_id = 1:condition_num
-    ref1_W_vector = W_data(:, ref1_id);
-    for ref2_id = 1:condition_num
-        ref2_W_vector = W_data(:, ref2_id);
-
-        % calcurate_cosine distance
-        denumerator_value = dot(ref1_W_vector, ref2_W_vector);
-        denomitor_value = norm(ref1_W_vector) * norm(ref2_W_vector);
-        cosine_distance_value = 1 - (denumerator_value / denomitor_value);
-        cosine_distance_value = round(cosine_distance_value, 5);
-        cosine_distance_matrix(ref1_id, ref2_id) = cosine_distance_value;
-    end
-end
-
-if plot_setting == 1
-    figure('position', [100, 100, 1200, 800])
-    colormap(jet);
-    imagesc(cosine_distance_matrix);
-    colorbar;
-    h = colorbar;
-    ylabel(h, 'cosine distance', 'FontSize', 25)
-    axis xy;
-
-    %decoration
-    if condition_num <= 50
-        xticks(1:condition_num); yticks(1:condition_num);
-        xticklabels(labels);
-        yticklabels(labels);
-        xtickangle(90);
-    end
-    set(gca, 'FontSize', 15)
-    title_str = sprintf(['cosine distance between each synergies' '\n' 'original order (' term_type ' ' num2str(day_num) 'days)']);
-    title(title_str, 'FontSize', 25)
-
-    % save
-    saveas(gcf, fullfile(hierarchical_cluster_result_path, ['original_order_heatmap(' term_type ').fig']))
-    saveas(gcf, fullfile(hierarchical_cluster_result_path, ['original_order_heatmap(' term_type ').png']))
-    close all;
-end
-
-% transform cosine_distance_matrix into pairwize_distance_vector
-paiwise_distance_vector = [];
-for row_id = 1:condition_num-1
-    ref_vector = cosine_distance_matrix(row_id, :);
-    start_index = find(ref_vector==0) + 1;
-    insert_vector = ref_vector(start_index:end);
-    paiwise_distance_vector = [paiwise_distance_vector insert_vector];
-end
-
-% perform hierarchical clustering
-Z = linkage(paiwise_distance_vector);
-cluster_idx_list = cluster(Z, "maxclust", synergy_num);
-k_arr = zeros(synergy_num, day_num);
-sort_idx = cell(1, synergy_num);
-for synergy_idx = 1:synergy_num
-    correspond_idx_list = find(cluster_idx_list == synergy_idx);
-    stored_idx_list = mod(correspond_idx_list, synergy_num);
-    
-    % change 0 value in 'stored_idx_list' to 'synergy_num'
-    changed_idx_list = find(stored_idx_list==0);
-    stored_idx_list(changed_idx_list) = synergy_num;
-    first_date_synergy_num = stored_idx_list(1);
-    
-    % store the data
-    sort_idx{first_date_synergy_num} = correspond_idx_list';
-    k_arr(first_date_synergy_num, :) = stored_idx_list;
-end
-
-if plot_setting == 1
-    % make dendrogram(argument2 is involved in the number of data to display)
-    figure('position', [100, 100, 1200, 800])
-    if condition_num < 50
-        dendrogram_fig = dendrogram(Z, 0, 'labels', labels);
-    else
-        dendrogram_fig = dendrogram(Z, 50, 'labels', labels);
-    end
-
-    % decoration of dendrogram
-    hold on;
-    grid on;
-    set(dendrogram_fig, 'LineWidth', 1.5)
-    dendrogram_axes = gca;
-    dendrogram_axes.XTickLabelRotation = 90;
-    dendrogram_axes.FontSize = 15;
-    c = cophenet(Z, paiwise_distance_vector);
-    title_str = sprintf(['cosine distance between synergies(' term_type ' ' num2str(day_num) 'days)' '\n' '(cophenetic correlation coefficient = ' num2str(c) ')']);
-    title(title_str, 'FontSize', 25);
-
-    % save
-    saveas(gcf, fullfile(hierarchical_cluster_result_path, ['dendrogram(' term_type ').png']));
-    saveas(gcf, fullfile(hierarchical_cluster_result_path, ['dendrogram(' term_type ').fig']));
-    close all;
-end
-
-% sort synergy and make heatmap
-if plot_setting==1
-    sort_idx = cell2mat(sort_idx);
-    sorted_cosine_distance_matrix = cosine_distance_matrix(sort_idx, sort_idx);
-
-    % ここ1回目と全く一緒だから関数化する
-    figure('position', [100, 100, 1200, 800])
-    colormap(jet);
-    imagesc(sorted_cosine_distance_matrix);
-    colorbar;
-    h = colorbar;
-    ylabel(h, 'cosine distance', 'FontSize', 25)
-    axis xy;
-
-    %decoration
-    if condition_num <= 50
-        xticks(1:condition_num); yticks(1:condition_num);
-        xticklabels(labels);
-        yticklabels(labels);
-        xtickangle(90);
-    end
-    set(gca, 'FontSize', 15)
-    title_str = sprintf(['cosine distance between each synergies' '\n' 'sorted (' term_type ' ' num2str(day_num) 'days)']);
-    title(title_str, 'FontSize', 25)
-
-    % save
-    saveas(gcf, fullfile(hierarchical_cluster_result_path, ['ordered_heatmap(' term_type ').fig']))
-    saveas(gcf, fullfile(hierarchical_cluster_result_path, ['ordered_heatmap(' term_type ').png']))
-    close all;
-end
-
-% make Wt
-Wt = cell(1, day_num);
-for day_id = 1:day_num
-    Wt{day_id} = W_data_for_Wt{day_id}(:, k_arr(:, day_id));
-end
 end

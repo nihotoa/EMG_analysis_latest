@@ -20,8 +20,8 @@ post: SYNERGYPLOT.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-term_type = 'pre'; %pre / post / all 
-monkeyname = 'Ni';
+term_type = 'post'; %pre / post / all 
+monkeyname = 'F';
 use_style = 'test'; % test/train
 VAF_plot_type = 'stack'; %'stack' or 'mean'
 VAF_threshold = 0.8; % param to draw threshold_line
@@ -51,7 +51,7 @@ switch term_type
     case 'pre'
         Allfiles_S = Allfiles_S(1:prev_last_idx);
     case 'post'
-        Allfiles_S = Allfiles_S(5:post_first_idx);
+        Allfiles_S = Allfiles_S(post_first_idx:end);
     case 'all'
         % no processing
 end
