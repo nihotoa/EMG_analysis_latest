@@ -4,7 +4,7 @@ eliminate '.' & '..' information from structure which is obained by 'dir' functi
 
 [input arguments]
 folder_path: [char], path of folder (same input arguments of 'dir' function)
-add_name_list: [cell (row vector)], list of file name which you want to remove additional
+additional_name_list: [cell (row vector)], list of file name which you want to remove additional
                         (this is optional argument (you don't have to set this arguments))
 
 [output arguments]
@@ -19,5 +19,8 @@ if nargin == 2
 end
 dir_list = dir(folder_path);
 dir_list = dir_list(~ismember({dir_list.name}, excluded_name_list));
+
+% also exclude automatically generated files by macOS   (ex.) .DS_Store
+dir_list = dir_list(~startsWith({dir_list.name}, {'.', '._'}));
 end
 

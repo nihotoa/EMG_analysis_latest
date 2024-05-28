@@ -25,9 +25,9 @@ In order to complete this function, in addtion to the analysis flow of synergy a
 clear;
 %% set param
 monkeyname = 'F'; % prefix that each monkey has uniquery
-synergy_num_list = [4, 5]; % which synergy number of synergies to plot(Please decide based onf VAF results)
+synergy_num_list = [4]; % which synergy number of synergies to plot(Please decide based onf VAF results)
 nmf_fold_name = 'new_nmf_result';
-each_plot = 0; % whether you want to plot spatial_pattern figure for each synergy
+each_plot = 1; % whether you want to plot spatial_pattern figure for each synergy
 
 % save_setting
 save_setting.save_fig_W = 1; % whether you want to save figure of spatial pattern of synergy(synergy W)

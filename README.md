@@ -1,6 +1,5 @@
 ## Overview
-This repository provides codes & some files for tutorials on EMG analysis and muscle synergy analysis
-
+This repository provides codes and files for muscle synergy and EMG analysis.
 ***
 
 ## How to Analyze
@@ -11,51 +10,31 @@ This repository provides codes & some files for tutorials on EMG analysis and mu
 
       (ex.) EMG_analysis_turorial/data/Yachimun/
 
-      - (To obtain the dataset, <strong>please contact the email address given at the end of this README.</strong>)
+      - (To obtain the dataset, <strong>please contact the email address given in the contact section.</strong>)
 
     <!-- insert image -->
     <img src="explanation_materials/explanation1.jpg" alt="explanation1" width="100%" style="display: block; margin-left: auto; margin-right: auto; padding: 20px">
 
-    - Understand the directory structure of this repository
+    - Please understand the directory structure of this repository
 
-      The documentation in the code assumes that you understand this folder structure.<br>
-      The Shematic diagram of folder structure is shown in the following figure. (This folder structure is tentative version. It may change in future updates)
+      Basically, the functions you need to execute in this analysis are stored in 'EMG_data_latest/data/'. All inner functions of these executed functions and packages of frequently used functions are contained in 'EMG_data_latest/code/'.</br>
+      The schematic below illustrates the structure of this repository.
 
       ```
-      EMG_analysis_tutorial
+      EMG_analysis_latest
         │
         ├ README.md
         │
-        ├ analysis_data_days(Yachimun).csv
-        │
         ├ code
-        │　├ filterBat_SynNMFPre.m
-        │　├ makeEMGNMFbtc_Oya.m
-        │　├ (other function files)
-        │　│
-        │　├ VBSR
-        │　│　└ (some function files)
-        │　│ 　　
-        │　├ codeForPlotTarget　
-        │　│　└ (some function files)
-        │　│
-        │　└ ttb
-        │　　 └ (some function files)
+        │　├ codeForNibali
+        │　├ codeForNMF
+        │　└ (other function packages)
         │
         ├ data
         │　├ runnningEasyfunc.m
         │　├ plotTarget.m
         │　├ SAVE4NMF.m
-        │　│
-        │　└ Yachimun
-        │      ├ SaveFileinfo.m
-        │      ├ SYNERGYPLOT.m
-        │      ├ (other function files)
-        │　 　　│
-        │      └ new_nmf_result
-        │      　　├ dispNMF_W.m
-        │      　　├ plotVAF.m
-        │      　　└ MakeDataForPlot_H_utb.m
+        │　└ (other functions you need to execute)
         │
         └ explanation_materials
         　　└  (some images)
@@ -69,7 +48,7 @@ This repository provides codes & some files for tutorials on EMG analysis and mu
 
   - <span style="font-size: 18px;">**Sequence of Analysis**</span>
 
-  The sequence of EMG analysis and muscle synergy analysis is shown inthe figure below.<br>
+  The sequence of EMG analysis and muscle synergy analysis is shown in the figure below.<br>
   For details on the usage and processing of each code, please refer to the description at the beginning of code.
 
   <!-- insert image -->
@@ -78,31 +57,29 @@ This repository provides codes & some files for tutorials on EMG analysis and mu
 ***
 
 ## Remarks
-  The following information is written at the beginning of every code. Please refer to them and proceed with the analysis.
+  The following information is written at the beginning of each code. Please refer to them and proceed with the analysis.
   - **Your operation**<br>
-    This section contains instructions for executing the code
+    This describes what you need to do to perform each function.
 
   - **Role of this code**<br>
-    The role of code is briefly described in this section
+    Details of the role each function plays in the overall analysis.
 
   - **Saved data location**<br>
-    This section contains details of data to be saved and where these data are saved
+    Details of the data saved when each function is executed and the location of this
 
   - **Procedure**<br>
-    This section describes which code should be executed before and after this code.
+    This describes which code should be executed before and after this code.
 
 ***
 
 ## Other information
 
-  - If all datasets are processed, the total size of the output data and figures will be about 100GB. Therefore, please make sure that you have enough storage on your device before you start analysis
+  - The dates adopted as experimental dates are summarized in 'analysis_data_days(Yachimun).csv'. This file is located at the top level of this repository.
 
-  - The dates adopted as experimental dates are summarized in 'analysis_data_days(Yachimun).csv'. Please refer this
-
-  - Details of the experiment and analysis outline are distributed separately. If you would like to get these information, <strong>please contact at the email address at the end of this README.</strong>
+  - Details of the experiment and analysis outline are distributed separately. If you would like to get these information, <strong>please contact at the email address given in the contact section</strong>
 
 ***
 
 ## Contact
 
-  If you want to get the dataset for analysis or have any questions, please feel free to contact me at nao-ota@ncnp.go.jp
+  If you have any questions about this analysis, please feel free to contact me at nao-ota@ncnp.go.jp
