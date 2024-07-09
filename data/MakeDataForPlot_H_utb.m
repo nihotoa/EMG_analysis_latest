@@ -29,9 +29,9 @@ In order to use the function 'resample', 'signal processing toolbox' must be ins
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkeyname = 'Ni';  % Name prefix of the folder containing the synergy data for each date
-term_type = 'pre';  % Which period synergies do you want to plot?
-synergy_num = 3; % number of synergy you want to analyze
+monkeyname = 'F';  % Name prefix of the folder containing the synergy data for each date
+term_type = 'post';  % Which period synergies do you want to plot?
+synergy_num = 4; % number of synergy you want to analyze
 save_data = 1; % whether you want to save data (basically, set 1)
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
@@ -65,7 +65,7 @@ switch term_type
     case 'pre'
         Allfiles_S = Allfiles_S(1:prev_last_idx);
     case 'post'
-        Allfiles_S = Allfiles_S(5:post_first_idx);
+        Allfiles_S = Allfiles_S(post_first_idx:end);
     case 'all'
         % no processing
 end
@@ -102,7 +102,7 @@ for ii =1:day_length %session loop
     % Load data based on PATH.
     % K is the order data required for the linkage of 'test' data to each other.
     try 
-        K = load(fullfile(H_synergy_data_fold_path, H_synergy_data_file_name), 'k'); 
+        K = load(fullfile(H_synergy_data_fold_path, H_synergy_data_file_name), 'k_arr'); 
     catch
         disp([Allfiles_S{ii} 'does not have trimmed H_synergy data']);
         continue;
@@ -111,7 +111,14 @@ for ii =1:day_length %session loop
     % Get 'test' data on the number of synergies of the target & Concatenate all 'test' data for each synergy.
     synergyData = load(fullfile(synergy_data_fold_path, synergy_data_file_path), 'test'); 
     Hdata = synergyData.test.H; % Data on synergy_H at each synergy number.
-    altH = [Hdata{synergy_num,1} Hdata{synergy_num,2}(K.k(1,:)',:) Hdata{synergy_num,3}(K.k(2,:)',:) Hdata{synergy_num,4}(K.k(3,:)',:)];
+    section_num = max(max(K.k_arr));
+    use_Hdata = Hdata(synergy_num, :);
+    altH = cell(1, section_num);
+    for section_id = 1:section_num
+        ref_section_order = K.k_arr(:, section_id);
+        altH{section_id} = use_Hdata{section_id}(ref_section_order, :);
+    end
+    altH = cell2mat(altH);
 
     % Store the concatenated day-by-day synergies in the order of the first day's synergies.
     % Extracting the order of synergies of date(ii) from 'k_arr'

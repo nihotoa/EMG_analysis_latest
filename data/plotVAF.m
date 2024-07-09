@@ -20,10 +20,12 @@ post: SYNERGYPLOT.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-term_type = 'post'; %pre / post / all 
+term_select_type = 'manual'; %'auto' / 'manual'
+term_type = 'post'; %(if term_select_type == 'auto') pre / post / all 
 monkeyname = 'F';
 use_style = 'test'; % test/train
 VAF_plot_type = 'stack'; %'stack' or 'mean'
+color_type = 'red'; %(if VAF_plot_type == 'stack') 'red' / 'colorful' 
 VAF_threshold = 0.8; % param to draw threshold_line
 font_size = 20; % Font size of text in the figure
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
@@ -32,12 +34,7 @@ nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 [realname] = get_real_name(monkeyname);
 base_dir = fullfile(pwd, realname, nmf_fold_name);
 
-% Create a list of folders containing the synergy data for each date.
-data_folders = dir(base_dir);
-folderList = {data_folders([data_folders.isdir]).name};
-Allfiles_S = folderList(startsWith(folderList, monkeyname));
-
-% Further refinement by term_type
+% define TT-syurgery date
 switch monkeyname
     case {'Ya', 'F'}
         TT_day = '20170530';
@@ -45,15 +42,30 @@ switch monkeyname
         TT_day = '20220530';
 end
 
-[prev_last_idx, post_first_idx] = get_term_id(Allfiles_S, 1, TT_day);
-
-switch term_type
-    case 'pre'
-        Allfiles_S = Allfiles_S(1:prev_last_idx);
-    case 'post'
-        Allfiles_S = Allfiles_S(post_first_idx:end);
-    case 'all'
-        % no processing
+% Create a list of folders containing the synergy data for each date.
+switch term_select_type
+    case 'auto'
+        data_folders = dir(base_dir);
+        folderList = {data_folders([data_folders.isdir]).name};
+        Allfiles_S = folderList(startsWith(folderList, monkeyname));
+        
+        [prev_last_idx, post_first_idx] = get_term_id(Allfiles_S, 1, TT_day);
+        
+        switch term_type
+            case 'pre'
+                Allfiles_S = Allfiles_S(1:prev_last_idx);
+            case 'post'
+                Allfiles_S = Allfiles_S(post_first_idx:end);
+            case 'all'
+                % no processing
+        end
+    case 'manual'
+        disp('Please select date folders which contains the VAF data you want to plot');
+        Allfiles_S = uiselect(dirdir(base_dir),1,'Please select date folders which contains the VAF data you want to plot');
+        if isempty(Allfiles_S)
+            disp('Any Folder were not selected. Shut down the process');
+            return;
+        end
 end
 
 Allfiles = strrep(Allfiles_S, '_standard','');
@@ -93,27 +105,42 @@ errorbar((1:muscle_num)', shuffle_mean, shuffle_std, 'o-', 'LineWidth', 2, 'Colo
 % plot VAF of actual data
 switch VAF_plot_type
     case 'stack'
-        color_matrix = zeros(day_num, 3);
-        color_vector = linspace(0.4, 1, day_num);
-        color_matrix(:, 1) = color_vector;
+        switch color_type
+            case 'red'
+                color_matrix = zeros(day_num, 3);
+                color_vector = linspace(0.4, 1, day_num);
+                color_matrix(:, 1) = color_vector;
+            case 'colorful'
+                color_matrix = turbo(day_num);
+        end
         day_range = [0 0];
         for ii = 1:day_num
             plot_VAF = VAF_data_list(:, ii);
             
             % plot
-            plot(plot_VAF,'LineWidth',2, 'Color', color_matrix(ii, :), HandleVisibility='off');
-            plot(plot_VAF,'o','LineWidth',2, 'Color', color_matrix(ii, :), HandleVisibility='off');
+            switch color_type
+                case 'red'
+                    plot(plot_VAF,'LineWidth',2, 'Color', color_matrix(ii, :), HandleVisibility='off');
+                    plot(plot_VAF,'o','LineWidth',2, 'Color', color_matrix(ii, :), HandleVisibility='off');
+                case 'colorful'
+                    plot(plot_VAF,'LineWidth',2, 'Color', color_matrix(ii, :), DisplayName = AllDays{ii});
+                    plot(plot_VAF,'o','LineWidth',2, 'Color', color_matrix(ii, :), HandleVisibility='off');
+            end
+
             if ii==1
                 day_range(1) = CountElapsedDate(AllDays{ii}, TT_day);
             elseif ii==day_num
                 day_range(2) = CountElapsedDate(AllDays{ii}, TT_day);
             end
         end
+
         % setting of color bar
-        clim(day_range);
-        colormap(color_matrix)
-        h = colorbar;
-        ylabel(h, 'Elapsed day(criterion = TT)', 'FontSize', font_size)
+        if strcmp(color_type, 'red')
+            clim(day_range);
+            colormap(color_matrix)
+            h = colorbar;
+            ylabel(h, 'Elapsed day(criterion = TT)', 'FontSize', font_size)
+        end
     case 'mean'
         plot_VAF = mean(VAF_data_list, 2);
         plot_VAF_std = std(VAF_data_list, 0, 2);
@@ -126,11 +153,18 @@ end
 yline(VAF_threshold,'Color','k','LineWidth',2, HandleVisibility='off')
 xlim([0 muscle_num]);
 ylim([0 1])
-set(gca, 'FontSize', 15)
-title(['VAF value at each synergy number(' term_type '=' num2str(day_num) 'days)'], FontSize = font_size);
+set(gca, 'FontSize', 15);
 xlabel('Number of synergy', FontSize=font_size)
 ylabel('Value of VAF', FontSize=font_size)
-legend('Location','northwest')
+switch term_select_type
+    case 'auto'
+        legend('Location','northwest')
+        title(['VAF value of each session(' term_type '=' num2str(day_num) 'days)'], FontSize = font_size);
+    case 'manual'
+        % legendつける
+        legend('Location', 'southeast');
+        title(['VAF value of each session'], FontSize = font_size);
+end
 
 grid on;
 
@@ -139,7 +173,13 @@ hold off
 %% save figure(as .fig & .png)
 save_fold = fullfile(base_dir, 'VAF_result');
 makefold(save_fold);
-saveas(gcf, fullfile(save_fold, ['VAF_result(' term_type '_' num2str(day_num) 'days_' VAF_plot_type ').png']))
-saveas(gcf, fullfile(save_fold, ['VAF_result(' term_type '_' num2str(day_num) 'days_' VAF_plot_type ').fig']))
+switch term_select_type
+    case 'auto'
+        saveas(gcf, fullfile(save_fold, ['VAF_result(' term_type '_' num2str(day_num) 'days_' VAF_plot_type ').png']))
+        saveas(gcf, fullfile(save_fold, ['VAF_result(' term_type '_' num2str(day_num) 'days_' VAF_plot_type ').fig']))
+    case 'manual'
+        saveas(gcf, fullfile(save_fold, ['VAF_result(' AllDays{1} 'to' AllDays{end} '_' num2str(length(AllDays)) 'days_' VAF_plot_type ').png']));
+        saveas(gcf, fullfile(save_fold, ['VAF_result(' AllDays{1} 'to' AllDays{end} '_' num2str(length(AllDays)) 'days_' VAF_plot_type ').fig']));
+end
 close all
 

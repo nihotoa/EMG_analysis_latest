@@ -1,4 +1,13 @@
 %{
+condition_num: 188
+W_data: 10*188
+plot_setting: 1
+
+【以下plot_setting==1なら必要】
+labels:
+title_str:
+save_fold_path:
+save_file_name:
 %}
 
 function [cosine_distance_matrix] = PerformCosineDistanceAnalysis(condition_num, W_data, plot_setting, labels, title_str, save_fold_path, save_file_name)

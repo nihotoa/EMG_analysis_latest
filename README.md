@@ -21,24 +21,20 @@ This repository provides codes and files for muscle synergy and EMG analysis.
       The schematic below illustrates the structure of this repository.
 
       ```
-      EMG_analysis_latest
-        │
-        ├ README.md
-        │
-        ├ code
-        │　├ codeForNibali
-        │　├ codeForNMF
-        │　└ (other function packages)
-        │
-        ├ data
-        │　├ runnningEasyfunc.m
-        │　├ plotTarget.m
-        │　├ SAVE4NMF.m
-        │　└ (other functions you need to execute)
-        │
-        └ explanation_materials
-        　　└  (some images)
-
+      .
+      └── EMG_analysis_latest
+          ├── README.md
+          ├── code
+          │   ├── codeForNibali
+          │   ├── codeForNMF
+          │   └── (other function packages)
+          ├── data
+          │   ├── runnningEasyfunc.m
+          │   ├── plotTarget.m
+          │   ├── SAVE4NMF.m
+          │   └── (other functions you need to execute)
+          └── explanation_materials
+              └── (some images)
       ```
 
     - Please add 'code' and 'data' folder to PATH in MATLAB

@@ -21,7 +21,7 @@ output arguments:
 loadした時にtestが上書きされてしまうので、構造体に保存して区別するべき
 %}
 
-function plotSynergyAll_uchida(fold_name, pcNum,nmf_fold_name, each_plot, save_setting, base_dir)
+function plotSynergyAll_uchida(fold_name, pcNum,nmf_fold_name, each_plot, save_setting, base_dir, plot_clustering, synergy_num_type)
 %% set para & get nmf result
 task = 'standard';
 fold_path = fullfile(base_dir, nmf_fold_name, [fold_name '_' task]);
@@ -60,7 +60,12 @@ save_data = save_setting.save_data;
 
 %% sort synergies extracted from each test data and group them by synergies of similar characteristics
 W_data = test.W(pcNum, :);
-[Wt, k_arr] = OrderSynergy(EMG_num, pcNum, W_data);
+if plot_clustering == 1
+    save_fold_path = fullfile(base_dir, 'new_nmf_result', [fold_name '_' task], [fold_name, '_syn_result_' num2str(EMG_num)], [fold_name '_clustering']);
+    [Wt, k_arr] = OrderSynergy(EMG_num, pcNum, W_data, [], kf, base_dir, 1, fold_name, save_fold_path);
+else
+    [Wt, k_arr] = OrderSynergy(EMG_num, pcNum, W_data);
+end
 
 %% plot W (spatial pattern)
 figure('Position',[0,1000,800,1300]);
@@ -100,7 +105,12 @@ if save_data == 1
     save_fold_W = fullfile(save_fold, [fold_name '_W']);
     makefold(save_fold_W);
     comment = 'this data will be used for dispW';
-    save(fullfile(save_fold_W, [fold_name '_aveW_' sprintf('%d',pcNum) '.mat']), 'aveW','k_arr','pcNum','fold_name','comment');
+    switch synergy_num_type
+        case 'manual'
+            save(fullfile(save_fold_W, [fold_name '_aveW_' sprintf('%d',pcNum) '.mat']), 'aveW','k_arr','pcNum','fold_name','comment');
+        case 'auto'
+            save(fullfile(save_fold_W, [fold_name '_aveW_appropriateNum.mat']), 'aveW','k_arr','pcNum','fold_name','comment');
+    end
 end
 
 % save figure
@@ -218,7 +228,12 @@ if save_data == 1
     save_fold_H = fullfile(save_fold, [fold_name '_H']);
     makefold(save_fold_H);
     comment = 'this data will be used for dispH';
-    save(fullfile(save_fold_H, [fold_name '_aveH3_' sprintf('%d',pcNum) '.mat']), 'aveH','k_arr','pcNum','fold_name','comment');
+    switch synergy_num_type
+        case 'manual'
+            save(fullfile(save_fold_H, [fold_name '_aveH3_' sprintf('%d',pcNum) '.mat']), 'aveH','k_arr','pcNum','fold_name','comment');
+        case 'auto'
+            save(fullfile(save_fold_H, [fold_name '_aveH3_appropriateNum.mat']), 'aveH','k_arr','pcNum','fold_name','comment');
+    end
 end
 
 % save figure
@@ -270,65 +285,6 @@ if save_fig_r2 ==1
     makefold(save_fold_VAF)
     saveas(gcf, fullfile(save_fold_VAF, [fold_name ' R2 pcNum = ' sprintf('%d',pcNum) '.png']));
     close all;
-end
-
-%% FInd the 'appropriate' number of synergy
-VAF_value = mean(test.r2, 2);
-appropriate_num = find(VAF_value > 0.8, 1);
-
-% load synergy data
-load(fullfile(fold_path, synergy_files(2).name));
-
-%% (変更するべき)sort synergies extracted from each test data and group them by synergies of similar characteristics
-W_data = test.W(appropriate_num, :);
-[Wt, k_arr] = OrderSynergy(EMG_num, appropriate_num, W_data);
-
-
-
-% get spatial pattern of appropriate number of synergy
-aveW = zeros(EMG_num, appropriate_num);
-for i = 1:appropriate_num
-    % organize value to be plotted
-    W_data = nan(EMG_num, kf);
-    for jj = 1:kf
-        W_data(:, jj) = Wt{jj}(:, i);
-    end
-    aveW(:, i) = mean(W_data, 2);
-end
-
-% save_data
-if save_data == 1
-    comment = 'this data will be used for calcurating cosine distance & clustering';
-    save(fullfile(save_fold_W, [fold_name '_aveW_appropriate.mat']), 'aveW', 'k_arr', 'appropriate_num', 'fold_name', 'comment');
-end
-
-% as for temporal pattern
-% concatenate all test data to create a temporal pattern of synergy in the entire recording interval (as All_H)
-H_data = test.H(appropriate_num, :);
-All_H = cell(1, kf);
-for ii = 1:kf
-    sort_order = k_arr(:, ii);
-    All_H{ii} = H_data{ii}(sort_order, :);
-end
-All_H = cell2mat(All_H);
-
-% save temporal pattern data of appropriate number of synergy
-aveH = zeros(appropriate_num, TIMEl);
-pullData = zeros(SUC_num, TIMEl);
-
-for ii=1:appropriate_num
-   for jj=1:SUC_num-1
-      % cut out temporal data for 'lever1 off' timIng +-1 [sec] for each trial('3' means index of 'lever1 off timing')
-      pullData(jj, :) = All_H(ii, SUC_Timing_A(jj, 3)+TIMEr(1):SUC_Timing_A(jj, 3)+TIMEr(2));
-
-      % update averarge value up to the current trial
-      aveH(ii, :) = ((aveH(ii, :) .* (jj-1)) + pullData(jj,:)) ./ jj ;
-   end
-end
-
-% save
-if save_data == 1
-    save(fullfile(save_fold_H, [fold_name '_aveH3_appropriate.mat']), 'aveH', 'k_arr', 'appropriate_num', 'fold_name', 'comment');
 end
 end
 
