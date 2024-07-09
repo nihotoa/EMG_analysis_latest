@@ -68,9 +68,10 @@ switch term_type
 end
 
 % extract only date portion from 'Allfiles_S' and store it into a list
-[days, day_num] = extract_date(Allfiles_S, monkeyname);
+days = get_days(Allfiles_S);
+day_num = length(days);
 if strcmp(term_type, 'post')
-    [pre_days, ~] = extract_date(pre_file_list, monkeyname);
+    pre_days = get_days(pre_file_list);
 end
 
 %% Get the name of the EMG used for the synergy analysis
@@ -218,27 +219,4 @@ if save_data == 1
     comment = 'this data were made for aveH plot';
     save_order_data_file_name = [monkeyname mat2str(days(1)) 'to' mat2str(days(end)) '_' sprintf('%d',day_num) '_' sprintf('%d',syn_num) '.mat'];
     save(fullfile(save_order_data_dir, save_order_data_file_name), 'k_arr','comment', 'days', 'EMG_num', 'syn_num');
-end
-
-
-%% define local function
-%{
-[explanation of this func]:
-extract only date portion from 'file_name_list' and store it into a list
-
-[input arguments]
-Allfiles_S: [cell array], the list of name of files
-monkeyname: [char], prefix of raw file
-
-[output arguments]
-days: [double array], the list of experiment date
-day_num: [double], how may days included in the list
-%}
-function [days, day_num] = extract_date(file_name_list, monkeyname)
-% S = size(file_name_list);
-Allfiles = strrep(file_name_list, '_standard','');
-days = strrep(Allfiles, monkeyname, '');
-days = cellfun(@str2double, days);
-days = transpose(days);
-day_num = length(days);
 end

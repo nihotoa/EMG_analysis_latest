@@ -15,7 +15,11 @@ file name: selected_folder_name + .mat (ex.)F170516_standard.mat => this file co
 
 [procedure]
 pre:fitlerBat_SynNMFPre.m
-post: plotVAF.m
+post:
+if you want to plot VAF value 
+    => plotVAF.m
+if you want to find the optimal number of synergy from the synergy data of each session(day)
+    =>FindOptimalSynergyNum.m
 
 [Improvement points(Japanaese)]
 %}

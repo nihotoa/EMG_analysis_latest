@@ -28,7 +28,13 @@ file_name: ~_Pdata.mat:  contains some data for synergy analysis (timing_data, t
 
 [procedure]
 pre: SaveFileInfo.m
-post: plotTarget.m(EMG analysis) or SYNERGYPLOT.m(synergy analysis)
+post: 
+        if you want to peform... 
+        => EMG analysis: plotTarget.m 
+        => Synergy analysis: SYNERGYPLOT.m
+        => Assesment of error between trials: ConfirmError.m
+        => Assesment of quality of EMG signal: PerformFFT.m
+
 
 (If you want to get the information shown below, you can get it by executing following function)
 ÅEif you want to visually confirm the difference of filtered EMG which is caused by the difference of filtering

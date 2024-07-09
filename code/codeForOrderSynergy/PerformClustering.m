@@ -1,15 +1,35 @@
-function [sort_idx, k_arr] = PerformClustering(condition_num, cosine_distance_matrix, syn_num, session_num, plot_setting, labels, term_type, save_fold_path)
+%{
+condition_num: 188
+cosine_distance_matrix: 188*188
+syn_num: 4
+session_num: 47
+
+【以下、プロットするなら必要】
+plot_setting: 1
+labels: 1*188, cell array
+term_type: 'post' (図の保存の際に必要)
+save_fold_path
+
+【注意点】
+シナジー数と同じ数のクラスターに分ける時に、各クラスターの要素数は完全に一致していなければいけない
+(例)
+4 * 47 = 188の要素を4つのクラスターに分解する時、各クラスターの要素数は47でなければいけない。もし要素数が異なるのであればそれは、いずれかのクラスターが
+同一セッションの複数のシナジーを要素として持っていることになるので、これはうまくいっていないと言うことになる。
+%}
+
+function [sort_idx, k_arr, coffen_coefficient] = PerformClustering(condition_num, cosine_distance_matrix, syn_num, session_num, plot_setting, labels, term_type, save_fold_path)
 % transform cosine_distance_matrix into pairwize_distance_vector (to use as input argument of 'linkage')
-paiwise_distance_vector = [];
+pairwise_distance_vector = [];
 for row_id = 1:condition_num-1
     ref_vector = cosine_distance_matrix(row_id, :);
     start_index = find(ref_vector==0) + 1;
     insert_vector = ref_vector(start_index:end);
-    paiwise_distance_vector = [paiwise_distance_vector insert_vector];
+    pairwise_distance_vector = [pairwise_distance_vector insert_vector];
 end
 
 % perform hierarchical clustering
-Z = linkage(paiwise_distance_vector);
+Z = linkage(pairwise_distance_vector);
+coffen_coefficient = cophenet(Z, pairwise_distance_vector);
 cluster_idx_list = cluster(Z, "maxclust", syn_num);
 
 % save information of sort synergies acording to the result of clustering
@@ -46,8 +66,7 @@ if plot_setting == 1
     dendrogram_axes = gca;
     dendrogram_axes.XTickLabelRotation = 90;
     dendrogram_axes.FontSize = 25;
-    c = cophenet(Z, paiwise_distance_vector);
-    title_str = sprintf(['cosine distance between synergies(' term_type ' ' num2str(session_num) 'days)' '\n' '(cophenetic correlation coefficient = ' num2str(c) ')']);
+    title_str = sprintf(['cosine distance between synergies(' term_type ' ' num2str(session_num) 'sessions)' '\n' '(cophenetic correlation coefficient = ' num2str(coffen_coefficient) ')']);
     title(title_str, 'FontSize', 25);
 
     % save

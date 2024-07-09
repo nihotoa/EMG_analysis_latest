@@ -44,10 +44,10 @@ post: nothing
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkeyname = 'Ni'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'
+monkeyname = 'F'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'
 plot_all = 1; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
-plot_type = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
+plot_type = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
 pColor = 'C';  % select 'K'(black plot) or 'C'(color plot) 
 normalizeAmp = 0; % normalize Amplitude a
 YL = Inf; % (if nomalize Amp == 0) ylim of graph
