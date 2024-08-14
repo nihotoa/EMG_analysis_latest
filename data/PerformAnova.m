@@ -25,18 +25,18 @@ post: nothing
 clear;
 
 %% set param
-monkeyname = 'F';  % Name prefix of the folder containing the synergy data for each date
+monkeyname = 'Se';  % Name prefix of the folder containing the synergy data for each date
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 session_group_name_list = {'pre', 'post'};
 display_synergy = false; % wherer you want to output spatial pattern to be compared
 figure_file_name_pattern = '^W.*\.fig$'; % 読み込みたい.figファイルの正規表現
-test_type = 'comprehensive_test' ; % 'one-way-anova', 'muscle-one-way-anova', 'two-way-anova', 'MANOVA', 'comprehensive_test' 
-test_type_for_comprehensive_test = 'friedman';  % 'two-way-anova', 'friedman'
+test_type = 'muscle-one-way-anova' ; % 'one-way-anova', 'muscle-one-way-anova', 'two-way-anova', 'MANOVA', 'comprehensive_test' 
+test_type_for_comprehensive_test = 'two-way-anova';  % 'two-way-anova', 'friedman'
 display_cosine_distance = false;
 significant_level_threshold = 0.05;
 
 %% code section
-[realname] = get_real_name(monkeyname);
+realname = get_real_name(monkeyname);
 base_dir = fullfile(pwd, realname, nmf_fold_name);
 Wdata_dir = fullfile(base_dir, 'W_synergy_data');
 W_figure_dir = fullfile(base_dir, 'syn_figures');
@@ -180,48 +180,11 @@ if exist("p_value_array_list", "var")
     [synergy_num, muscle_num] = size(p_value_data);
     ref_background_color = ones(synergy_num, muscle_num);
     ref_background_color(p_value_data < significant_level_threshold) = 2;
-    
-    % 以下の部分をcommonCodeライブラリの関数に落とし込む
-    %{
-    figure('position', [100, 100, 1200, 1200])
-    colormap(customColormap);
-
     x_labels = cellstr(ref_structure.x);
     y_labels = arrayfun(@(i) sprintf('synergy%d', i), 1:synergy_num, 'UniformOutput', false);
-
-    % 色のみをプロット
-    imagesc(ref_background_color);
-    colorbar off;
-    axis equal tight;
-
-    % 各マスの上にテキストを入れていく
-    textStrings = num2str(p_value_data(:), '%.4f');
-    textStrings = strtrim(cellstr(textStrings));
-    [x, y] = meshgrid(1:size(p_value_data, 2), 1:size(p_value_data, 1));
-    hStrings = text(x(:), y(:), textStrings(:), 'HorizontalAlignment', 'center', 'Color', 'k');
-    nanIndex_list = isnan(p_value_data(:));
-    set(hStrings(nanIndex_list), 'Color', 'k');
-
-    %decoration
-    xline((0.5:1:muscle_num-0.5))
-    yline((0.5:1:synergy_num-0.5))
-    xticks(1:muscle_num); yticks(1:synergy_num);
-    xticklabels(x_labels);
-    yticklabels(y_labels);
-    xtickangle(90);
-    set(gca, 'FontSize', 15)
-    c = colorbar;
-    c.Ticks = [1.25 1.75];
-    c.TickLabels = {'n.s.', 'Sig.'};
-    c.FontSize=20;
     title_str = sprintf(['one-way anova result(for each muscle, α = ' num2str(significant_level_threshold) ')']);
-    title(title_str, 'FontSize', 20)
-
-    % save figure
-    makefold(save_fold_path);
-    file_name = 'one-way_anova_result(for_each_muscle)';
-    saveas(gcf, fullfile(save_fold_path, [file_name '.fig']));
-    saveas(gcf, fullfile(save_fold_path, [file_name '.png']));
-    close all;
-    %}
+    save_file_name = 'one-way_anova_result(for_each_muscle)';
+    
+    % create annotatedHeatmap
+    CreateAnnotatedHeatmap(customColormap, p_value_data, ref_background_color, x_labels, y_labels, title_str, save_fold_path, save_file_name)
 end

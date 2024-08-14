@@ -28,7 +28,7 @@ mergeFiguresは汎用性高めたいので、書き換える
 clear;
 
 %% set param
-monkeyname = 'F';  % Name prefix of the folder containing the synergy data for each date
+monkeyname = 'Se';  % Name prefix of the folder containing the synergy data for each date
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 session_group_name_list = {'pre', 'post'};
 numPermutations = 10000; % パーミュテーションの回数(少なくとも100は必要、多ければ多いほどp値の信憑性が高まる)
