@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 [your operation]
 1. Change some parameters (please refer to 'set param' section)
@@ -14,16 +14,14 @@ pre: makeEMGNMF_btcOya.m
 post: SYNERGYPLOT.m
 
 [Improvement points(Japanaese)]
-・coffen cofficientが0.95超えなかった時の例外処理の確認をしていない(Yachimunでその状況に出会わなかったため)
-・Nibaliだとシナジー数と同じ数のクラスタに分割した時に、各クラスタの要素数が均等にならない時がある(同じセッションの複数のシナジーが同一のクラスタに分類されてしまっている)
-=> 改善策を考える
-・optimal_synergy_num_structのセーブ設定
+
+[shared information]
 %}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
 term_type = 'all'; %pre / post / all 
-monkeyname = 'F';
+monkeyname = 'Ni';
 use_style = 'test'; % test/train
 VAF_plot_type = 'stack'; %'stack' or 'mean'
 VAF_threshold = 0.8; % param to draw threshold_line
@@ -64,8 +62,11 @@ AllDays = strrep(Allfiles, monkeyname, '');
 day_num = length(Allfiles_S);
 
 % create the data array of VAF & date array of spatial pattern
-VAF_data_list = cell(1, day_num);
-spatial_pattern_data_list = cell(1, day_num);
+% some dates may not have synergy data files, so the method of appending to an empty cell array is adopted
+VAF_data_list = {};
+spatial_pattern_data_list = {};
+eliminated_date_list = {};
+
 for day_id = 1:day_num
     VAF_data_path = fullfile(base_dir, Allfiles_S{day_id}, [Allfiles_S{day_id} '.mat']);
     spatial_pattern_data_path = fullfile(base_dir, Allfiles_S{day_id}, ['t_' Allfiles_S{day_id} '.mat']);
@@ -76,20 +77,26 @@ for day_id = 1:day_num
         synergy_data = load(spatial_pattern_data_path, use_style);
     catch
         disp([Allfiles_S{day_id} ' have no synergy data']);
+        eliminated_date_list{end+1} = Allfiles_S{day_id};
         continue;
     end
 
     % calcurate the average value of VAF for all test (or train) data & shuffle data
-    VAF_data_list{day_id} = mean(VAF_data.(use_style).r2, 2);
-    spatial_pattern_data_list{day_id} = synergy_data.(use_style).W;
+    VAF_data_list{end+1} = mean(VAF_data.(use_style).r2, 2);
+    spatial_pattern_data_list{end+1} = synergy_data.(use_style).W;
     if day_id == 1
         [muscle_num, kf] = size(synergy_data.(use_style).W);
     end
 end
 VAF_data_list = cell2mat(VAF_data_list);
 
-%% output optimal number of synergy for each session
+% update the list of sessions with reference to eliminated_date_list
+Allfiles_S = setdiff(Allfiles_S, eliminated_date_list);
+Allfiles = strrep(Allfiles_S, '_standard','');
+AllDays = strrep(Allfiles, monkeyname, '');
+day_num = length(Allfiles_S);
 
+%% output optimal number of synergy for each session
 % create strucutre to store optimal synergy number
 optimal_synergy_num_struct = struct();
 
@@ -105,7 +112,13 @@ for day_id = 1:day_num
     W_data = cell2mat(candidate_synergy_spatial_pattern);
     [~, condition_num] = size(W_data);
     cosine_distance_matrix = PerformCosineDistanceAnalysis(condition_num, W_data, 0);
-    [~, ~, coffen_coefficient] = PerformClustering(condition_num, cosine_distance_matrix, optimal_synergy_num_candidate, kf, 0);
+    [~, k_arr, coffen_coefficient] = PerformClustering(condition_num, cosine_distance_matrix, optimal_synergy_num_candidate, kf, 0);
+    
+    % if differences are found between segments(if multipe synergy from same session between same cluster)
+    if isempty(k_arr)
+        % the clustering is not working well, the coefficient treated as 0
+        coffen_coefficient = 0;
+    end
 
     if coffen_coefficient > coffen_coefficient_threshold
         % store the data in the structure
@@ -123,22 +136,38 @@ for day_id = 1:day_num
             W_data = cell2mat(candidate_synergy_spatial_pattern);
             [~, condition_num] = size(W_data);
             cosine_distance_matrix = PerformCosineDistanceAnalysis(condition_num, W_data, 0);
-            [~, ~, coffen_coefficient] = PerformClustering(condition_num, cosine_distance_matrix, candidate_synergy_num, kf, 0);
+            [~, k_arr, coffen_coefficient] = PerformClustering(condition_num, cosine_distance_matrix, candidate_synergy_num, kf, 0);
+            if isempty(k_arr)
+                % the clustering is not working well, the coefficient treated as 0
+                coffen_coefficient = 0;
+            end
             coffen_coefficient_list(candidate_synergy_id) = coffen_coefficient;
         end
         [best_cc_value, best_cc_value_idx] = max(coffen_coefficient_list); 
-        optimal_synergy_num = candidate_synergy_num_list(best_cc_value_idx);
-
-        % store the data in the structure
-        optimal_synergy_num_struct.([monkeyname AllDays{day_id}]).optimal_synergy_num = optimal_synergy_num;
-        optimal_synergy_num_struct.([monkeyname AllDays{day_id}]).VAF_cc = coffen_coefficient_list(2);
-        optimal_synergy_num_struct.([monkeyname AllDays{day_id}]).best_cc =  best_cc_value;
+        if best_cc_value > coffen_coefficient_threshold
+            optimal_synergy_num = candidate_synergy_num_list(best_cc_value_idx);
+    
+            % store the data in the structure
+            optimal_synergy_num_struct.([monkeyname AllDays{day_id}]).optimal_synergy_num = optimal_synergy_num;
+            optimal_synergy_num_struct.([monkeyname AllDays{day_id}]).VAF_cc = coffen_coefficient_list(2);
+            optimal_synergy_num_struct.([monkeyname AllDays{day_id}]).best_cc =  best_cc_value;
+        else
+            % if the optimal number of synergy can not be found even though using this method
+            % store the data in the structure
+            optimal_synergy_num_struct.([monkeyname AllDays{day_id}]).optimal_synergy_num = NaN;
+            optimal_synergy_num_struct.([monkeyname AllDays{day_id}]).VAF_cc = NaN;
+            optimal_synergy_num_struct.([monkeyname AllDays{day_id}]).best_cc =  NaN;
+        end
     end
 end
+
+optimal_synergyNum_list = extractOptimalSynergyNum(optimal_synergy_num_struct, 'optimal_synergy_num');
+VAF_cc_list = extractOptimalSynergyNum(optimal_synergy_num_struct, 'VAF_cc');
+best_cc_list = extractOptimalSynergyNum(optimal_synergy_num_struct, 'best_cc');
 
 % save setting of optimal_synergy_num_struct
 save_file_path = fullfile(base_dir, 'optimal_synergy_num_data');
 makefold(save_file_path)
 save_file_name = ['optimal_synergy_num_data(' Allfiles{1} '_to_' Allfiles{end} '_' num2str(length(Allfiles)) ').mat'];
-save(fullfile(save_file_path, save_file_name), 'optimal_synergy_num_struct');
+save(fullfile(save_file_path, save_file_name), 'optimal_synergy_num_struct', 'VAF_cc_list', 'best_cc_list', 'optimal_synergyNum_list');
 

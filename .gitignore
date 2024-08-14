@@ -3,7 +3,7 @@
 
 # ただし，以下だけは除く
 !*.m
-!*.csv
+analysis_data_days(Yachimun).csv
 !*.gitignore
 !*/
 !README.md

@@ -18,7 +18,7 @@ end
 
 %% find session_num
 if exist('sessions', 'var')
-    if isa(sessions, "double")
+    if and(isa(sessions, "double"), isscalar(sessions))
         session_num = sessions;
     else
         session_num = length(sessions);
@@ -63,7 +63,7 @@ W_data = cell2mat(W_data);
 
 %% calcurate cosine distance of all pairs of spatial pattern vectors & plot this as heatmap & store them in a square matrix
 if plot_setting == 1
-    title_str = ['cosine distance between each synergies' '\n' 'original order (' term_type ' ' num2str(session_num) 'sessions)'];
+    title_str = ['cosine distance between each synergies' '\n' 'original order (' term_type ' ' num2str(session_num) 'sessions)(synNum = ' num2str(syn_num) ')'];
     save_file_name =  ['original_order_heatmap(' term_type ')_syn_num = ' num2str(syn_num)];
     cosine_distance_matrix = PerformCosineDistanceAnalysis(condition_num, W_data, plot_setting, labels, title_str, hierarchical_cluster_result_path, save_file_name);
 else
@@ -77,14 +77,20 @@ else
     [sort_idx, k_arr] = PerformClustering(condition_num, cosine_distance_matrix, syn_num, session_num, plot_setting);
 end
 
+% 
+if isempty(k_arr)
+    Wt = [];
+    return
+end
+
 %%  plot cosine distance between each pair of synergy by grid after sorting synergies
 if plot_setting==1
     sort_idx = cell2mat(sort_idx);
     sorted_cosine_distance_matrix = cosine_distance_matrix(sort_idx, sort_idx);
     
     % plot
-    title_str = ['cosine distance between each synergies' '\n' 'sorted (' term_type ' ' num2str(session_num) 'sessions)'];
-    save_file_name = ['ordered_heatmap(' term_type ')'];
+    title_str = ['cosine distance between each synergies' '\n' 'sorted (' term_type ' ' num2str(session_num) 'sessions)(synNum = ' num2str(syn_num) ')'];
+    save_file_name = ['ordered_heatmap(' term_type '-synNum=' num2str(syn_num) ')'];
     plotCosineDistance(sorted_cosine_distance_matrix, condition_num, sorted_labels, title_str, hierarchical_cluster_result_path, save_file_name)
 end
 

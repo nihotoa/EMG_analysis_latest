@@ -46,7 +46,14 @@ for synergy_idx = 1:syn_num
     
     % store the data
     sort_idx{first_date_synergy_num} = correspond_idx_list';
-    k_arr(first_date_synergy_num, :) = stored_idx_list;
+
+    try
+        k_arr(first_date_synergy_num, :) = stored_idx_list;
+    catch
+        % when multiple data form the same session is belonged in same cluster
+        k_arr = [];
+        break;
+    end
 end
 
 % plot dendrogram
@@ -66,12 +73,12 @@ if plot_setting == 1
     dendrogram_axes = gca;
     dendrogram_axes.XTickLabelRotation = 90;
     dendrogram_axes.FontSize = 25;
-    title_str = sprintf(['cosine distance between synergies(' term_type ' ' num2str(session_num) 'sessions)' '\n' '(cophenetic correlation coefficient = ' num2str(coffen_coefficient) ')']);
+    title_str = sprintf(['cosine distance between synergies(' term_type ' ' num2str(session_num) 'sessions)(synNum = ' num2str(syn_num) ')' '\n' '(cophenetic correlation coefficient = ' num2str(coffen_coefficient) ')']);
     title(title_str, 'FontSize', 25);
 
     % save
-    saveas(gcf, fullfile(save_fold_path, ['dendrogram(' term_type ').png']));
-    saveas(gcf, fullfile(save_fold_path, ['dendrogram(' term_type ').fig']));
+    saveas(gcf, fullfile(save_fold_path, ['dendrogram(' term_type '-synNum=' num2str(syn_num) ').png']));
+    saveas(gcf, fullfile(save_fold_path, ['dendrogram(' term_type '-synNum=' num2str(syn_num) ').fig']));
     close all;
 end
 end
