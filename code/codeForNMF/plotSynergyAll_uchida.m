@@ -67,6 +67,11 @@ else
     [Wt, k_arr] = OrderSynergy(EMG_num, pcNum, W_data);
 end
 
+% if difference are found between segments
+if isempty(k_arr)
+    return;
+end
+
 %% plot W (spatial pattern)
 figure('Position',[0,1000,800,1300]);
 x = categorical(EMGs');

@@ -21,8 +21,8 @@ post: SYNERGYPLOT.m
 clear;
 %% set param
 term_select_type = 'manual'; %'auto' / 'manual'
-term_type = 'post'; %(if term_select_type == 'auto') pre / post / all 
-monkeyname = 'F';
+term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
+monkeyname = 'Ni';
 use_style = 'test'; % test/train
 VAF_plot_type = 'stack'; %'stack' or 'mean'
 color_type = 'red'; %(if VAF_plot_type == 'stack') 'red' / 'colorful' 

@@ -23,7 +23,8 @@
 
 [procedure]
 pre: SYNERGYPLOT.m
-post: MakeDataForPlot_H_utb.m
+post: (if you want to cutout temporal pattern of synergy)MakeDataForPlot_H_utb.m
+         (if you want to verify the change in spatial synergy by statistical test) PerformAnova.m
 
 [Improvement points(Japanaese)]
 cosine distanceとclusteringは他の関数でも使うので、localじゃなくて、外部関数としてまとめたほうがいいかも
@@ -32,10 +33,10 @@ cosine distanceとclusteringは他の関数でも使うので、localじゃなくて、外部関数とし
 clear;
 
 %% set param
-monkeyname = 'F';  % Name prefix of the folder containing the synergy data for each date
-term_type = 'post';  % Which period synergies do you want to plot?
+monkeyname = '';  % Name prefix of the folder containing the synergy data for each date
+term_type = 'pre';  % Which period synergies do you want to plot?
 syn_num = 4; % number of synergy you want to analyze
-plot_clustering_result = 1; % whether to plot cosine distance & dendrogram of hierarcical clustering
+plot_clustering_result = 0; % whether to plot cosine distance & dendrogram of hierarcical clustering
 save_WDaySynergy = 1;% Whether to save synergy W (to be used for ANOVA)
 save_data = 1; % Whether to store data on synergy orders in 'order_tim_list' folder (should basically be set to 1).
 save_fig = 1; % Whether to save the plotted synergy W figure
@@ -56,6 +57,8 @@ switch monkeyname
         TT_day = '20170530';
     case 'Ni'
         TT_day = '20220530';
+    case 'Se'
+        TT_day = '20200121';
 end
 [prev_last_idx, post_first_idx] = get_term_id(Allfiles_S, 1, TT_day);
 
