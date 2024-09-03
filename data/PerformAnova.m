@@ -30,9 +30,9 @@ nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 session_group_name_list = {'pre', 'post'};
 display_synergy = false; % wherer you want to output spatial pattern to be compared
 figure_file_name_pattern = '^W.*\.fig$'; % 読み込みたい.figファイルの正規表現
-test_type = 'muscle-one-way-anova' ; % 'one-way-anova', 'muscle-one-way-anova', 'two-way-anova', 'MANOVA', 'comprehensive_test' 
+test_type = 'comprehensive_test' ; % 'one-way-anova', 'muscle-one-way-anova', 'two-way-anova', 'MANOVA', 'comprehensive_test' 
 test_type_for_comprehensive_test = 'two-way-anova';  % 'two-way-anova', 'friedman'
-display_cosine_distance = false;
+display_cosine_distance = true;
 significant_level_threshold = 0.05;
 
 %% code section
@@ -128,8 +128,12 @@ for synergy_id = 1:synergy_num
     if not(isempty(cosine_distance_list))
         if synergy_id == 1
             all_cosine_distance_list = cell(synergy_num, 1);
+            same_synergy_cosD_list = cell(synergy_num, 1);
+            diff_synergy_cosD_list = cell(synergy_num, 1);
         end
         all_cosine_distance_list{synergy_id} = cosine_distance_list;
+        same_synergy_cosD_list{synergy_id} = cosine_distance_list(synergy_id, :);
+        diff_synergy_cosD_list{synergy_id} = reshape(cosine_distance_list(setdiff(1:synergy_num, synergy_id), :), [], 1);
     end
     
     % save result of static test as csv file
