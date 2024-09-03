@@ -24,7 +24,9 @@
 [procedure]
 pre: SYNERGYPLOT.m
 post: (if you want to cutout temporal pattern of synergy)MakeDataForPlot_H_utb.m
-         (if you want to verify the change in spatial synergy by statistical test) PerformAnova.m
+         (if you want to confirm whether the significant change is occured in spatial synergy by statistical test) PerformAnova.m
+        (if you want to evaluate the change in spatial synergy by PCA) EvaluateSynergyChange.m
+
 
 [Improvement points(Japanaese)]
 cosine distanceとclusteringは他の関数でも使うので、localじゃなくて、外部関数としてまとめたほうがいいかも

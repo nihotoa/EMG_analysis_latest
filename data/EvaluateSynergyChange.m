@@ -1,34 +1,29 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 [your operation]
-1. 
+1. Go to the directory where this code is stored
+2. Change some parameters(Please refer to 'setparam' section)
+3. Please run this code
 
 [role of this code]
-・
+> Evaluate changes in spatial synergy using PCA(Principle Component Analysis)
+> This allows us to  quantify which weight of muscle affect changes in synergy
+> This also allows us to  explain changes in the spatial synergy in lower dimention
 
 [Saved data location]
+<figures for contribution and coefficient vector of each principle component>
+    [path]: /EMG_analysis_latest/data/Yachimun/new_nmf_result/evaluate_synergy_change_result/contribution_and_coeff
+
+<plot of each spatial synergy on a dimension-reduced space>
+    [path]:
+    /EMG_analysis_latest/data/Yachimun/new_nmf_result/evaluate_synergy_change_result/pc_plot
 
 [procedure]
-pre:
-post:
+pre: dispNMF_W.m
+post: nothing
 
-[Improvement points(Japanaese)]
-優先順位
-(ok!) 各Wは長さ1に正規化されるべき(単位ベクトルにすべき)
-=> ちょっとだけ結果が変わった(係数とか寄与率とか) -> なぜ?
-3. contributionの図にlegendを追加
-(ok!!) 累積寄与率の閾値の情報をタイトルに含める
-3. 3次元プロットのアニメーション作成(.gifで出力する)
-(ok!) X, Y, Z軸のスケール合わせた方がいい
-
-[caution!!]
-・全セッションの比較しかしていないので注意
-・単位ベクトルは長さ1だが，各成分の重みを足し合わせても1にはならないことに注意!!!!!
-・(全部足して1になるベクトルと，単位ベクトルは異なるって意味.(向きは同じだけ度スカラーが違う))
-
-[備考]
- 2. クラスタ数の決定のためにエルボー法を実装(最大のクラスター数を10に設定すること)
-=> エルボー法を使っても結局目視になる & あまり効果的な手法じゃないかもしれないらしいので実装してない.
+[improvement point]
+All the japanese characters ara garbled, so refer to past commits and fix them
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -37,7 +32,7 @@ clear;
 monkeyname = 'Ya';  % Name prefix of the folder containing the synergy data for each date
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 session_group_name_list = {'pre', 'post'};
-variance_threshld = 0.8; % 累積寄与率の閾値
+variance_threshld = 0.8; % 累積�?与率の閾値
 cluster_num = 2;
 
 %% code section
@@ -66,17 +61,17 @@ synergy_num = length(ref_structure.WDaySynergy);
 [~, pre_day_num] = size(main_structure.pre.WDaySynergy{1});
 W_data = cellfun(@(pre_synergy, post_synergy) [pre_synergy, post_synergy], main_structure.pre.WDaySynergy, main_structure.post.WDaySynergy, UniformOutput=false);
 
-% 各空間シナジーを長さ1に正規化(単位ベクトルにする)
+% �?空間シナジーを長�?1に正規化(単位�?�クトルにする)
 W_data = cellfun(@(x) normalizeVectors(x), W_data, 'UniformOutput', false);
 
 % シナジーごとにPCAとクラスタリングを行って図示する
 for synergy_id = 1:synergy_num
     ref_W_data = transpose(W_data{synergy_id});
-    % coeff => 各列が各種成分の係数ベクトル, score => 各列が,その主成分に対するデータの投射した値(主成分得点),
-    % explained=> 各種成分の寄与率
+    % coeff => �?列が�?種成�?の係数ベクトル, score => �?列が,そ�?�主成�?に対する�?ータの投�?した値(主成�?得点),
+    % explained=> �?種成�?の�?与率
     [coeff, score, ~, ~, explained, ~] = pca(ref_W_data);
 
-    % 使用する主成分の数を決定する
+    % 使用する主成�?の数を決定す�?
     variance_total = 0;
     for pc_num = 1:length(explained)
         variance_total = variance_total + (explained(pc_num) / 100);
@@ -88,7 +83,7 @@ for synergy_id = 1:synergy_num
     use_coeff = coeff(:, 1:use_pc_num);
     use_score = score(:, 1:use_pc_num);
 
-    % 主成分得点を2主成分 or 3主成分でプロット
+    % 主成�?得点�?2主成�? or 3主成�?でプロ�?�?
     if use_pc_num>=3
         plot_dim = 3;
         use_score = use_score(:, 1:3);
@@ -98,16 +93,16 @@ for synergy_id = 1:synergy_num
         plot_func = @plot;
     end
 
-    % 主成分スコアを用いてk-meansクラスタリング
+    % 主成�?スコアを用�?てk-meansクラスタリング
     [cluster_idx_list, C_list] = kmeans(use_score, cluster_num, 'Distance', 'cityblock', 'Replicates', 5, 'Options', statset('Display', 'final'));
     point_shape_list = {'o', '^', 'square', 'v', 'pentagram'};
 
-    % 実際にプロットする
+    % 実際にプロ�?トす�?
     figure('position', [100, 100, 800, 600])
     hold on;
     [data_num, ~] = size(use_score);
     for data_id = 1:data_num
-        % 色の決定
+        % 色の決�?
         if data_id <= pre_day_num
             color_vector = [0 0 1];
         else
@@ -119,7 +114,7 @@ for synergy_id = 1:synergy_num
             plot_func(use_score(data_id, 1), use_score(data_id, 2), point_shape_list{cluster_idx_list(data_id)}, 'color', color_vector,  'MarkerSize', 10, linewidth=1.5);
         end
     end
-    % 重心のプロット
+    % 重�?のプロ�?�?
     if plot_dim == 3
         plot_func(C_list(:, 1), C_list(:, 2), C_list(:, 3), 'kx', 'MarkerSize', 15, 'LineWidth', 3, 'color', 'g');
         xlim([-1 1]);
@@ -154,8 +149,8 @@ for synergy_id = 1:synergy_num
     saveas(gcf, fullfile(plot_save_dir, ['pc_plot(' num2str(plot_dim) 'D)_synergy' num2str(synergy_id) ').fig']))
     close all;
 
-    % 主成分の係数ベクトルと寄与率を別途図示する(絶対値が一番大きいものを赤にする)
-    % 2*1のsubplotを作成して，1個目に係数ベクトルを，2個目に累積寄与率をプロットする
+    % 主成�?の係数ベクトルと�?与率を別途図示する(絶対値が�?番大きいも�?�を赤にする)
+    % 2*1のsubplotを作�?�して?�?1個目に係数ベクトルを�?2個目に累積�?与率を�?�ロ�?トす�?
     figure('position', [100, 100, 800, 1200])
     subplot(2,1,1);
     hold on;
@@ -188,11 +183,11 @@ for synergy_id = 1:synergy_num
 end
 
 %% define local function
-% matrixは10*51の行列, 列ごとにベクトルとして処理を行う
+% matrixは10*51の行�??, 列ごとにベクトルとして処�?を行う
 function normalizedMatrix = normalizeVectors(matrix)
-% 各列ベクトルについて，ノルムを計算
+% �?列�?�クトルにつ�?て?��ノル�?を計�?
 norms = sqrt(sum(matrix.^2, 1));
 
-% 各列に対して，ノルムで割る処理を適用
+% �?列に対して?��ノル�?で割る�?��?を適用
 normalizedMatrix = bsxfun(@rdivide, matrix, norms);
 end
