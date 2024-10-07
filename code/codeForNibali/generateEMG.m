@@ -50,11 +50,11 @@ for idx = start_num:2:end_num-1
     end
 
     % store the signal & informations
-    unique_num = sprintf('%03d', EMG_idx);
+    formatted_number = sprintf('%03d', EMG_idx);
     ref_signal = EMG_signal * hFile.Entity(idx).Scale;
-    CEMG.(['CEMG_' unique_num]) = resample(ref_signal, down_sampleRate, original_sampleRate);
-    CEMG.(['CEMG_' unique_num '_KHz']) = down_sampleRate / 1000;
-    CEMG.(['CEMG_' unique_num '_KHz_Orig']) = down_sampleRate / 1000;
+    CEMG.(['CEMG_' formatted_number]) = resample(ref_signal, down_sampleRate, original_sampleRate);
+    CEMG.(['CEMG_' formatted_number '_KHz']) = down_sampleRate / 1000;
+    CEMG.(['CEMG_' formatted_number '_KHz_Orig']) = down_sampleRate / 1000;
 
     EMG_idx = EMG_idx + 1;
 end

@@ -36,9 +36,7 @@ easyData_fold_path = fullfile(pwd, real_name, save_fold);
 save_fold_path = fullfile(easyData_fold_path, [monkeyname xpdate '_' task]);
 
 % make save fold
-if not(exist(save_fold_path))
-    mkdir(save_fold_path);
-end
+makefold(save_fold_path);
 disp(['START TO MAKE & SAVE ' monkeyname xpdate 'file[' sprintf('%d',file_num(1)) ',' sprintf('%d',file_num(end)) ']']);
 
 % Store the name of the muscle corresponding to each electrode in the cell array
@@ -162,15 +160,15 @@ if make_Timing == 1
          ph_d = zeros(length(Tp),1); % photo down clock = Photo On
          ph_u = zeros(length(Tp),1); % photo up clock = Photo Off
          for i = 1:length(Tp)
-            if isempty(max(TTLd(find((Tp(i,3)<TTLd).*(TTLd<Tp(i,5))))))
+            if isempty(max(TTLd((Tp(i,3)<TTLd).*(TTLd<Tp(i,5)))))
                 emp_d = 1;
             else
-                ph_d(i) = min(TTLd(find((Tp(i,3)<TTLd).*(TTLd<Tp(i,5)))));
+                ph_d(i) = min(TTLd((Tp(i,3)<TTLd).*(TTLd<Tp(i,5))));
             end
-            if isempty(max(TTLu(find((Tp(i,3)<TTLu).*(TTLu<Tp(i,5))))))
+            if isempty(max(TTLu((Tp(i,3)<TTLu).*(TTLu<Tp(i,5)))))
                 emp_u = 1;
             else
-                ph_u(i) = max(TTLu(find((Tp(i,3)<TTLu).*(TTLu<Tp(i,5)))));
+                ph_u(i) = max(TTLu((Tp(i,3)<TTLu).*(TTLu<Tp(i,5))));
             end
             if ph_d(i)>ph_u(i) || emp_d == 1 || emp_u ==1
                 errorlist = [errorlist ' ' sprintf('%d',i)];
@@ -193,7 +191,13 @@ if make_Timing == 1
            catch
                warning([real_name '-' xpdate ' does not have "CTTL_003" signal']);
            end
-       otherwise %if reference monkey is not SesekiR or Wasa、（if you don't have to chage to fotocell）
+       case 'Hu'
+           try
+               [Timing,Tp,Tp3] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to);
+           catch
+               warning([real_name '-' xpdate ' does not have "CTTL_003" signal']);
+           end
+       otherwise %if reference monkey is not SesekiR or Wasa. (if you don't have to chage to fotocell）
             [Timing,Tp,Tp3] = makeEasyTiming(monkeyname,xpdate,file_num,downdata_to,TimeRange_EMG);
    end
 end
@@ -363,7 +367,7 @@ Lp = length(perfect_task);
 Timing_sel = cell(1,Lp);
 for ii = 1:Lp
     % Extract elements with timing(ii) event codes from AllInPort
-    Timing_alt = AllInPort(:,find((AllInPort(2,:)==perfect_task(ii))+(AllInPort(2,:)==perfect_task_2(ii))));
+    Timing_alt = AllInPort(:,(AllInPort(2,:)==perfect_task(ii))+(AllInPort(2,:)==perfect_task_2(ii)));
     % Offset start of TimeRange to 0 (In CInport, original 0 correspond to 'TimeBegin = 0')
     Timing_alt(1,:) = Timing_alt(1,:) - TimeRange_EMG(1) * S1.CInPort_001_KHz * 1000; 
     % Match the sampling frequency after resampling
@@ -397,7 +401,7 @@ for s = 3:suc_num
 end
 
 % Exclude trials that did not meet the condition (excluding rows with 0)
-Tp = Tp_sub(find(Tp_sub(:,1) ~= 0),:);
+Tp = Tp_sub(Tp_sub(:,1) ~= 0,:);
 
 
 % Summarize the timing of 3 consecutive successful trials.
@@ -418,7 +422,7 @@ for s = 4:suc_num
         Tp3_sub(s-3,:) = Timing(1, suc(s)-Lp*3+1:suc(s));
     end
 end
-Tp3 = Tp3_sub(find(Tp3_sub(:,1) ~= 0),:);
+Tp3 = Tp3_sub(Tp3_sub(:,1) ~= 0,:);
 end
 
 %% 3. function to extract timing data for Nibali
@@ -436,7 +440,7 @@ start_end_timing_array_candidate = find(CAI_signal > -100);
 start_timing_array = eliminate_consective_num(start_end_timing_array_candidate, 'front');
 end_timing_array = eliminate_consective_num(start_end_timing_array_candidate, 'back');
 
-% 2. make attached id array
+% 2. make timing_id array
 start_end_num = length(start_timing_array);
 start_id_array = ones(1, start_end_num) * 1;
 end_id_array = ones(1, start_end_num) * 4;
@@ -517,6 +521,101 @@ Tp = reshape(Timing(1, :), 5, [])';
 Tp3 = reshape(match_3rd_array(1,:), 16, [])';
 end
 
+%% for drawer task
+function [Timing,Tp,Tp3] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to)
+load_file_path = fullfile(pwd, real_name, [monkeyname xpdate '-' sprintf('%04d', file_num(1))]);
+make_timing_struct = load(load_file_path, 'CAI*', 'CTTL*');
+timing_struct = struct();
+multple_value = downdata_to / (make_timing_struct.CTTL_002_KHz * 1000);
+
+% make digitai timing matrix from CAI signal
+CAI_signal = make_timing_struct.CAI_001;
+start_end_timing_array_candidate = find(CAI_signal > -100);
+
+% 1.extract 'start' and 'end' timing
+start_timing_array = eliminate_consective_num(start_end_timing_array_candidate, 'front');
+end_timing_array = eliminate_consective_num(start_end_timing_array_candidate, 'back');
+
+% 2. make timing_id array
+start_end_num = length(start_timing_array);
+start_id_array = ones(1, start_end_num) * 1;
+end_id_array = ones(1, start_end_num) * 4;
+
+% 3.resample and make array (which is consist of timing and id)
+start_timing_array = round(start_timing_array * multple_value);
+timing_struct.start_timing_array = [start_timing_array; start_id_array];
+end_timing_array = round(end_timing_array * multple_value);
+timing_struct.end_timing_array = [end_timing_array; end_id_array];
+
+% make 'grasp on', 'grasp off' and 'success' timing
+%1. assign timing data in each array
+[grasp_signal, id_vector] = sort([make_timing_struct.CTTL_002_Down; make_timing_struct.CTTL_002_Up], 1);
+if not(unique(id_vector(1, :)) == 1)
+    error('Inconsistent sort order of "grasp on" and "grasp off"');
+end
+grasp_on_timing_array = grasp_signal(1, :);
+grasp_off_timing_array = grasp_signal(2, :);
+success_timing_array = make_timing_struct.CTTL_003_Down;
+
+%2. assign id in each array
+grasp_on_id = ones(1, length(grasp_on_timing_array)) * 2;
+grasp_off_id = ones(1, length(grasp_off_timing_array)) * 3;
+succcess_id = ones(1, length(success_timing_array)) * 5;
+
+% 3.resample and make array (which is consist of timing and id)
+grasp_on_timing_array = round(grasp_on_timing_array * multple_value);
+timing_struct.grasp_on_timing_array = [grasp_on_timing_array; grasp_on_id];
+grasp_off_timing_array = round(grasp_off_timing_array * multple_value);
+timing_struct.grasp_off_timing_array = [grasp_off_timing_array; grasp_off_id];
+success_timing_array = round(success_timing_array * multple_value);
+timing_struct.success_timing_array = [success_timing_array; succcess_id];
+
+% merge and crearte all_timing_data
+% 1st stage screening
+ref_timing_array1 = [timing_struct.start_timing_array , timing_struct.grasp_on_timing_array, timing_struct.grasp_off_timing_array, timing_struct.end_timing_array];
+[~, sort_sequence] = sort(ref_timing_array1(1, :));
+ref_timing_array1 = ref_timing_array1(:, sort_sequence);
+
+% get the index of the element that matches the condition1
+condition1 = [1, 2, 3, 4];
+necessary_idx = [];
+for ref_start_id = 1:length(ref_timing_array1)-3
+    if all(ref_timing_array1(2, ref_start_id:ref_start_id+3) == condition1)
+        necessary_idx = [necessary_idx ref_start_id:ref_start_id+3];
+    end
+end
+match_1st_array = ref_timing_array1(:, necessary_idx);
+
+% marge ref_timing_array and success_timing_array & update ref_timing_array which matches the condition2
+ref_timing_array2 = [match_1st_array timing_struct.success_timing_array];
+[~, sort_sequence] = sort(ref_timing_array2(1, :));
+ref_timing_array2 = ref_timing_array2(:, sort_sequence);
+
+% get the index of the element that matches the condition2
+condition2 = [1, 2, 3, 4, 5];
+necessary_idx = [];
+for ref_start_id = 1:length(ref_timing_array2)-4
+    if all(ref_timing_array2(2, ref_start_id:ref_start_id+4) == condition2)
+        necessary_idx = [necessary_idx ref_start_id:ref_start_id+4];
+    end
+end
+match_2nd_array = ref_timing_array2(:, necessary_idx);
+
+% get the index of the element that matches the condition3
+condition3 = [1 2 3 4 2 3 1 2 3 4 2 3 1 2 3 4];
+necessary_idx = [];
+for ref_start_id = 1:length(ref_timing_array1)-15
+    if all(ref_timing_array1(2, ref_start_id:ref_start_id+15) == condition3)
+        necessary_idx = [necessary_idx ref_start_id:ref_start_id+15];
+    end
+end
+match_3rd_array = ref_timing_array1(:, necessary_idx);
+
+% create output arguments
+Timing = match_2nd_array;
+Tp = reshape(Timing(1, :), 5, [])';
+Tp3 = reshape(match_3rd_array(1,:), 16, [])';
+end
 
 %% 4.Confirm cross-talk of each other's electrodes
 function [pullData, dt3] = getCTcheck(AllData_EMG,Tp, EMG_num, n)
