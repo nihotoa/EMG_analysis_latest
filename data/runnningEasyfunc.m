@@ -54,7 +54,7 @@ makeEasyData_all/makeEasyTiming“à‚ÌSu, Se‚ÌðŒ•ªŠò‚ÌˆÓ–¡‚ð”cˆ¬‚µ‚Ä‚¢‚È‚¢ => Ses
 clear 
 %% set param
 % which monkey?
-realname = 'Nibali';  % 'Wasa', 'Yachimun', 'SesekiL', 'SesekiR', 'Matatabi', 'Nibali' 
+realname = 'Hugo';  % 'Yachimun', 'SesekiL', 'Nibali' , 'Hugo'
 
 task = 'standard'; % you don't need to change
 save_fold = 'easyData'; % you don't need to change

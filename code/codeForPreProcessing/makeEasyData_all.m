@@ -135,6 +135,24 @@ switch monkeyname
         EMGs{14,1}= 'FPL';
         EMGs{15,1}= 'Biceps';
         EMGs{16,1}= 'Triceps';
+    case 'Hu'
+        EMGs=cell(16,1) ;
+        EMGs{1,1}= 'EDC';
+        EMGs{2,1}= 'ED23';
+        EMGs{3,1}= 'ED45';
+        EMGs{4,1}= 'ECR';
+        EMGs{5,1}= 'ECU';
+        EMGs{6,1}= 'FDI';
+        EMGs{7,1}= 'ADP';
+        EMGs{8,1}= 'ADM';
+        EMGs{9,1}= 'Biceps';
+        EMGs{10,1}= 'Triceps';
+        EMGs{11,1}= 'FDS';
+        EMGs{12,1}= 'FDP';
+        EMGs{13,1}= 'PL';
+        EMGs{14,1}= 'FCR';
+        EMGs{15,1}= 'FCU';
+        EMGs{16,1}= 'BRD';
 end
 EMG_num = length(EMGs);
 
@@ -192,11 +210,7 @@ if make_Timing == 1
                warning([real_name '-' xpdate ' does not have "CTTL_003" signal']);
            end
        case 'Hu'
-           try
-               [Timing,Tp,Tp3] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to);
-           catch
-               warning([real_name '-' xpdate ' does not have "CTTL_003" signal']);
-           end
+           [Timing,Tp,Tp3] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to);
        otherwise %if reference monkey is not SesekiR or Wasa. (if you don't have to chage to fotocellÅj
             [Timing,Tp,Tp3] = makeEasyTiming(monkeyname,xpdate,file_num,downdata_to,TimeRange_EMG);
    end
@@ -219,7 +233,7 @@ if save_E == 1
     Unit = 'uV';
     SampleRate = downdata_to;
     switch monkeyname
-        case {'Ya','Ma','F', 'Wa', 'Ni'}
+        case {'Ya','Ma','F', 'Wa', 'Ni', 'Hu'}
             save(fullfile(save_fold_path, [monkeyname xpdate '_EasyData.mat']), 'monkeyname', 'xpdate', 'file_num', 'EMGs',...
                                                     'AllData_EMG', ...
                                                     'TimeRange_EMG',...
@@ -539,7 +553,7 @@ end_timing_array = eliminate_consective_num(start_end_timing_array_candidate, 'b
 % 2. make timing_id array
 start_end_num = length(start_timing_array);
 start_id_array = ones(1, start_end_num) * 1;
-end_id_array = ones(1, start_end_num) * 4;
+end_id_array = ones(1, start_end_num) * 6;
 
 % 3.resample and make array (which is consist of timing and id)
 start_timing_array = round(start_timing_array * multple_value);
@@ -547,41 +561,44 @@ timing_struct.start_timing_array = [start_timing_array; start_id_array];
 end_timing_array = round(end_timing_array * multple_value);
 timing_struct.end_timing_array = [end_timing_array; end_id_array];
 
-% make 'grasp on', 'grasp off' and 'success' timing
+% make 'drawer on', 'drawer off',  'food on', 'food off' timing.
 %1. assign timing data in each array
-[grasp_signal, id_vector] = sort([make_timing_struct.CTTL_002_Down; make_timing_struct.CTTL_002_Up], 1);
+[photo_sensor_signal, id_vector] = sort([make_timing_struct.CTTL_002_Down; make_timing_struct.CTTL_002_Up], 1);
 if not(unique(id_vector(1, :)) == 1)
     error('Inconsistent sort order of "grasp on" and "grasp off"');
 end
-grasp_on_timing_array = grasp_signal(1, :);
-grasp_off_timing_array = grasp_signal(2, :);
+photo_on_timing_array = photo_sensor_signal(1, :);
+photo_off_timing_array= photo_sensor_signal(2, :);
+
 success_timing_array = make_timing_struct.CTTL_003_Down;
 
 %2. assign id in each array
-grasp_on_id = ones(1, length(grasp_on_timing_array)) * 2;
-grasp_off_id = ones(1, length(grasp_off_timing_array)) * 3;
-succcess_id = ones(1, length(success_timing_array)) * 5;
+photo_on_id = ones(1, length(photo_on_timing_array)) * 2;
+photo_off_id = ones(1, length(photo_off_timing_array)) * 3;
+succcess_id = ones(1, length(success_timing_array)) * 7;
 
 % 3.resample and make array (which is consist of timing and id)
-grasp_on_timing_array = round(grasp_on_timing_array * multple_value);
-timing_struct.grasp_on_timing_array = [grasp_on_timing_array; grasp_on_id];
-grasp_off_timing_array = round(grasp_off_timing_array * multple_value);
-timing_struct.grasp_off_timing_array = [grasp_off_timing_array; grasp_off_id];
+photo_on_timing_array = round(photo_on_timing_array * multple_value);
+timing_struct.photo_on_timing_array = [photo_on_timing_array; photo_on_id];
+photo_off_timing_array = round(photo_off_timing_array * multple_value);
+timing_struct.photo_off_timing_array = [photo_off_timing_array; photo_off_id];
 success_timing_array = round(success_timing_array * multple_value);
 timing_struct.success_timing_array = [success_timing_array; succcess_id];
 
 % merge and crearte all_timing_data
 % 1st stage screening
-ref_timing_array1 = [timing_struct.start_timing_array , timing_struct.grasp_on_timing_array, timing_struct.grasp_off_timing_array, timing_struct.end_timing_array];
+ref_timing_array1 = [timing_struct.start_timing_array , timing_struct.photo_on_timing_array, timing_struct.photo_off_timing_array, timing_struct.end_timing_array];
 [~, sort_sequence] = sort(ref_timing_array1(1, :));
 ref_timing_array1 = ref_timing_array1(:, sort_sequence);
+ref_timing_array1 = sortAlgorithmforHugo(ref_timing_array1);
 
 % get the index of the element that matches the condition1
-condition1 = [1, 2, 3, 4];
+condition1 = [1, 2, 3, 2, 3, 6];
 necessary_idx = [];
-for ref_start_id = 1:length(ref_timing_array1)-3
-    if all(ref_timing_array1(2, ref_start_id:ref_start_id+3) == condition1)
-        necessary_idx = [necessary_idx ref_start_id:ref_start_id+3];
+validate_length = length(condition1) - 1;
+for ref_start_id = 1 : (length(ref_timing_array1) - validate_length)
+    if all(ref_timing_array1(2, ref_start_id : (ref_start_id + validate_length)) == condition1)
+        necessary_idx = [necessary_idx ref_start_id : (ref_start_id + validate_length)];
     end
 end
 match_1st_array = ref_timing_array1(:, necessary_idx);
@@ -592,29 +609,31 @@ ref_timing_array2 = [match_1st_array timing_struct.success_timing_array];
 ref_timing_array2 = ref_timing_array2(:, sort_sequence);
 
 % get the index of the element that matches the condition2
-condition2 = [1, 2, 3, 4, 5];
+condition2 = [1, 2, 3, 2, 3, 6, 7];
 necessary_idx = [];
-for ref_start_id = 1:length(ref_timing_array2)-4
-    if all(ref_timing_array2(2, ref_start_id:ref_start_id+4) == condition2)
-        necessary_idx = [necessary_idx ref_start_id:ref_start_id+4];
+validate_length = length(condition2) - 1;
+for ref_start_id = 1:length(ref_timing_array2) - validate_length
+    if all(ref_timing_array2(2, ref_start_id:ref_start_id + validate_length) == condition2)
+        necessary_idx = [necessary_idx ref_start_id:ref_start_id + validate_length];
     end
 end
 match_2nd_array = ref_timing_array2(:, necessary_idx);
 
 % get the index of the element that matches the condition3
-condition3 = [1 2 3 4 2 3 1 2 3 4 2 3 1 2 3 4];
+condition3 = repmat([1 2 3 2 3 6], 1, 3);
 necessary_idx = [];
-for ref_start_id = 1:length(ref_timing_array1)-15
-    if all(ref_timing_array1(2, ref_start_id:ref_start_id+15) == condition3)
-        necessary_idx = [necessary_idx ref_start_id:ref_start_id+15];
+validate_length = length(condition3) - 1;
+for ref_start_id = 1:length(ref_timing_array1) - validate_length
+    if all(ref_timing_array1(2, ref_start_id:ref_start_id+validate_length) == condition3)
+        necessary_idx = [necessary_idx ref_start_id:ref_start_id + validate_length];
     end
 end
 match_3rd_array = ref_timing_array1(:, necessary_idx);
 
 % create output arguments
 Timing = match_2nd_array;
-Tp = reshape(Timing(1, :), 5, [])';
-Tp3 = reshape(match_3rd_array(1,:), 16, [])';
+Tp = reshape(Timing(1, :), length(condition2), [])';
+Tp3 = reshape(match_3rd_array(1,:), length(condition3), [])';
 end
 
 %% 4.Confirm cross-talk of each other's electrodes
