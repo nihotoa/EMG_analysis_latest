@@ -32,7 +32,7 @@ clear;
 monkeyname = 'Ya';  % Name prefix of the folder containing the synergy data for each date
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 session_group_name_list = {'pre', 'post'};
-variance_threshld = 0.8; % 累積�?与率の閾値
+variance_threshold = 0.8; % Threshold for cumulative contribution rate of principal componeetns
 cluster_num = 2;
 
 %% code section
@@ -61,21 +61,22 @@ synergy_num = length(ref_structure.WDaySynergy);
 [~, pre_day_num] = size(main_structure.pre.WDaySynergy{1});
 W_data = cellfun(@(pre_synergy, post_synergy) [pre_synergy, post_synergy], main_structure.pre.WDaySynergy, main_structure.post.WDaySynergy, UniformOutput=false);
 
-% �?空間シナジーを長�?1に正規化(単位�?�クトルにする)
+% Normalize each spatial synergy (make it a unit bector)
 W_data = cellfun(@(x) normalizeVectors(x), W_data, 'UniformOutput', false);
 
-% シナジーごとにPCAとクラスタリングを行って図示する
+% perform PCA and clustering for each synergy, then make figures to display the result
 for synergy_id = 1:synergy_num
     ref_W_data = transpose(W_data{synergy_id});
-    % coeff => �?列が�?種成�?の係数ベクトル, score => �?列が,そ�?�主成�?に対する�?ータの投�?した値(主成�?得点),
-    % explained=> �?種成�?の�?与率
+    % coeff => each column is a coefficient vector for each principal component
+    % score => each column vector contains principal component score for the corresponding principal component
+    % explained=>contribution rate of each principal component 
     [coeff, score, ~, ~, explained, ~] = pca(ref_W_data);
 
-    % 使用する主成�?の数を決定す�?
+    % Determine the number of principal components to be used
     variance_total = 0;
     for pc_num = 1:length(explained)
         variance_total = variance_total + (explained(pc_num) / 100);
-        if variance_total > variance_threshld
+        if variance_total > variance_threshold
             use_pc_num = pc_num;
             break;
         end
@@ -83,7 +84,7 @@ for synergy_id = 1:synergy_num
     use_coeff = coeff(:, 1:use_pc_num);
     use_score = score(:, 1:use_pc_num);
 
-    % 主成�?得点�?2主成�? or 3主成�?でプロ�?�?
+    % select plot function to be used according to 'use_pc_num'
     if use_pc_num>=3
         plot_dim = 3;
         use_score = use_score(:, 1:3);
@@ -93,16 +94,16 @@ for synergy_id = 1:synergy_num
         plot_func = @plot;
     end
 
-    % 主成�?スコアを用�?てk-meansクラスタリング
+    % create clusters by k-means clustering of 'use_score'
     [cluster_idx_list, C_list] = kmeans(use_score, cluster_num, 'Distance', 'cityblock', 'Replicates', 5, 'Options', statset('Display', 'final'));
     point_shape_list = {'o', '^', 'square', 'v', 'pentagram'};
 
-    % 実際にプロ�?トす�?
+    % Plot principal component scores colour-coded by cluster
     figure('position', [100, 100, 800, 600])
     hold on;
     [data_num, ~] = size(use_score);
     for data_id = 1:data_num
-        % 色の決�?
+        % Assign a color to each cluster.
         if data_id <= pre_day_num
             color_vector = [0 0 1];
         else
@@ -114,7 +115,8 @@ for synergy_id = 1:synergy_num
             plot_func(use_score(data_id, 1), use_score(data_id, 2), point_shape_list{cluster_idx_list(data_id)}, 'color', color_vector,  'MarkerSize', 10, linewidth=1.5);
         end
     end
-    % 重�?のプロ�?�?
+
+    % plot the centroid of each cluster
     if plot_dim == 3
         plot_func(C_list(:, 1), C_list(:, 2), C_list(:, 3), 'kx', 'MarkerSize', 15, 'LineWidth', 3, 'color', 'g');
         xlim([-1 1]);
@@ -128,7 +130,7 @@ for synergy_id = 1:synergy_num
         % not edited
     end
 
-    % decoration
+    % decoration of figure
     grid on;
     title(['plot for each principal component(cluster-num=' num2str(cluster_num) ')']);
     xlabel('principle component score for "pc1"');
@@ -149,8 +151,7 @@ for synergy_id = 1:synergy_num
     saveas(gcf, fullfile(plot_save_dir, ['pc_plot(' num2str(plot_dim) 'D)_synergy' num2str(synergy_id) ').fig']))
     close all;
 
-    % 主成�?の係数ベクトルと�?与率を別途図示する(絶対値が�?番大きいも�?�を赤にする)
-    % 2*1のsubplotを作�?�して?�?1個目に係数ベクトルを�?2個目に累積�?与率を�?�ロ�?トす�?
+    % Separately plot the coefficient vector and contribution rate of each principal components (display the coefficient with the largest absolute value in red)
     figure('position', [100, 100, 800, 1200])
     subplot(2,1,1);
     hold on;
@@ -177,17 +178,14 @@ for synergy_id = 1:synergy_num
     % save setting
     coeff_save_dir = fullfile(common_save_dir, 'contribution_and_coeff');
     makefold(coeff_save_dir)
-    saveas(gcf, fullfile(coeff_save_dir, ['contribution_and_coeff_of_pc(synergy' num2str(synergy_id) ')_variance_threshold=' num2str(variance_threshld) '.png']))
-    saveas(gcf, fullfile(coeff_save_dir, ['contribution_and_coeff_of_pc(synergy' num2str(synergy_id) ')_variance_threshold=' num2str(variance_threshld) '.fig']))
+    saveas(gcf, fullfile(coeff_save_dir, ['contribution_and_coeff_of_pc(synergy' num2str(synergy_id) ')_variance_threshold=' num2str(variance_threshold) '.png']))
+    saveas(gcf, fullfile(coeff_save_dir, ['contribution_and_coeff_of_pc(synergy' num2str(synergy_id) ')_variance_threshold=' num2str(variance_threshold) '.fig']))
     close all;
 end
 
 %% define local function
-% matrixは10*51の行�??, 列ごとにベクトルとして処�?を行う
-function normalizedMatrix = normalizeVectors(matrix)
-% �?列�?�クトルにつ�?て?��ノル�?を計�?
-norms = sqrt(sum(matrix.^2, 1));
-
-% �?列に対して?��ノル�?で割る�?��?を適用
-normalizedMatrix = bsxfun(@rdivide, matrix, norms);
+% normalize a given vector (to a unit vector).
+function normalizedVector = normalizeVectors(vector)
+norms = sqrt(sum(vector.^2, 1));
+normalizedVector = bsxfun(@rdivide, vector, norms);
 end

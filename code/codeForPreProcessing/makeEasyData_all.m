@@ -536,6 +536,24 @@ Tp3 = reshape(match_3rd_array(1,:), 16, [])';
 end
 
 %% for drawer task
+%{
+[explanation of this func]:
+Function to obtain the event timing of the 'drawer task'. 
+('drawer task' is the task performed in the 'Hugo' experiment. More monkeys may perform this task in the future.)
+
+[input arguments]:
+real_name: [char], full name of monkey
+monkeyname: [char], prefix of file
+xpdate_num: [double], date of experiment
+file_num: [double list], List of numbered experimental data files for the date of interest  (ex.) [2, 4]
+downdata_to: [double], Sampling rate of the signal after resampling.
+
+[output arguments]:
+Timing: [double array], Array containing the id and timing of each event timing.
+Tp: [double array], Data for each timing in each trial is stored.
+Tp3: [double array], Data for each timing in each trial is stored.
+%}
+
 function [Timing,Tp,Tp3] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to)
 load_file_path = fullfile(pwd, real_name, [monkeyname xpdate '-' sprintf('%04d', file_num(1))]);
 make_timing_struct = load(load_file_path, 'CAI*', 'CTTL*');
@@ -590,7 +608,7 @@ timing_struct.success_timing_array = [success_timing_array; succcess_id];
 ref_timing_array1 = [timing_struct.start_timing_array , timing_struct.photo_on_timing_array, timing_struct.photo_off_timing_array, timing_struct.end_timing_array];
 [~, sort_sequence] = sort(ref_timing_array1(1, :));
 ref_timing_array1 = ref_timing_array1(:, sort_sequence);
-ref_timing_array1 = sortAlgorithmforHugo(ref_timing_array1);
+ref_timing_array1 = sortAlgorithmforDrawer(ref_timing_array1);
 
 % get the index of the element that matches the condition1
 condition1 = [1, 2, 3, 2, 3, 6];

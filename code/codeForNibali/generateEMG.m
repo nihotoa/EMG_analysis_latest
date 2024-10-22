@@ -50,9 +50,7 @@ for file_id = 1:length(EMG_files)
             % For some reason, the signal obtained from the binary file is empty, so the data from this file is discarded
             break;
         end
-
-        if EMG_id == 1
-        end
+        
         % take the difference
         EMG_signal = transpose(EMG_signal1 - EMG_signal2);
     
