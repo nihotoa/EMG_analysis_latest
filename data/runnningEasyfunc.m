@@ -54,7 +54,7 @@ makeEasyData_all/makeEasyTiming“à‚ÌSu, Se‚ÌðŒ•ªŠò‚ÌˆÓ–¡‚ð”cˆ¬‚µ‚Ä‚¢‚È‚¢ => Ses
 clear 
 %% set param
 % which monkey?
-realname = 'Yachimun';  % 'Wasa', 'Yachimun', 'SesekiL', 'SesekiR', 'Matatabi', 'Nibali' 
+realname = 'Hugo';  % 'Yachimun', 'SesekiL', 'Nibali' , 'Hugo'
 
 task = 'standard'; % you don't need to change
 save_fold = 'easyData'; % you don't need to change
@@ -90,10 +90,10 @@ if ischar(Allfiles_S)
     Allfiles_S={Allfiles_S};
 end
     
-S = size(Allfiles_S);
+[~, session_num] = size(Allfiles_S);
 Allfiles = strrep(Allfiles_S,['_' task '.mat'],'');
 %% RUNNING FUNC LIST (make data)
-for i = 1:S(2)
+for i = 1:session_num
     load(fullfile(easyData_fold_path, Allfiles_S{i}), 'fileInfo');
     monkeyname = fileInfo.monkeyname;
     xpdate = fileInfo.xpdate;

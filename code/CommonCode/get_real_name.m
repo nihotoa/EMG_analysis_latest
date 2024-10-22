@@ -19,6 +19,8 @@ switch prefix
         realname = 'Nibali';
     case 'Se'
         realname = 'SesekiL';
+    case 'Hu'
+        realname = 'Hugo';
 end
 end
 

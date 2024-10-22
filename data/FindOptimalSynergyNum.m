@@ -5,7 +5,6 @@
 2. Please run this code
 
 [role of this code]
-各セッション(日付)において、適切なシナジー数を見つけるための関数
 
 [Saved figure location]
 

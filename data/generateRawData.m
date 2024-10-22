@@ -23,7 +23,7 @@ post : SaveFileInfo.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkeyname = 'Ni'; % prefix of recorded file name
+monkeyname = 'Hu'; % prefix of recorded file name
 down_SR = 1375; % which sampling rate do you want? (set this param below 1375)
 select_type = 'manual'; % which folder selection type do you want? 'manual' / 'auto'
 
@@ -39,6 +39,11 @@ switch select_type
     case 'manual'
         disp('Please select all folders which contains the data you want to analyze')
         folder_name_list = uiselect(dirdir(base_dir),1,'Please select folders which contains the data you want to analyze');
+end
+
+if isempty(folder_name_list)
+    disp("user press 'cancel'");
+    return;
 end
 
 for idx = 1:length(folder_name_list)

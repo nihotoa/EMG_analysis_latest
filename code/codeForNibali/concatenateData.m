@@ -35,7 +35,7 @@ for file_id = 1:AO_file_num
     all_data_cell{file_id} = load(fullfile(base_dir, AO_file_list(file_id).name));
 end
 
-% refer to the file to obtain some parameters
+%obtain some parameters(number of TTL_signal, CAI_signal, LFP_signal etc...)
 initial_data = all_data_cell{1};
 vars = fieldnames(initial_data);
 
@@ -135,7 +135,7 @@ for file_id = 1:AO_file_num
     end
 end
 
-% add error sampling(between 'record_start' and '1st rising time of each TTL signal')
+% align the criteia for number of elapsed samples with 'recordingStart'(TimeRange(1,1))
 for TTL_id = 2:CTTL_signal_num 
     vars = fieldnames(CTTL_str);
     Up_data_name = vars(contains(vars, sprintf('%03d', TTL_id)) & contains(vars, 'Up'));

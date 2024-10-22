@@ -25,14 +25,15 @@ post: nothing
 clear;
 
 %% set param
-monkeyname = 'Se';  % Name prefix of the folder containing the synergy data for each date
+monkeyname = 'F';  % Name prefix of the folder containing the synergy data for each date
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 session_group_name_list = {'pre', 'post'};
 display_synergy = false; % wherer you want to output spatial pattern to be compared
 figure_file_name_pattern = '^W.*\.fig$'; % ì«Ç›çûÇ›ÇΩÇ¢.figÉtÉ@ÉCÉãÇÃê≥ãKï\åª
-test_type = 'muscle-one-way-anova' ; % 'one-way-anova', 'muscle-one-way-anova', 'two-way-anova', 'MANOVA', 'comprehensive_test' 
+test_type = 'comprehensive_test' ; % 'one-way-anova', 'muscle-one-way-anova', 'two-way-anova', 'MANOVA', 'comprehensive_test' 
 test_type_for_comprehensive_test = 'two-way-anova';  % 'two-way-anova', 'friedman'
-display_cosine_distance = false;
+display_cosine_distance = true;
+calculateMeanCosineDist = true;
 significant_level_threshold = 0.05;
 
 %% code section
@@ -69,13 +70,11 @@ if display_synergy == true
         end
         for synergy_id = 1:synergy_num
             ref_figure_path = fullfile(ref_figure_fold_path, figure_file_struct(synergy_id).name);
-            % ref_figure = openfig(ref_figure_path, 'invisible');
             figure_file_path_list{synergy_id, group_id} = ref_figure_path;
-            % close(ref_figure)
         end
     end
     
-    synergy_name_list = arrayfun(@(i) sprintf('synergy%d', i), 1:synergy_num, 'UniformOutput', false);
+    synegy_name_list = generateSequentialNames('synergy', synergy_num);
     % create new figure  by combining .fig file
     mergeFigures(figure_file_path_list, common_save_dir, save_figure_name, synergy_name_list, session_group_name_list)
 end
@@ -128,8 +127,15 @@ for synergy_id = 1:synergy_num
     if not(isempty(cosine_distance_list))
         if synergy_id == 1
             all_cosine_distance_list = cell(synergy_num, 1);
+
+            % differentiation of cosine distance values depending on whether the synergies are of the same type or different type
+            cosineDistanceByType = struct();
+            cosineDistanceByType.same_synergy_cosD_list = cell(synergy_num, 1);
+            cosineDistanceByType.diff_synergy_cosD_list = cell(synergy_num, 1);
         end
         all_cosine_distance_list{synergy_id} = cosine_distance_list;
+        cosineDistanceByType.same_synergy_cosD_list{synergy_id} = cosine_distance_list(synergy_id, :);
+        cosineDistanceByType.diff_synergy_cosD_list{synergy_id} = reshape(cosine_distance_list(setdiff(1:synergy_num, synergy_id), :), [], 1);
     end
     
     % save result of static test as csv file
@@ -146,7 +152,7 @@ end
 % session_group_name_list = {'pre', 'post'}ÇµÇ©ëzíËÇµÇƒÇ¢Ç»Ç¢ÇÃÇ≈íçà”
 if strcmp(test_type, 'comprehensive_test') && display_cosine_distance
     cosine_distance_figure_name = 'cosine_distance_plot';
-    x_labels = arrayfun(@(i) sprintf('synergy%d', i), 1:synergy_num, 'UniformOutput', false);
+    x_labels = generateSequentialNames('synergy', synergy_num);
     x_labels = categorical(x_labels);
     zeroBar = zeros(synergy_num,1);
 
@@ -173,6 +179,22 @@ if strcmp(test_type, 'comprehensive_test') && display_cosine_distance
     close all;
 end
 
+% (if test_type=='comprehensive_test') calculate the average cosine distance for the 'same type synergy' and 'different type synergy' for the 'reference synergy'
+% session_group_name_list = {'pre', 'post'}ÇµÇ©ëzíËÇµÇƒÇ¢Ç»Ç¢ÇÃÇ≈íçà”
+if strcmp(test_type, 'comprehensive_test') && calculateMeanCosineDist
+    SameTypeCosineDistances = cell2mat(cosineDistanceByType.same_synergy_cosD_list);
+    SameTypeCosineDistances = reshape(SameTypeCosineDistances, [], 1);
+    DiffTypeCosineDistances = cell2mat(cosineDistanceByType.diff_synergy_cosD_list);
+    disp('Åymean cosine distance by typeÅz')
+    fprintf('mean value of cosD(same type): %.2f Å} %.2f\n', mean(SameTypeCosineDistances), std(SameTypeCosineDistances));
+    fprintf('mean value of cosD(different type): %.2f Å} %.2f\n', mean(DiffTypeCosineDistances), std(DiffTypeCosineDistances));
+
+    % save data
+    save_fold_path = fullfile(common_save_dir, test_type, [session_group_name_list{1} '_vs_' session_group_name_list{end}]);
+    save_data_file_name = 'CosineDistanceforEachType';
+    save(fullfile(save_fold_path, save_data_file_name), "SameTypeCosineDistances", "DiffTypeCosineDistances");
+end
+
 % (if test_type=='muscle-one-way-anova') create heatmap to display result
 if exist("p_value_array_list", "var")
     p_value_data = cell2mat(p_value_array_list);
@@ -181,7 +203,7 @@ if exist("p_value_array_list", "var")
     ref_background_color = ones(synergy_num, muscle_num);
     ref_background_color(p_value_data < significant_level_threshold) = 2;
     x_labels = cellstr(ref_structure.x);
-    y_labels = arrayfun(@(i) sprintf('synergy%d', i), 1:synergy_num, 'UniformOutput', false);
+    y_labels = generateSequentialNames('synergy', synergy_num);
     title_str = sprintf(['one-way anova result(for each muscle, Éø = ' num2str(significant_level_threshold) ')']);
     save_file_name = 'one-way_anova_result(for_each_muscle)';
     

@@ -23,39 +23,70 @@ nevÇ™ì«Ç›çûÇﬂÇ»Ç©Ç¡ÇΩéûÇÃ.matì«Ç›çûÇ›ïîï™Çè¡ÇµÇΩÇÃÇ≈ÅAÉGÉâÅ[ìfÇ¢ÇΩÇÁÇªÇÃéûÇ…çlÇ
 %}
 
 function [CEMG, amplitude_unit, record_time] = generateEMG(base_dir, exp_day, down_sampleRate)
+EMG_files_dir = fullfile(base_dir, exp_day);
+EMG_files = dir(fullfile(EMG_files_dir, 'datafile*.ns5'));
 
-ref_dir = fullfile(base_dir, exp_day);
-ref_file = dir(fullfile(ref_dir, 'datafile*.nev'));
-EMG_file_path = fullfile(ref_dir, ref_file.name);
-
-[~, hFile] = ns_OpenFile(EMG_file_path); 
-[start_num, end_num] = get_EMG_electrode_num(hFile);
-
+file_num = length(EMG_files);
+EMG_element_cell = cell(1, file_num);
+record_time_element = nan(1, file_num);
 CEMG = struct;
-EMG_idx = 1;
-for idx = start_num:2:end_num-1
-    % get EMG signal from both electrode
-    [~, ~, EMG_signal1] = ns_GetAnalogData(hFile, idx, 1, 1e8);
-    [~, ~, EMG_signal2] = ns_GetAnalogData(hFile, idx+1, 1, 1e8);
-        
-    % take the difference
-    EMG_signal = transpose(EMG_signal1 - EMG_signal2);
 
-    % compile the information of record(samplingRate, rosolution, etc...)
-    if idx == start_num
-        [~, record_info] = ns_GetAnalogInfo(hFile, idx);
-        original_sampleRate = record_info.SampleRate;
-        amplitude_unit = record_info.Units;
-        record_time = length(EMG_signal) / original_sampleRate;
+for file_id = 1:length(EMG_files)
+    ref_EMG_file_path = fullfile(EMG_files_dir, EMG_files(file_id).name);
+    [~, hFile] = ns_OpenFile(ref_EMG_file_path); 
+    try
+        [start_num, end_num] = get_EMG_electrode_num(hFile);
+    catch
+        % This file does not contain EMG electrode signals, so continue
+        continue;
     end
-
-    % store the signal & informations
-    unique_num = sprintf('%03d', EMG_idx);
-    ref_signal = EMG_signal * hFile.Entity(idx).Scale;
-    CEMG.(['CEMG_' unique_num]) = resample(ref_signal, down_sampleRate, original_sampleRate);
-    CEMG.(['CEMG_' unique_num '_KHz']) = down_sampleRate / 1000;
-    CEMG.(['CEMG_' unique_num '_KHz_Orig']) = down_sampleRate / 1000;
-
-    EMG_idx = EMG_idx + 1;
+    EMG_id = 1;
+    for idx = start_num:2:end_num-1
+        try
+            % get EMG signal from both electrode
+            [~, ~, EMG_signal1] = ns_GetAnalogData(hFile, idx, 1, 1e10);
+            [~, ~, EMG_signal2] = ns_GetAnalogData(hFile, idx+1, 1, 1e10);
+        catch
+            % For some reason, the signal obtained from the binary file is empty, so the data from this file is discarded
+            break;
+        end
+        
+        % take the difference
+        EMG_signal = transpose(EMG_signal1 - EMG_signal2);
+    
+        % compile the information of record(samplingRate, rosolution, etc...)
+        if idx == start_num
+            [~, record_info] = ns_GetAnalogInfo(hFile, idx);
+            original_sampleRate = record_info.SampleRate;
+            amplitude_unit = record_info.Units;
+            muscle_num = ((end_num - start_num) + 1) / 2;
+            EMG_element_cell{file_id} = cell(muscle_num, 1);
+            record_time_element(file_id) = length(EMG_signal) / original_sampleRate;
+        end
+    
+        % store the signal & informations
+        ref_signal = EMG_signal * hFile.Entity(idx).Scale;
+        formatted_number = sprintf('%03d', EMG_id);
+        CEMG.(['CEMG_' formatted_number '_KHz']) = down_sampleRate / 1000;
+        CEMG.(['CEMG_' formatted_number '_KHz_Orig']) = down_sampleRate / 1000;
+        EMG_element_cell{file_id}{EMG_id} = resample(ref_signal, down_sampleRate, original_sampleRate);
+        EMG_id = EMG_id + 1;
+    end
 end
+not_empty_file_indices = find(~cellfun('isempty', EMG_element_cell));
+validate_EMG_element_cell = EMG_element_cell(not_empty_file_indices);
+validate_EMG_files_name = arrayfun(@(x) x.name, EMG_files(not_empty_file_indices), 'UniformOutput', false);
+validate_record_time_element = record_time_element(not_empty_file_indices);
+record_time = sum(validate_record_time_element);
+
+% concatenate EMG data
+for EMG_id = 1:muscle_num
+    concatenatedData = cell(1, length(validate_EMG_element_cell));
+    for concat_id = 1:length(validate_EMG_element_cell)
+        concatenatedData{concat_id} = validate_EMG_element_cell{concat_id}{EMG_id};
+    end
+    CEMG.(['CEMG_' sprintf('%03d', EMG_id)]) = cell2mat(concatenatedData);
+end
+
+disp(['Åy' exp_day '_validate_file:  ' strjoin(validate_EMG_files_name, ' and ') 'Åz']);
 end

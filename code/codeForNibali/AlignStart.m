@@ -20,28 +20,27 @@ TimeRange: [double array], time data both start and end of recording
 signal_struct: [struct], struct to store the necessary data which is created in this function
 
 [detail of this process(japanese)]
-1. CTTL_001は, recordの開始と終了のセレクタスイッチに対応している
-(途中から, AlphaOmegaの方がセレクタスイッチで記録の開始と終了ができなくなったので、AlphaOmegaは先に手動で
-記録を開始して、手動で終了する必要があった。そのため、EMGとタイミングを合わせるためにセレクタスイッチの開始
+1. CTTL_001は, recordの'開始'と'終了'のトグルスイッチに対応している
+(途中から, AlphaOmegaの方がトグルスイッチで記録の開始と終了ができなくなったので、AlphaOmegaは手動で
+記録を開始して、手動で終了する必要があった。そのため、EMGとタイミングを合わせるためにトグルスイッチの開始
 と終了のタイミングであるCTTL_001の入ったタイミングで合わせるようにした(この関数を作った))
 
 2. つまり、EMGの最初のサンプルと, CTTL_001の最初のタイミングが一致するように, AlphaOmegaのデータをトリミングする必要があり
-　 同様にして終了タイミング以降のAOfileの内容も削除する必要がある
+　 同様にして終了タイミング以降のAlphaOmegafileの内容も削除する必要がある
 
 [caution(japanese)]
 終わりと始まりが一致している時はtrash_data_timeが0になるので、とりあえずこの関数を使っておけば問題ない
 
 [Improvement point]
-CTTL_001がセレクタスイッチのon offに必ずしも対応するわけではないので、引数に設定する
+CTTL_001がトグルスイッチのon offに必ずしも対応するわけではないので、引数に設定する
 %}
 
 function [TimeRange, signal_struct] = AlignStart(all_data_cell, signal_struct, downHz, record_time, exp_day, signal_name, ref_id, task_start_time) 
-    AO_file_num = length(all_data_cell);
-    sel_signal = cell(1, AO_file_num);
+    AlphaOmega_file_num = length(all_data_cell);
+    sel_signal = cell(1, AlphaOmega_file_num);
     ref_data_name = [signal_name '_' sprintf('%03d', ref_id)];
 
-    for file_idx = 1:AO_file_num 
-        
+    for file_idx = 1:AlphaOmega_file_num 
         try
             ref_data = all_data_cell{file_idx}.(ref_data_name);
         catch
@@ -80,7 +79,7 @@ function [TimeRange, signal_struct] = AlignStart(all_data_cell, signal_struct, d
         elseif all_data_cell{file_idx}.([ref_data_name '_TimeEnd']) > TimeRange(2) 
             % trash(align end)
             trash_data_time =  all_data_cell{file_idx}.([ref_data_name '_TimeEnd']) - TimeRange(2); 
-            if and(strcmp(signal_name, 'CAI'), file_idx == AO_file_num)
+            if and(strcmp(signal_name, 'CAI'), file_idx == AlphaOmega_file_num)
                 disp([exp_day ' TrashTime(after_end): ' num2str(trash_data_time) '[s]']);
             end
             trash_sample = round(downHz * trash_data_time);
