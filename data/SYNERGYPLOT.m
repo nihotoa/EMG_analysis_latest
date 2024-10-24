@@ -25,9 +25,9 @@ select_synergy_num_type == 'auto'で解析を行うためには,先にFindOptima
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkeyname = 'Ni'; % prefix that each monkey has uniquery
-select_synergy_num_type = 'auto';  % 'manual' / 'auto'
-synergy_num_list = [3, 4]; % (if select_synergy_num_type == 'manual')which synergy number of synergies to plot(Please decide based onf VAF results)
+monkeyname = 'Hu'; % prefix that each monkey has uniquery
+select_synergy_num_type = 'manual';  % 'manual' / 'auto'
+synergy_num_list = [5]; % (if select_synergy_num_type == 'manual')which synergy number of synergies to plot(Please decide based onf VAF results)
 plot_clustering = 1; % Whether you want to plot & save heatmap of cosine distance and the clustering result.
 nmf_fold_name = 'new_nmf_result'; 
 each_plot = 0; % whether you want to plot spatial_pattern figure for each synergy
