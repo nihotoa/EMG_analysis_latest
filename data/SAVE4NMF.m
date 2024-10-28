@@ -45,7 +45,7 @@ standard_fold_path = fullfile(pwd, real_name, 'easyData');
 disp(['Please select all "' prefix '~_standard.mat"']);
 standard_file_list = uigetfile(standard_fold_path, 'Select One or More Files', 'MultiSelect', 'on');
 
-if standard_file_list == 0
+if isequal(standard_file_list, 0)
     disp('user press "cancel" button');
     return;
 end

@@ -65,6 +65,10 @@ end
 realname = get_real_name(monkeyname);
 base_dir = fullfile(pwd, realname, nmf_fold_name);
 standard_data_name_list = getGroupedDates(base_dir, monkeyname, term_select_type, term_type);
+if isempty(standard_data_name_list)
+    disp('user pressed "cancel" button');
+    return;
+end
 
 [~, date_num] = size(standard_data_name_list);
 prefix_date_name_list = strrep(standard_data_name_list, '_standard','');

@@ -36,6 +36,11 @@ nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 realname = get_real_name(monkeyname);
 base_dir = fullfile(pwd, realname, nmf_fold_name);
 Allfiles_S = getGroupedDates(base_dir, monkeyname, term_select_type, term_type);
+if isempty(Allfiles_S)
+    disp('user pressed "cancel" button');
+    return;
+end
+
 Allfiles = strrep(Allfiles_S, '_standard','');
 AllDays = strrep(Allfiles, monkeyname, '');
 day_num = length(Allfiles_S);

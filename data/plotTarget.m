@@ -104,7 +104,7 @@ end
 
 % compile a list of names of files containing data to be plotted
 [Allfiles_S, select_folder_path] = getFileName(plot_type, realname);
-if not(iscell(Allfiles_S))
+if isequal(Allfiles_S, 0)
     disp('user press "cancel" button')
     return;
 end

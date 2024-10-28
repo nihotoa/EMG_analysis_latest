@@ -54,8 +54,12 @@ end
 % get the list of day
 disp('Please select all date folder you want to analyze')
 InputDirs   = uiselect(dirdir(fullfile(base_dir, 'new_nmf_result')), 1, 'Please select all date folder you want to analyze');
-days = get_days(InputDirs);
+if isempty(InputDirs)
+    disp('user press "cancel" button');
+    return;
+end
 
+days = get_days(InputDirs);
 if strcmp(select_synergy_num_type, 'auto')
     optimal_synergy_num_list = zeros(length(days), 1);
     field_name_list = fieldnames(optimal_synergy_num_struct);

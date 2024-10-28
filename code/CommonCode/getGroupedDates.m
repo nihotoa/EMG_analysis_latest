@@ -29,7 +29,6 @@ switch term_select_type
         disp('Please select date folders which contains the VAF data you want to plot');
         Allfiles_S = uiselect(dirdir(base_dir),1,'Please select date folders which contains the VAF data you want to plot');
         if isempty(Allfiles_S)
-            disp('user pressed "cancel" button');
             return;
         end
 end

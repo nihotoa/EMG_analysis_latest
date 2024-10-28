@@ -19,7 +19,7 @@ post: SYNERGYPLOT.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-term_select_type = 'auto'; %'auto' / 'manual'
+term_select_type = 'manual'; %'auto' / 'manual'
 term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
 monkeyname = 'F';
 use_style = 'test'; % test/train
@@ -33,6 +33,10 @@ nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 realname = get_real_name(monkeyname);
 base_dir = fullfile(pwd, realname, nmf_fold_name);
 Allfiles_S = getGroupedDates(base_dir, monkeyname, term_select_type, term_type);
+if isempty(Allfiles_S)
+    disp('user pressed "cancel" button');
+    return;
+end
 
 % create the data array of VAF & date array of spatial pattern
 % some dates may not have synergy data files, so the method of appending to an empty cell array is adopted
