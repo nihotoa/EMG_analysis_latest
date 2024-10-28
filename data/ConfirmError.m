@@ -28,14 +28,14 @@ post: nothing
 clear;
 
 %% set param
-monkeyname = 'F'; % 'F', 'Ni'
+monkeyname = 'Hu'; % 'F', 'Ni'
 
 % setting of threshold
-average_time_threshold = 10;
-std_time_threshold = 5;
+average_time_threshold = 2;
+std_time_threshold = 1;
 normalized_time_threshold = 1;
-scale_FontSize = 12;
-label_FontSize = 15;
+scale_FontSize = 10;
+label_FontSize = 10;
 
 %% code section
 warning('off')
@@ -52,11 +52,18 @@ switch monkeyname
     case 'Ni'
         timing_name = {'task start', 'grasp on', 'grasp off', 'task end'};
         TT_surgery_day = '220530';
+    case 'Hu'
+        timing_name = {'task start', 'drawer on', 'drawer off', 'food on', 'food off', 'task end'};
+        TT_surgery_day = '241020';
 end
 
 % get the list of directory name
 disp('【Please select all day folders you want to analyze (Multiple selections are possible)】)')
 InputDirs   = uiselect(dirdir(base_dir),1,'Please select folders which contains the data you want to analyze');
+if isempty(InputDirs)
+    disp('user pressed "cancel" button');
+    return
+end
 
 % make struct to store the data
 trial_data_str = struct();
@@ -174,6 +181,8 @@ save_file_name = ['task_time_analysis(' num2str(length(elapsed_day_list)) 'days_
 
 saveas(gcf, fullfile(save_fold_path, [save_file_name '.fig']));
 saveas(gcf, fullfile(save_fold_path, [save_file_name '.png']));
+disp(['figure is saved as ' fullfile(save_fold_path, [save_file_name '.fig'])]);
+disp(['figure is saved as ' fullfile(save_fold_path, [save_file_name '.png'])]);
 
 close all;
 warning('on');
