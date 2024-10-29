@@ -32,7 +32,6 @@ synergy_files = get_synergy_files_name(fold_path, fold_name) ;
 % load file
 if isempty(synergy_files)
     error('synergy_files are not found. Please run "makeEMFNMF_btcOya.m" first');
-    return
 else
     % load both of NMF result file
     for ii = 1:length(synergy_files)
@@ -79,16 +78,35 @@ zeroBar = zeros(EMG_num,1);
 aveW = zeros(EMG_num,pcNum);
 std_value = cell(1, pcNum);
 
+% make coefficient matrix for normalizing W(making it a unit vector)
+Wt_coefficient_matrix = cell(size(Wt));
+normalized_Wt = cell(size(Wt));
+for session_id = 1:length(Wt)
+    ref_session_Wt = Wt{session_id};
+    [~, synergy_num] = size(ref_session_Wt);
+    normalized_Wt{session_id} = zeros(size(ref_session_Wt));
+    Wt_coefficient_matrix{session_id} = zeros(1, synergy_num);
+    for synergy_id = 1:synergy_num
+        ref_W = ref_session_Wt(:, synergy_id);
+        W_coefficient = norm(ref_W);
+        Wt_coefficient_matrix{session_id}(synergy_id) = W_coefficient;
+        normalized_Wt{session_id}(:, synergy_id) = ref_W / W_coefficient;
+    end
+end
+
+
 % subplot for each synergy
 for i = 1:pcNum
     % organize value to be plotted
     plotted_W = nan(EMG_num, kf);
     for jj = 1:kf
-        plotted_W(:, jj) = Wt{jj}(:, i);
+        plotted_W(:, jj) = normalized_Wt{jj}(:, i);
     end
     
     % calc the mean value of test data
-    aveW(:, i) = mean(plotted_W, 2);
+    temp = mean(plotted_W, 2);
+    ave_normalized_W = temp / norm(temp);
+    aveW(:, i) = ave_normalized_W;
     std_value{1,i} = std(plotted_W, 0, 2);
 
     % barplot
@@ -96,7 +114,7 @@ for i = 1:pcNum
     bar(x,[zeroBar plotted_W]);
 
     % decoration
-    ylim([0 3.5]);
+    ylim([0 1]);
     title([fold_name ' W pcNum = ' sprintf('%d',pcNum)]);
 end
 
@@ -112,9 +130,9 @@ if save_data == 1
     comment = 'this data will be used for dispW';
     switch synergy_num_type
         case 'manual'
-            save(fullfile(save_fold_W, [fold_name '_aveW_' sprintf('%d',pcNum) '.mat']), 'aveW','k_arr','pcNum','fold_name','comment');
+            save(fullfile(save_fold_W, [fold_name '_aveW_' sprintf('%d',pcNum) '.mat']), 'Wt_coefficient_matrix', 'aveW','k_arr','pcNum','fold_name','comment');
         case 'auto'
-            save(fullfile(save_fold_W, [fold_name '_aveW_appropriateNum.mat']), 'aveW','k_arr','pcNum','fold_name','comment');
+            save(fullfile(save_fold_W, [fold_name '_aveW_appropriateNum.mat']), 'Wt_coefficient_matrix', 'aveW','k_arr','pcNum','fold_name','comment');
     end
 end
 
@@ -139,7 +157,7 @@ for i = 1:pcNum
     er.LineStyle = 'none';
 
     % decoration
-    ylim([0 3.5]);
+    ylim([0 1]);
     title([fold_name ' aveW pcNum = ' sprintf('%d',pcNum)]);
 end
 
@@ -163,7 +181,7 @@ if each_plot == 1
         er.LineStyle = 'none';
 
         % decoration
-        ylim([0 3.5]);
+        ylim([0 1]);
         title([fold_name ' aveW pcNum = ' sprintf('%d',pcNum) ' synergy' num2str(i)]);
 
         % save figure
@@ -196,7 +214,11 @@ H_data = test.H(pcNum, :);
 All_H = cell(1, kf);
 for ii = 1:kf
     sort_order = k_arr(:, ii);
-    All_H{ii} = H_data{ii}(sort_order, :);
+    for jj = 1:length(sort_order)
+        sort_id = sort_order(jj);
+        All_H{ii}(jj, :) = H_data{ii}(sort_id, :) * Wt_coefficient_matrix{ii}(jj);
+    end
+% All_H{ii} = H_data{ii}(sort_order, :);
 end
 All_H = cell2mat(All_H);
 
@@ -223,7 +245,7 @@ for ii=1:pcNum
       aveH(ii, :) = ((aveH(ii, :) .* (jj-1)) + pullData(jj,:)) ./ jj ;
 
       % decoration
-      ylim([0 2]);
+      ylim([0 8]);
       hold on;
    end
 end
@@ -235,9 +257,9 @@ if save_data == 1
     comment = 'this data will be used for dispH';
     switch synergy_num_type
         case 'manual'
-            save(fullfile(save_fold_H, [fold_name '_aveH3_' sprintf('%d',pcNum) '.mat']), 'aveH','k_arr','pcNum','fold_name','comment');
+            save(fullfile(save_fold_H, [fold_name '_aveH3_' sprintf('%d',pcNum) '.mat']), 'Wt_coefficient_matrix', 'aveH','k_arr','pcNum','fold_name','comment');
         case 'auto'
-            save(fullfile(save_fold_H, [fold_name '_aveH3_appropriateNum.mat']), 'aveH','k_arr','pcNum','fold_name','comment');
+            save(fullfile(save_fold_H, [fold_name '_aveH3_appropriateNum.mat']), 'Wt_coefficient_matrix', 'aveH','k_arr','pcNum','fold_name','comment');
     end
 end
 
@@ -253,7 +275,7 @@ close all;
  for j=1:pcNum
      subplot(pcNum,1,j);
      plot(aveH(j,:), 'r');
-     ylim([0 2]);
+     ylim([0 8]);
      hold on;
  end
 

@@ -78,8 +78,19 @@ EMG_num = length(EMGs);
 %% Reorder the synergies to match the synergies on the first day.
 
 % align the order of synergies
-if length(days) > 1
-    [Wt, k_arr] = OrderSynergy(EMG_num, syn_num, [], monkeyname, days, base_dir, plot_clustering_result, term_type);
+% 1. load W_data
+if day_num > 1
+    W_data = cell(1, day_num);
+    for date_id = 1:day_num
+        ref_day = days(date_id);
+        common_name = [monkeyname num2str(ref_day)];
+        use_W_folder_path = fullfile(base_dir, [common_name '_standard'], [common_name '_syn_result_' num2str(EMG_num)], [common_name '_W']);
+        use_W_file_name = [common_name '_aveW_' num2str(syn_num)];
+        load(fullfile(use_W_folder_path, use_W_file_name), 'aveW');
+        W_data{date_id} = aveW;
+        clear aveW;
+    end
+    [Wt, k_arr] = OrderSynergy(EMG_num, syn_num, W_data, monkeyname, days, base_dir, plot_clustering_result, term_type);
 else
     k_arr = transpose(1:syn_num);
     W_data =  cell(1,1);
@@ -92,7 +103,17 @@ end
 if and(strcmp(term_select_type, 'auto'), strcmp(term_type, 'post'))
     % align the order of synergies with the 1st day of 'pre'
     compair_days = [pre_days(1); days(1)];
-    [~, order_list] = OrderSynergy(EMG_num, syn_num, [], monkeyname, compair_days, base_dir, plot_clustering_result);
+    representative_data = cell(1, 2);
+    for date_id = 1:2
+        ref_day = compair_days(date_id);
+        common_name = [monkeyname num2str(ref_day)];
+        use_W_folder_path = fullfile(base_dir, [common_name '_standard'], [common_name '_syn_result_' num2str(EMG_num)], [common_name '_W']);
+        use_W_file_name = [common_name '_aveW_' num2str(syn_num)];
+        load(fullfile(use_W_folder_path, use_W_file_name), 'aveW');
+        representative_data{date_id} = aveW;
+        clear aveW;
+    end
+    [~, order_list] = OrderSynergy(EMG_num, syn_num, representative_data, monkeyname, compair_days, base_dir, plot_clustering_result);
     synergy_order = order_list(:, 2);
 
     % align with using 'synergy_order'
@@ -132,7 +153,7 @@ for synergy_id=1:syn_num
     bar(x,[zeroBar plotted_W],'b','EdgeColor','none');
 
     % decoration
-    ylim([0 2.5]);
+    ylim([0 1]);
     a = gca;
     a.FontSize = 20;
     a.FontWeight = 'bold';

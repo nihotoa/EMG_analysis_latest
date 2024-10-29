@@ -70,7 +70,7 @@ if isempty(standard_data_name_list)
     return;
 end
 
-[~, date_num] = size(standard_data_name_list);
+date_num = length(standard_data_name_list);
 prefix_date_name_list = strrep(standard_data_name_list, '_standard','');
 date_name_list = strrep(prefix_date_name_list, monkeyname, '');
 
@@ -107,14 +107,28 @@ for date_id =1:date_num %session loop
     end
 
     % Get 'test' data on the number of synergies of the target & Concatenate all 'test' data for each synergy.
-    synergy_data = load(fullfile(synergy_data_fold_path, synergy_data_file_path), 'test'); 
+    synergy_data = load(fullfile(synergy_data_fold_path, synergy_data_file_path), 'test');
+    load(fullfile(H_synergy_data_fold_path, H_synergy_data_file_name), 'Wt_coefficient_matrix');
     H_data = synergy_data.test.H; % Data on synergy_H at each synergy number.
+    sorted_W_coefficient_matrix = Wt_coefficient_matrix;
     [~, section_num] = size(order_in_section_struct.k_arr);
     use_H_data = H_data(synergy_num, :);
     alt_H = cell(1, section_num);
+    %{
     for section_id = 1:section_num
         ref_section_order = order_in_section_struct.k_arr(:, section_id);
         alt_H{section_id} = use_H_data{section_id}(ref_section_order, :);
+    end
+    alt_H = cell2mat(alt_H);
+    %}
+
+    for section_id = 1:section_num
+        sort_order = order_in_section_struct.k_arr(:, section_id);
+        for jj = 1:length(sort_order)
+            sort_id = sort_order(jj);
+            alt_H{section_id}(jj, :) = use_H_data{section_id}(sort_id, :) * sorted_W_coefficient_matrix{section_id}(jj);
+        end
+    % alt_H{section_id} = use_H_data{section_id}(sort_order, :);
     end
     alt_H = cell2mat(alt_H);
 
@@ -165,25 +179,6 @@ for date_id = 1:date_num
       range_struct.(['Range' num2str(timing_id)]) = range_struct.(['trig' num2str(timing_id) '_per']);
       ResAVE.(['tData' num2str(timing_id) '_AVE']) = Res.(['tData' num2str(timing_id) '_AVE']);
   end
-   %{
-   range_struct.Ld1 = length(Res.tData1_AVE{1});
-   range_struct.Range1 = range_struct.trig1_per;
-   range_struct.Ld2 = length(Res.tData2_AVE{1});
-   range_struct.Range2 = range_struct.trig2_per;
-   range_struct.Ld3 = length(Res.tData3_AVE{1});
-   range_struct.Range3 = range_struct.trig3_per;
-   range_struct.Ld4 = length(Res.tData4_AVE{1});
-   range_struct.Range4 = range_struct.trig4_per;
-   range_struct.LdTask = length(Res.tDataTask_AVE{1});
-   range_struct.RangeTask = range_struct.task_per;
-
-   % Store results in a structure ''ResAVE
-   ResAVE.tData1_AVE = Res.tData1_AVE;
-   ResAVE.tData2_AVE = Res.tData2_AVE;
-   ResAVE.tData3_AVE = Res.tData3_AVE;
-   ResAVE.tData4_AVE = Res.tData4_AVE;
-   ResAVE.tDataTask_AVE = Res.tDataTask_AVE;
-   %}
    
    % save data
    if save_data == 1

@@ -25,7 +25,7 @@ monkeyname = 'F';
 use_style = 'test'; % test/train
 VAF_plot_type = 'stack'; %'stack' or 'mean'
 VAF_threshold = 0.8; % param to draw threshold_line
-coffen_coefficient_threshold = 0.95;
+coffen_coefficient_threshold = 0.90;
 font_size = 20; % Font size of text in the figure
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
