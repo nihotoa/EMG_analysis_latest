@@ -46,12 +46,12 @@ figure, データに限らず、何かしらセーブしたらログ出すように変更して。
 clear;
 %% set param
 monkeyname = 'Hu'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
-plot_all = 1; % whether you want to plot figure focus on 'whole task'
+plot_all = 0; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
 plot_type = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
 pColor = 'K';  % select 'K'(black plot) or 'C'(color plot) 
 normalizeAmp = 0; % normalize Amplitude a
-YL = inf; % (if nomalize Amp == 0) ylim of graph
+YL = 5; % (if nomalize Amp == 0) ylim of graph
 LineW = 1.5; %0.1;a % width of plot line 
 timing_name_list = ["Task start ", "Drawer on", "Drawer off", "Grasp on ", "Grasp off ", "Task End"];  % this is used for titling  (ex.) ["Lever1 on ", "Lever1 off ", "Lever2 on ", "Lever2 off"], ["Task start ", "Grasp on ", "Grasp off ", "Task End"]; , ["Task start ", "Drawer on", "Drawer off", "Grasp on ", "Grasp off ", "Task End"];  
 row_num = 4; % how many rows to display in one subplot figure
@@ -334,11 +334,14 @@ if plot_each_timing == 1
         data_str.timing_name = timing_name;
         data_str.plotWindow = plotWindow;
         data_str.Pdata = Pdata;
-
+        if timing_id == 1
+            max_amplitude_list = getMaxAmplitudeList(Pdata.plotData_sel);
+        end
+        
         % plot figures
         for idx = 1:length(fig_type_array)
             fig_type = fig_type_array{idx};
-            figure_str.(fig_type) = plot_figures(figure_str.(fig_type), data_str, 'each_timing', fig_type);
+            figure_str.(fig_type) = plot_figures(figure_str.(fig_type), data_str, 'each_timing', fig_type, max_amplitude_list);
         end
     end
 
@@ -404,4 +407,19 @@ function [TermDays, term_type] = extract_post_days(TT_day, folder_path, plot_typ
         term_type = 'post';
     end
     TermDays = get_specific_term(date_list, term_type, TT_day);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function max_amplitude_list = getMaxAmplitudeList(plotData)
+session_num = length(plotData);
+EMG_num = length(plotData{1});
+max_amplitude_list = zeros(EMG_num, 1);
+for EMG_id = 1:EMG_num
+    ref_data = cell(1, session_num);
+    for session_id = 1:session_num
+        ref_data{session_id} = plotData{session_id}{EMG_id};
+    end
+    ref_data = cell2mat(ref_data);
+    max_amplitude_list(EMG_id) = max(ref_data);
+end
 end
