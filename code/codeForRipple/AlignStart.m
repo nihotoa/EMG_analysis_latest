@@ -95,6 +95,8 @@ function [TimeRange, signal_struct] = AlignStart(all_data_cell, signal_struct, d
 
     % add necessary information into 'signal struct'
     signal_struct.(ref_data_name) = signal_data;
+    signal_struct.([ref_data_name '_BitResolution']) = all_data_cell{1}.([ref_data_name '_BitResolution']);
+    signal_struct.([ref_data_name '_Gain']) = all_data_cell{1}.([ref_data_name '_Gain']);
     signal_struct.([ref_data_name '_KHz']) = downHz / 1000;
     signal_struct.([ref_data_name '_KHz_Orig']) = downHz / 1000;
     signal_struct.([ref_data_name '_TimeBegin']) = TimeRange(1, 1);
