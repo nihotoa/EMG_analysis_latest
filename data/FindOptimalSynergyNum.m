@@ -19,52 +19,31 @@ post: SYNERGYPLOT.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-term_type = 'all'; %pre / post / all 
-monkeyname = 'Ni';
+term_select_type = 'manual'; %'auto' / 'manual'
+term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
+monkeyname = 'F';
 use_style = 'test'; % test/train
 VAF_plot_type = 'stack'; %'stack' or 'mean'
 VAF_threshold = 0.8; % param to draw threshold_line
-coffen_coefficient_threshold = 0.95;
+coffen_coefficient_threshold = 0.90;
 font_size = 20; % Font size of text in the figure
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
 %% code section
-[realname] = get_real_name(monkeyname);
+realname = get_real_name(monkeyname);
 base_dir = fullfile(pwd, realname, nmf_fold_name);
-
-% Create a list of folders containing the synergy data for each date.
-data_folders = dir(base_dir);
-folderList = {data_folders([data_folders.isdir]).name};
-Allfiles_S = folderList(startsWith(folderList, monkeyname));
-
-% Further refinement by term_type
-switch monkeyname
-    case {'Ya', 'F'}
-        TT_day = '20170530';
-    case 'Ni'
-        TT_day = '20220530';
+Allfiles_S = getGroupedDates(base_dir, monkeyname, term_select_type, term_type);
+if isempty(Allfiles_S)
+    disp('user pressed "cancel" button');
+    return;
 end
-
-[prev_last_idx, post_first_idx] = get_term_id(Allfiles_S, 1, TT_day);
-
-switch term_type
-    case 'pre'
-        Allfiles_S = Allfiles_S(1:prev_last_idx);
-    case 'post'
-        Allfiles_S = Allfiles_S(post_first_idx:end);
-    case 'all'
-        % no processing
-end
-
-Allfiles = strrep(Allfiles_S, '_standard','');
-AllDays = strrep(Allfiles, monkeyname, '');
-day_num = length(Allfiles_S);
 
 % create the data array of VAF & date array of spatial pattern
 % some dates may not have synergy data files, so the method of appending to an empty cell array is adopted
 VAF_data_list = {};
 spatial_pattern_data_list = {};
 eliminated_date_list = {};
+day_num = length(Allfiles_S);
 
 for day_id = 1:day_num
     VAF_data_path = fullfile(base_dir, Allfiles_S{day_id}, [Allfiles_S{day_id} '.mat']);

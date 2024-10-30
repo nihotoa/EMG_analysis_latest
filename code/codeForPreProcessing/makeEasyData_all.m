@@ -214,6 +214,8 @@ if make_Timing == 1
        otherwise %if reference monkey is not SesekiR or Wasa. (if you don't have to chage to fotocellÅj
             [Timing,Tp,Tp3] = makeEasyTiming(monkeyname,xpdate,file_num,downdata_to,TimeRange_EMG);
    end
+   success_timing = transpose(Tp(:, 1:end-1));
+   success_timing = [success_timing; success_timing(end, :) - success_timing(1, :)];
 end
 
 %% get data for Cross-Talk check (getCTcheck)
@@ -249,6 +251,9 @@ if save_E == 1
                                                     'Timing','Tp','Tp3','TTLd','TTLu');
     end
     save(fullfile(save_fold_path, [monkeyname xpdate '_CTcheckData.mat']), 'CTcheck');
+    if exist("success_timing")
+        save(fullfile(save_fold_path, 'success_timing.mat'), 'success_timing');
+    end
     disp(['FINISH TO MAKE & SAVE ' monkeyname xpdate 'file[' sprintf('%d',file_num(1)) ',' sprintf('%d',file_num(end)) ']']);
 else
    disp(['NOT SAVE ' monkeyname xpdate 'file[' sprintf('%d',file_num(1)) ',' sprintf('%d',file_num(end)) ']']);

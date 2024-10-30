@@ -35,47 +35,31 @@ cosine distanceとclusteringは他の関数でも使うので、localじゃなくて、外部関数とし
 clear;
 
 %% set param
-monkeyname = '';  % Name prefix of the folder containing the synergy data for each date
-term_type = 'pre';  % Which period synergies do you want to plot?
-syn_num = 4; % number of synergy you want to analyze
+term_select_type = 'manual'; %'auto' / 'manual'
+term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
+monkeyname = 'Hu';
+syn_num = 5; % number of synergy you want to analyze
 plot_clustering_result = 0; % whether to plot cosine distance & dendrogram of hierarcical clustering
 save_WDaySynergy = 1;% Whether to save synergy W (to be used for ANOVA)
 save_data = 1; % Whether to store data on synergy orders in 'order_tim_list' folder (should basically be set to 1).
 save_fig = 1; % Whether to save the plotted synergy W figure
-synergy_combination = 'prox-prox'; % dist-dist/prox-dist/all etc..
+synergy_combination = 'all'; % dist-dist/prox-dist/all etc..
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
 %% code section
-[realname] = get_real_name(monkeyname);
+realname = get_real_name(monkeyname);
 base_dir = fullfile(pwd, realname, nmf_fold_name);
-
-% Create a list of folders containing the synergy data for each date.
-data_folders = dir(base_dir);
-folderList = {data_folders([data_folders.isdir]).name};
-Allfiles_S = folderList(startsWith(folderList, monkeyname));
-
-switch monkeyname
-    case {'Ya', 'F'}
-        TT_day = '20170530';
-    case 'Ni'
-        TT_day = '20220530';
-    case 'Se'
-        TT_day = '20200121';
-end
-[prev_last_idx, post_first_idx] = get_term_id(Allfiles_S, 1, TT_day);
-
-switch term_type
-    case 'pre'
-        Allfiles_S = Allfiles_S(1:prev_last_idx);
-    case 'post'
-        pre_file_list = Allfiles_S(1:prev_last_idx);
-        Allfiles_S = Allfiles_S(post_first_idx:end);
+Allfiles_S = getGroupedDates(base_dir, monkeyname, term_select_type, term_type);
+if isempty(Allfiles_S)
+    disp('user pressed "cancel" button');
+    return;
 end
 
 % extract only date portion from 'Allfiles_S' and store it into a list
 days = get_days(Allfiles_S);
 day_num = length(days);
-if strcmp(term_type, 'post')
+if and(strcmp(term_select_type, 'auto'), strcmp(term_type, 'post'))
+    pre_file_list = getGroupedDates(base_dir, monkeyname, term_select_type, 'pre');
     pre_days = get_days(pre_file_list);
 end
 
@@ -94,12 +78,42 @@ EMG_num = length(EMGs);
 %% Reorder the synergies to match the synergies on the first day.
 
 % align the order of synergies
-[Wt, k_arr] = OrderSynergy(EMG_num, syn_num, [], monkeyname, days, base_dir, plot_clustering_result, term_type);
+% 1. load W_data
+if day_num > 1
+    W_data = cell(1, day_num);
+    for date_id = 1:day_num
+        ref_day = days(date_id);
+        common_name = [monkeyname num2str(ref_day)];
+        use_W_folder_path = fullfile(base_dir, [common_name '_standard'], [common_name '_syn_result_' num2str(EMG_num)], [common_name '_W']);
+        use_W_file_name = [common_name '_aveW_' num2str(syn_num)];
+        load(fullfile(use_W_folder_path, use_W_file_name), 'aveW');
+        W_data{date_id} = aveW;
+        clear aveW;
+    end
+    [Wt, k_arr] = OrderSynergy(EMG_num, syn_num, W_data, monkeyname, days, base_dir, plot_clustering_result, term_type);
+else
+    k_arr = transpose(1:syn_num);
+    W_data =  cell(1,1);
+    % Load the W synergy data created by SYNERGYPLOT
+    synergy_W_file_path = fullfile(base_dir, [monkeyname num2str(days) '_standard'], [monkeyname num2str(days) '_syn_result_' sprintf('%d',EMG_num)], [monkeyname num2str(days) '_W'], [monkeyname num2str(days) '_aveW_' sprintf('%d',syn_num) '.mat']);
+    load(synergy_W_file_path, 'aveW');
+    Wt{1} = aveW;
+end
 
-if strcmp(term_type, 'post')
+if and(strcmp(term_select_type, 'auto'), strcmp(term_type, 'post'))
     % align the order of synergies with the 1st day of 'pre'
     compair_days = [pre_days(1); days(1)];
-    [~, order_list] = OrderSynergy(EMG_num, syn_num, [], monkeyname, compair_days, base_dir, plot_clustering_result);
+    representative_data = cell(1, 2);
+    for date_id = 1:2
+        ref_day = compair_days(date_id);
+        common_name = [monkeyname num2str(ref_day)];
+        use_W_folder_path = fullfile(base_dir, [common_name '_standard'], [common_name '_syn_result_' num2str(EMG_num)], [common_name '_W']);
+        use_W_file_name = [common_name '_aveW_' num2str(syn_num)];
+        load(fullfile(use_W_folder_path, use_W_file_name), 'aveW');
+        representative_data{date_id} = aveW;
+        clear aveW;
+    end
+    [~, order_list] = OrderSynergy(EMG_num, syn_num, representative_data, monkeyname, compair_days, base_dir, plot_clustering_result);
     synergy_order = order_list(:, 2);
 
     % align with using 'synergy_order'
@@ -139,7 +153,7 @@ for synergy_id=1:syn_num
     bar(x,[zeroBar plotted_W],'b','EdgeColor','none');
 
     % decoration
-    ylim([0 2.5]);
+    ylim([0 1]);
     a = gca;
     a.FontSize = 20;
     a.FontWeight = 'bold';

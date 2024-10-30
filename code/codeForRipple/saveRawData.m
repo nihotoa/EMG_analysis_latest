@@ -43,7 +43,10 @@ clear CEMG_struct CAI_struct CRAW_struct CLFP_struct CTTL_struct;
 
 % save data
 save_file_path = fullfile(base_dir, [monkeyname exp_day(3:end) '-' sprintf('%04d', 1) '.mat']);
+all_data_file_path = fullfile(base_dir, ['AllData_' monkeyname exp_day '.mat']); % data to provde to Roland.  contents is same as save_file_path
 save(save_file_path, 'CEMG*', 'CAI*', 'CRAW*', 'CLFP*', 'CTTL*');
+save(all_data_file_path, 'CEMG*', 'CAI*', 'CRAW*', 'CLFP*', 'CTTL*'); 
 disp(['[saved]: ' save_file_path])
+disp(['[saved]: ' all_data_file_path])
 end
 

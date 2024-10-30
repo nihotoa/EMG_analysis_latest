@@ -22,7 +22,7 @@ post:filterBat_SynNMFPre.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-real_name = 'Nibali'; % Name of the directory containing the data you want to analyze
+real_name = 'Hugo'; % Name of the directory containing the data you want to analyze
 task = 'standard'; % you don't need to change this parameter
 
 % parameters used in local function(MakeData4nmf)
@@ -44,6 +44,11 @@ prefix = string_parts{1};
 standard_fold_path = fullfile(pwd, real_name, 'easyData');
 disp(['Please select all "' prefix '~_standard.mat"']);
 standard_file_list = uigetfile(standard_fold_path, 'Select One or More Files', 'MultiSelect', 'on');
+
+if isequal(standard_file_list, 0)
+    disp('user press "cancel" button');
+    return;
+end
 
 % count the number of sessions
 if iscell(standard_file_list)
@@ -178,6 +183,24 @@ switch monkeyname
         EMGs{14,1}= 'FPL';
         EMGs{15,1}= 'Biceps';
         EMGs{16,1}= 'Triceps';
+    case 'Hu'
+        EMGs=cell(16,1) ;
+        EMGs{1,1}= 'EDC';
+        EMGs{2,1}= 'ED23';
+        EMGs{3,1}= 'ED45';
+        EMGs{4,1}= 'ECR';
+        EMGs{5,1}= 'ECU';
+        EMGs{6,1}= 'FDI';
+        EMGs{7,1}= 'ADP';
+        EMGs{8,1}= 'ADM';
+        EMGs{9,1}= 'Biceps';
+        EMGs{10,1}= 'Triceps';
+        EMGs{11,1}= 'FDS';
+        EMGs{12,1}= 'FDP';
+        EMGs{13,1}= 'PL';
+        EMGs{14,1}= 'FCR';
+        EMGs{15,1}= 'FCU';
+        EMGs{16,1}= 'BRD';
 end
 EMG_num = length(EMGs);
 

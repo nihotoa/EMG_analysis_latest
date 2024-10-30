@@ -28,7 +28,7 @@ post:makeEMGNMFbtc_Oya.m
 clear;
 
 %% set param
-monkeyname = 'F'; % prefix of the recorded file
+monkeyname = 'Hu'; % prefix of the recorded file
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
 % setting of filter 
@@ -41,7 +41,7 @@ resample_on = 1;
 % setting of cut off frequency
 band_pass_freq = [50 200]; % cut off frequency[Hz] of band pass filter
 high_pass_freq = 50; % cut off frequency[Hz] of high pass filter
-low_pass_freq = 50; % cut off frequency[Hz] of high pass filter
+low_pass_freq = 20; % cut off frequency[Hz] of high pass filter
 resample_freq = 100; % sampling Rate[Hz] after downsampling
 
 %% code section

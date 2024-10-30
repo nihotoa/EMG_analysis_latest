@@ -12,7 +12,7 @@ figure_str: [struct], contains some figure object
 
 %}
 
-function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type)
+function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type, y_max_value_list)
     % (if timing_id == last_timing) change center persentage from 100 to 0
     if strcmp(trim_type, 'each_timing')
         if data_str.timing_id == data_str.timing_num
@@ -39,8 +39,10 @@ function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type)
         switch plot_type
             case 'EMG'
                 title_str = [add_str EMGs{m}];
+                ylabel_str = 'Amplitude[uV]';
             case 'Synergy'
                 title_str = [add_str 'Synergy' num2str(m)];
+                ylabel_str = 'Coefficient';
         end
 
         % identify subplot location & subplot
@@ -76,8 +78,14 @@ function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type)
         if normalizeAmp == 1
             ylim([0 1]);
         else
-            ylim([0 YL]);
-            ylabel('Amplitude[uV]')
+            if and(exist("y_max_value_list"), YL==inf)
+                ref_y_max_value = y_max_value_list(m);
+                upper_lim = ceil(ref_y_max_value / 10) * 10;
+                ylim([0 upper_lim]);
+            else
+                ylim([0 YL]);
+            end
+            ylabel(ylabel_str)
         end
 
         % title 

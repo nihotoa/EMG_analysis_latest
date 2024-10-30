@@ -46,6 +46,11 @@ base_dir = fullfile(pwd, realname, nmf_fold_name);
 disp('ÅyPlease select all day folders you want to analyze (Multiple selections are possible)Åz)')
 InputDirs   = uiselect(dirdir(base_dir),1,'Please select folders which contains the data you want to analyze');
 
+if isempty(InputDirs)
+    disp('user pressed "cancel" button');
+    return
+end
+
 InputDir    = InputDirs{1};
 % Assign all file names contained in InputDirs{1} to Tarfiles
 Tarfiles = sortxls(dirmat(fullfile(base_dir,InputDir)));

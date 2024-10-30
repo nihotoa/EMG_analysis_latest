@@ -33,6 +33,7 @@ post: nothing
 2. Do not select date before 'TT_day' when you use pColor as 'C'
 
 [Improvement points(Japanaese)]
+figure, データに限らず、何かしらセーブしたらログ出すように変更して。
 
 [Remind(Japanese)]
 ・save_dataのセクションを消した。(チュートリアルで必要がないから)
@@ -44,15 +45,15 @@ post: nothing
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkeyname = 'F'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'
-plot_all = 1; % whether you want to plot figure focus on 'whole task'
+monkeyname = 'Hu'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
+plot_all = 0; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
 plot_type = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
-pColor = 'C';  % select 'K'(black plot) or 'C'(color plot) 
+pColor = 'K';  % select 'K'(black plot) or 'C'(color plot) 
 normalizeAmp = 0; % normalize Amplitude a
-YL = Inf; % (if nomalize Amp == 0) ylim of graph
+YL = 5; % (if nomalize Amp == 0) ylim of graph
 LineW = 1.5; %0.1;a % width of plot line 
-timing_name_list = ["Task start ", "Grasp on ", "Grasp off ", "Task End"]; % this is used for titling  (ex.) ["Lever1 on ", "Lever1 off ", "Lever2 on ", "Lever2 off"]
+timing_name_list = ["Task start ", "Drawer on", "Drawer off", "Grasp on ", "Grasp off ", "Task End"];  % this is used for titling  (ex.) ["Lever1 on ", "Lever1 off ", "Lever2 on ", "Lever2 off"], ["Task start ", "Grasp on ", "Grasp off ", "Task End"]; , ["Task start ", "Drawer on", "Drawer off", "Grasp on ", "Grasp off ", "Task End"];  
 row_num = 4; % how many rows to display in one subplot figure
 fig_type_array = {'stack', 'std'}; % you don't  need to change
 
@@ -90,10 +91,25 @@ switch realname
         plotWindow_cell{2} = [-15 15];
         plotWindow_cell{3} = [-15 15];
         plotWindow_cell{4} = [95 125];
+    case 'Hugo'
+        TT_day=  [];
+        % plot window (Xcorr data will be made in this range)
+        plotWindow_cell{1} = [-25 5];
+        plotWindow_cell{2} = [-15 15];
+        plotWindow_cell{3} = [-15 15];
+        plotWindow_cell{4} = [-15 15];
+        plotWindow_cell{5} = [-15 15];
+        plotWindow_cell{6} = [95 125];
 end
 
 % compile a list of names of files containing data to be plotted
 [Allfiles_S, select_folder_path] = getFileName(plot_type, realname);
+if isequal(Allfiles_S, 0)
+    disp('user press "cancel" button')
+    return;
+end
+
+
 [~, session_num] = size(Allfiles_S);
 
 % make array containing folder name
@@ -114,12 +130,12 @@ end
 %% Get the average data length over all sessions(days)
 
 %get the session average of each parameter
-for i = 1:session_num
+for session_id = 1:session_num
     % load parameters
-    load_file_path = fullfile(select_folder_path, Allfiles_S{i});
+    load_file_path = fullfile(select_folder_path, Allfiles_S{session_id});
     load(load_file_path, "AllT", "TIME_W", "D" )
     
-    if i == 1
+    if session_id == 1
         % Create empty array to store data from each timing
         timing_num = sum(startsWith(fieldnames(D), 'trig'));
         % for trial
@@ -136,15 +152,15 @@ for i = 1:session_num
 
     % store the data from each session
     % for trial
-    AllT_AVE = (AllT_AVE*(i-1) + AllT)/i; 
-    Pall.Tlist(i,1) = AllT;  
+    AllT_AVE = (AllT_AVE*(session_id-1) + AllT)/session_id; 
+    Pall.Tlist(session_id,1) = AllT;  
     
     % for each timing
     for jj = 1:(timing_num-1)
         original_data = D_AVE.(['timing' num2str(jj)]);
         added_data = D.(['Ld' num2str(jj)]);
-        D_AVE.(['timing' num2str(jj)]) = (original_data * (i-1) + added_data)/i;
-        Ptrig{jj}.Tlist(i,1) = added_data;
+        D_AVE.(['timing' num2str(jj)]) = (original_data * (session_id-1) + added_data)/session_id;
+        Ptrig{jj}.Tlist(session_id,1) = added_data;
     end
 end
 
@@ -297,7 +313,7 @@ if plot_each_timing == 1
         fig_type = fig_type_array{idx};
         figure_str.(fig_type) = struct;
         for ii = 1:figure_num
-            figure_str.(fig_type).(['fig' num2str(ii)]) = figure("position", [100, 100, 1000, 1000]);
+            figure_str.(fig_type).(['fig' num2str(ii)]) = figure("position", [100, 100, 250 * timing_num, 1000]);
         end
     end
 
@@ -318,11 +334,14 @@ if plot_each_timing == 1
         data_str.timing_name = timing_name;
         data_str.plotWindow = plotWindow;
         data_str.Pdata = Pdata;
-
+        if timing_id == 1
+            max_amplitude_list = getMaxAmplitudeList(Pdata.plotData_sel);
+        end
+        
         % plot figures
         for idx = 1:length(fig_type_array)
             fig_type = fig_type_array{idx};
-            figure_str.(fig_type) = plot_figures(figure_str.(fig_type), data_str, 'each_timing', fig_type);
+            figure_str.(fig_type) = plot_figures(figure_str.(fig_type), data_str, 'each_timing', fig_type, max_amplitude_list);
         end
     end
 
@@ -388,4 +407,19 @@ function [TermDays, term_type] = extract_post_days(TT_day, folder_path, plot_typ
         term_type = 'post';
     end
     TermDays = get_specific_term(date_list, term_type, TT_day);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function max_amplitude_list = getMaxAmplitudeList(plotData)
+session_num = length(plotData);
+EMG_num = length(plotData{1});
+max_amplitude_list = zeros(EMG_num, 1);
+for EMG_id = 1:EMG_num
+    ref_data = cell(1, session_num);
+    for session_id = 1:session_num
+        ref_data{session_id} = plotData{session_id}{EMG_id};
+    end
+    ref_data = cell2mat(ref_data);
+    max_amplitude_list(EMG_id) = max(ref_data);
+end
 end
