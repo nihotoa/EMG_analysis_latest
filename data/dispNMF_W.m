@@ -30,6 +30,10 @@ post: (if you want to cutout temporal pattern of synergy)MakeDataForPlot_H_utb.m
 
 [Improvement points(Japanaese)]
 cosine distanceとclusteringは他の関数でも使うので、localじゃなくて、外部関数としてまとめたほうがいいかも
+
+[caution]
+階層クラスタリングを行った時に、全てのクラスタの要素数が一致していない場合はエラー吐く。
+(シナジー数が変化しない & シナジーの構造も変化しない前提で作られている)
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;

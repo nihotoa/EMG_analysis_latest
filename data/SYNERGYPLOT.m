@@ -21,6 +21,7 @@ In order to complete this function, in addtion to the analysis flow of synergy a
 [Improvement points(Japanaese)]
 注意点: タイミングデータの取得のために, EMG_analysisのフローをrunnningEasyfuncまで行う必要がある
 select_synergy_num_type == 'auto'で解析を行うためには,先にFindOptimalSynergyNum.mを行う必要がある.
+autoで行った時のsaveファイル名もmanualの時と同じものにする
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
