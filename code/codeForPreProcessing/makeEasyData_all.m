@@ -21,6 +21,9 @@ Tp3: [double array], Data for each timing in each trial is stored.
 pwdじゃなくて,  inputにbase_dir指定してそれを使った方がいいかも
 全体的に冗長
 NibaliのTpの切り出しの関数内も冗長なので削る
+CTTL_003がうまく計測できなかったように、success_button_count_thresholdを設けて、TTL_002のみを使って
+イベントタイミングを作るような条件分岐を実現しているが、drawerタスクしか対応していないので、Nibaliの方も書き換える
+(というか共通化できないかどうか考える)
 %}
 
 function [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, real_name, xpdate_num, file_num, save_fold, mE, task)
@@ -30,6 +33,8 @@ save_E = mE.save_E;
 down_E =  mE.down_E;
 make_Timing = mE.make_Timing;
 downdata_to = mE.downdata_to;
+success_button_count_threshold = 80;
+
 %% code section
 xpdate = sprintf('%d',xpdate_num);
 easyData_fold_path = fullfile(pwd, real_name, save_fold);
@@ -210,11 +215,16 @@ if make_Timing == 1
                warning([real_name '-' xpdate ' does not have "CTTL_003" signal']);
            end
        case 'Hu'
-           [Timing,Tp,Tp3] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to);
+           [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to, success_button_count_threshold);
        otherwise %if reference monkey is not SesekiR or Wasa. (if you don't have to chage to fotocell）
             [Timing,Tp,Tp3] = makeEasyTiming(monkeyname,xpdate,file_num,downdata_to,TimeRange_EMG);
    end
-   success_timing = transpose(Tp(:, 1:end-1));
+   
+   if and(exist("is_condition2_active"), not(is_condition2_active))
+       success_timing = transpose(Tp);
+   else
+       success_timing = transpose(Tp(:, 1:end-1));
+   end
    success_timing = [success_timing; success_timing(end, :) - success_timing(1, :)];
 end
 
@@ -259,8 +269,6 @@ else
    disp(['NOT SAVE ' monkeyname xpdate 'file[' sprintf('%d',file_num(1)) ',' sprintf('%d',file_num(end)) ']']);
 end
 end
-
-
 
 %% define local function
 %% 1.concatenate EMG data from each file & return concatenated EMG dataset (AllData_EMG)
@@ -559,7 +567,7 @@ Tp: [double array], Data for each timing in each trial is stored.
 Tp3: [double array], Data for each timing in each trial is stored.
 %}
 
-function [Timing,Tp,Tp3] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to)
+function [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to, success_button_count_threshold)
 load_file_path = fullfile(pwd, real_name, [monkeyname xpdate '-' sprintf('%04d', file_num(1))]);
 make_timing_struct = load(load_file_path, 'CAI*', 'CTTL*');
 timing_struct = struct();
@@ -627,20 +635,33 @@ end
 match_1st_array = ref_timing_array1(:, necessary_idx);
 
 % marge ref_timing_array and success_timing_array & update ref_timing_array which matches the condition2
-ref_timing_array2 = [match_1st_array timing_struct.success_timing_array];
-[~, sort_sequence] = sort(ref_timing_array2(1, :));
-ref_timing_array2 = ref_timing_array2(:, sort_sequence);
-
-% get the index of the element that matches the condition2
-condition2 = [1, 2, 3, 2, 3, 6, 7];
-necessary_idx = [];
-validate_length = length(condition2) - 1;
-for ref_start_id = 1:length(ref_timing_array2) - validate_length
-    if all(ref_timing_array2(2, ref_start_id:ref_start_id + validate_length) == condition2)
-        necessary_idx = [necessary_idx ref_start_id:ref_start_id + validate_length];
-    end
+success_button_count = length(timing_struct.success_timing_array);
+is_condition2_active = false;
+if success_button_count > success_button_count_threshold
+    is_condition2_active = true;
 end
-match_2nd_array = ref_timing_array2(:, necessary_idx);
+
+if is_condition2_active
+    ref_timing_array2 = [match_1st_array timing_struct.success_timing_array];
+    [~, sort_sequence] = sort(ref_timing_array2(1, :));
+    ref_timing_array2 = ref_timing_array2(:, sort_sequence);
+    
+    % get the index of the element that matches the condition2
+    condition2 = [1, 2, 3, 2, 3, 6, 7];
+    necessary_idx = [];
+    validate_length = length(condition2) - 1;
+    for ref_start_id = 1:length(ref_timing_array2) - validate_length
+        if all(ref_timing_array2(2, ref_start_id:ref_start_id + validate_length) == condition2)
+            necessary_idx = [necessary_idx ref_start_id:ref_start_id + validate_length];
+        end
+    end
+    match_2nd_array = ref_timing_array2(:, necessary_idx);
+    Timing = match_2nd_array;
+    representative_condition = condition2;
+else
+    Timing = match_1st_array;
+    representative_condition = condition1;
+end
 
 % get the index of the element that matches the condition3
 condition3 = repmat([1 2 3 2 3 6], 1, 3);
@@ -654,8 +675,7 @@ end
 match_3rd_array = ref_timing_array1(:, necessary_idx);
 
 % create output arguments
-Timing = match_2nd_array;
-Tp = reshape(Timing(1, :), length(condition2), [])';
+Tp = reshape(Timing(1, :), length(representative_condition), [])';
 Tp3 = reshape(match_3rd_array(1,:), length(condition3), [])';
 end
 

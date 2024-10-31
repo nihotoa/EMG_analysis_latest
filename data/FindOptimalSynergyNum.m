@@ -21,7 +21,7 @@ clear;
 %% set param
 term_select_type = 'manual'; %'auto' / 'manual'
 term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
-monkeyname = 'F';
+monkeyname = 'Hu';
 use_style = 'test'; % test/train
 VAF_plot_type = 'stack'; %'stack' or 'mean'
 VAF_threshold = 0.8; % param to draw threshold_line

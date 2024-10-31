@@ -49,6 +49,7 @@ Sometimes the function 'uigetfile' is not executed and an error occurs
 [Improvement points(Japanaese)]
 makeEasyData_all/makeEasyTiming内のSu, Seの条件分岐の意味を把握していない => Sesekiで試す or チュートリアル用のリポジトリを作った後に消す
 ・この関数の中で使われている関数の中で使われているplotEasyData_utbとMakeDataForPlot_H_utb.mが激似なので関数ファイルを作って外から呼び出すように変更する
+try catchのせいで、エラーが起きてもエラー文章が表示されずに実行が進んでしまうので、廃止する or エラーが起きていることをログとして出す。
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear 
