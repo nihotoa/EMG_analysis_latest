@@ -17,17 +17,16 @@ post: dispNMF_W.m
 
 [caution!!]
 In order to complete this function, in addtion to the analysis flow of synergy analysis, it is necessary to finish the flow up to 'runningEasyfunc.m' of EMG analysis
+・select_synergy_num_type == 'auto'で解析を行うためには,先にFindOptimalSynergyNum.mを行う必要がある.
 
 [Improvement points(Japanaese)]
-注意点: タイミングデータの取得のために, EMG_analysisのフローをrunnningEasyfuncまで行う必要がある
-select_synergy_num_type == 'auto'で解析を行うためには,先にFindOptimalSynergyNum.mを行う必要がある.
-autoで行った時のsaveファイル名もmanualの時と同じものにする
+autoにした時のcancel処理が実装されてない
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
 monkeyname = 'Hu'; % prefix that each monkey has uniquery
-select_synergy_num_type = 'manual';  % 'manual' / 'auto'
+select_synergy_num_type = 'auto';  % 'manual' / 'auto'
 synergy_num_list = [5]; % (if select_synergy_num_type == 'manual')which synergy number of synergies to plot(Please decide based onf VAF results)
 plot_clustering = 1; % Whether you want to plot & save heatmap of cosine distance and the clustering result.
 nmf_fold_name = 'new_nmf_result'; 

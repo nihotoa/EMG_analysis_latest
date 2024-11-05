@@ -26,7 +26,7 @@ if you want to find the optimal number of synergy from the synergy data of each 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkeyname = 'F'; % prefix of recorded data
+monkeyname = 'Hu'; % prefix of recorded data
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
 % about algorithm & threshold
