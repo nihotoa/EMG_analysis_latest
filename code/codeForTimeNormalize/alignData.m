@@ -51,24 +51,36 @@ alignedDataAVE = cell(1,EMG_num);
 for j = 1:EMG_num
     DataA = zeros(trial_num,AllT);
     for i = 1:trial_num
+        ref_start_timing = Timing(i,task_start_id);
+        ref_end_timing = Timing(i,task_end_id);
+
         % Find the number of samples for each trial.
-        time_w = round(Timing(i,task_end_id) - Timing(i,task_start_id) +1);
+        time_w = round(ref_end_timing - ref_start_timing +1);
+        pre_margin = time_w*per1;
+        post_margin = time_w*per2;
+        
+        % エラー避けるための条件の作成.(切り出し範囲がData長の範囲外にならないようにここで弾く)
+        condition1 = (ref_start_timing - pre_margin) < 0;
+        condition2 = (ref_end_timing + post_margin) > size(Data, 2);
+        if or(condition1, condition2)
+            continue;
+        end
 
         % Resampling from average frames of all task (time_w) to the frames of this task(time_W)
         if time_w == TIME_W
-            trialData{i,1} = Data(j,floor(Timing(i,task_start_id)-time_w*per1):floor(Timing(i,task_start_id)-1)); % pre trial data
-            trialData{i,2} = Data(j,floor(Timing(i,task_start_id)):floor(Timing(i,task_end_id))); % trial_data
-            trialData{i,3} = Data(j,floor(Timing(i,task_end_id)+1):floor(Timing(i,task_end_id)+time_w*per2)); % post trial data
+            trialData{i,1} = Data(j,floor(ref_start_timing-pre_margin):floor(ref_start_timing-1)); % pre trial data
+            trialData{i,2} = Data(j,floor(ref_start_timing):floor(ref_end_timing)); % trial_data
+            trialData{i,3} = Data(j,floor(ref_end_timing+1):floor(ref_end_timing+post_margin)); % post trial data
         
         elseif time_w<TIME_W 
-            trialData{i,1} = interpft(Data(j,floor(Timing(i,task_start_id)-time_w*per1):floor(Timing(i,task_start_id)-1)),pre1_TIME);
-            trialData{i,2} = interpft(Data(j,floor(Timing(i,task_start_id)):floor(Timing(i,task_end_id))),TIME_W);
-            trialData{i,3} = interpft(Data(j,floor(Timing(i,task_end_id)+1):floor(Timing(i,task_end_id)+time_w*per2)),post2_TIME);
+            trialData{i,1} = interpft(Data(j,floor(ref_start_timing-pre_margin):floor(ref_start_timing-1)),pre1_TIME);
+            trialData{i,2} = interpft(Data(j,floor(ref_start_timing):floor(ref_end_timing)),TIME_W);
+            trialData{i,3} = interpft(Data(j,floor(ref_end_timing+1):floor(ref_end_timing+post_margin)),post2_TIME);
         
         else
-            trialData{i,1} = resample(Data(j,floor(Timing(i,task_start_id)-time_w*per1):floor(Timing(i,task_start_id)-1)),pre1_TIME,round(time_w*per1));
-            trialData{i,2} = resample(Data(j,floor(Timing(i,task_start_id)):floor(Timing(i,task_end_id))),TIME_W,time_w);
-            trialData{i,3} = resample(Data(j,floor(Timing(i,task_end_id)+1):floor(Timing(i,task_end_id)+time_w*per2)),post2_TIME,round(time_w*per2));
+            trialData{i,1} = resample(Data(j,floor(ref_start_timing-pre_margin):floor(ref_start_timing-1)),pre1_TIME,round(pre_margin));
+            trialData{i,2} = resample(Data(j,floor(ref_start_timing):floor(ref_end_timing)),TIME_W,time_w);
+            trialData{i,3} = resample(Data(j,floor(ref_end_timing+1):floor(ref_end_timing+post_margin)),post2_TIME,round(post_margin));
         end
         
         % Concatenate pre_trial, trial, post_trial data and save in list
@@ -85,8 +97,9 @@ for j = 1:EMG_num
     end 
 
     % Store each time-normalized EMG data
-    alignedData{1,j} = DataA;
-    alignedDataAVE{1,j} = mean(DataA,1);
+    alignedData{1, j} = DataA;
+    validate_DataA = DataA(any(DataA, 2), :);
+    alignedDataAVE{1,j} = mean(validate_DataA,1);
 end
 
 % Calculate the average number of samples elapsed from the 'lever1 on' (task_start_id) to each timing

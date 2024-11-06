@@ -32,11 +32,11 @@ monkeyname = 'Hu'; % prefix of the recorded file
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
 % setting of filter 
-band_pass_on = 0;
-high_pass_on = 1;
-rect_on = 1;
-low_pass_on = 1;
-resample_on = 1;
+band_pass_on = false;
+high_pass_on = true;
+rect_on = true;
+low_pass_on = true;
+resample_on = true;
 
 % setting of cut off frequency
 band_pass_freq = [50 200]; % cut off frequency[Hz] of band pass filter
@@ -45,7 +45,7 @@ low_pass_freq = 20; % cut off frequency[Hz] of high pass filter
 resample_freq = 100; % sampling Rate[Hz] after downsampling
 
 %% code section
-[realname] = get_real_name(monkeyname);
+realname = get_real_name(monkeyname);
 base_dir = fullfile(pwd, realname, nmf_fold_name);
 
 % get the name of the floder that exists directly under 'Parent dir'
@@ -59,7 +59,9 @@ if(isempty(InputDirs))
 end
 InputDir    = InputDirs{1};
 
-Tarfiles    = sortxls(dirmat(fullfile(base_dir,InputDir)));
+% Tarfiles    = sortxls(dirmat(fullfile(base_dir,InputDir)));
+muscle_file_list = dirEx(fullfile(base_dir, InputDir));
+Tarfiles = {muscle_file_list.name};
 disp('【Please select all muscle data(<muscle name>(uV).mat) which you want to filter】')
 Tarfiles    = uiselect(Tarfiles,1,'Please select all muscle data');
 if(isempty(Tarfiles))
@@ -67,13 +69,17 @@ if(isempty(Tarfiles))
     return;
 end
 
-for jj=1:length(InputDirs)  % each day
+trimmed_flag = false;
+if contains(Tarfiles(1), '_trimmed')
+    trimmed_flag = true;
+end
+
+for day_id=1:length(InputDirs)  
     try
-        InputDir    = InputDirs{jj};
-         for kk =1:length(Tarfiles)
-             Tar = loaddata(fullfile(base_dir,InputDir,Tarfiles{kk}));
+        InputDir = InputDirs{day_id};
+         for muscle_id =1:length(Tarfiles)
+             Tar = loaddata(fullfile(base_dir,InputDir,Tarfiles{muscle_id}));
              OutputDir   = fullfile(base_dir,InputDir);
-            
              if band_pass_on
                  Tar = makeContinuousChannel([Tar.Name,'-bandpass-' num2str(band_pass_freq(1)) 'Hz_to_' num2str(band_pass_freq(2)) 'Hz'], 'band-pass', Tar, band_pass_freq);
              end
@@ -95,14 +101,21 @@ for jj=1:length(InputDirs)  % each day
             
              if resample_on
                  %down sampling at 100Hz
+                 if trimmed_flag
+                     Tar.event_timings_after_trimmed = round(Tar.event_timings_after_trimmed * (resample_freq / Tar.SampleRate));
+                 end
                  Tar = makeContinuousChannel([Tar.Name,'-ds' num2str(resample_freq) 'Hz'], 'resample', Tar, resample_freq, 0);
              end
-             
+                
+             if contains(Tarfiles(1), '_trimmed')
+                 Tar.Name = [Tar.Name, '-trimmed'];
+             end
+
              % save data
              save(fullfile(OutputDir,[Tar.Name,'.mat']),'-struct','Tar');
              disp(fullfile(OutputDir,Tar.Name));     
          end
      catch
-      disp(['****** Error occured in ',InputDirs{jj}]) ; 
+        disp(['****** Error occured in ',InputDirs{day_id}]) ; 
     end
 end

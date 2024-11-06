@@ -83,12 +83,21 @@ all_H = cell(1, date_num);
 
 % load order information (as order_data_struct)
 order_fold_path = fullfile(base_dir, 'order_tim_list', [prefix_date_name_list{1} 'to' date_name_list{end} '_' num2str(length(prefix_date_name_list))]);
+if not(exist(order_fold_path, 'dir'))
+    error(['The "order_tim_list" corresponding to the date combination you selected has not yet been created. ' ...
+        '      Please run "dispNMF_W.m" with the same date combination first to create "order_tim_list" file']);
+end
 
 disp("Please select the file related to order created with 'dispNMF_W.m'");
-[order_data_file_name] = uigetfile(order_fold_path, ['*_' sprintf('%d',synergy_num) '.mat']); 
+order_data_file_name = uigetfile(order_fold_path, ['*_' sprintf('%d',synergy_num) '.mat']); 
+if not(ischar(order_data_file_name))
+    disp('user pressed "cancel" button');
+    return;
+end
 order_data_struct = load(fullfile(order_fold_path, order_data_file_name));
 
 %% Linking temporal pattern data(synergy H) & arrange order of Synergies between each date.
+cutout_flag_list = false(1, date_num);
 for date_id =1:date_num %session loop
     % Get the path of the data to be accessed.
     synergy_data_fold_path = fullfile(base_dir, [prefix_date_name_list{date_id} '_standard']);
@@ -107,20 +116,13 @@ for date_id =1:date_num %session loop
     end
 
     % Get 'test' data on the number of synergies of the target & Concatenate all 'test' data for each synergy.
-    synergy_data = load(fullfile(synergy_data_fold_path, synergy_data_file_path), 'test');
+    synergy_data = load(fullfile(synergy_data_fold_path, synergy_data_file_path));
     load(fullfile(H_synergy_data_fold_path, H_synergy_data_file_name), 'Wt_coefficient_matrix');
     H_data = synergy_data.test.H; % Data on synergy_H at each synergy number.
     sorted_W_coefficient_matrix = Wt_coefficient_matrix;
     [~, section_num] = size(order_in_section_struct.k_arr);
     use_H_data = H_data(synergy_num, :);
     alt_H = cell(1, section_num);
-    %{
-    for section_id = 1:section_num
-        ref_section_order = order_in_section_struct.k_arr(:, section_id);
-        alt_H{section_id} = use_H_data{section_id}(ref_section_order, :);
-    end
-    alt_H = cell2mat(alt_H);
-    %}
 
     for section_id = 1:section_num
         sort_order = order_in_section_struct.k_arr(:, section_id);
@@ -137,6 +139,11 @@ for date_id =1:date_num %session loop
     day_index =  find(order_data_struct.days==str2double(date_name_list{date_id}));
     synergy_order = order_data_struct.k_arr(:, day_index); 
     all_H{date_id} = alt_H(synergy_order, :);
+    
+    % change the flag that determines whether the data of reference day has been cut out or not
+    if isfield(synergy_data, 'event_timings_after_trimmed')
+        cutout_flag_list(date_id) = true;
+    end
 end
 
 
@@ -154,11 +161,22 @@ ResAVE.tDataTask_AVE = cell(1,synergy_num);
 
 % Cutting out synergy H data for each date.
 for date_id = 1:date_num 
-    % get the path of EasyData(which contains each timing data)
-   easy_data_fold_path = fullfile(monkey_dir_path, 'easyData', standard_data_name_list{date_id});
-   easy_data_file_name = [prefix_date_name_list{date_id} '_EasyData.mat'];
-   timing_data_struct = load(fullfile(easy_data_fold_path, easy_data_file_name),'Tp','Tp3','SampleRate'); % load the timing data of each trial
-   timing_data_for_filtered_EMG = floor(timing_data_struct.Tp ./ (timing_data_struct.SampleRate/100)); % down sample (to 100Hz)
+    ref_flag = cutout_flag_list(date_id);
+    if ref_flag
+        standard_file_name = standard_data_name_list{date_id};
+        synergy_data_fold_path = fullfile(base_dir, standard_file_name);
+        synergy_data_file_name = [standard_file_name '.mat'];
+        load(fullfile(synergy_data_fold_path, synergy_data_file_name), 'event_timings_after_trimmed')
+        timing_data_for_filtered_EMG = event_timings_after_trimmed;
+    else
+         % get the path of EasyData(which contains each timing data)
+        easy_data_fold_path = fullfile(monkey_dir_path, 'easyData', standard_data_name_list{date_id});
+        easy_data_file_name = [prefix_date_name_list{date_id} '_EasyData.mat'];
+    
+        timing_data_struct = load(fullfile(easy_data_fold_path, easy_data_file_name)); % load the timing data of each trial
+        timing_data_for_filtered_EMG = floor(timing_data_struct.Tp ./ (timing_data_struct.SampleRate/100)); % down sample (to 100Hz)
+    end
+
    [trial_num, ~] = size(timing_data_for_filtered_EMG);
    pre_per = 50; % How long do you want to see the signals before 'lever1 on' starts.
    post_per = 50; % How long do you want to see the signals after 'lever2 off' starts.

@@ -77,12 +77,19 @@ for iDir=1:nDir
     try
         InputDir    = InputDirs{iDir};
         disp([num2str(iDir),'/',num2str(nDir),':  ',InputDir])
-
+        trimmed_flag = 0;
         % create matrix of EMG data(XData)
         for iTar=1:nTar % each muscle
             clear('Tar')
             Tarfile     = Tarfiles{iTar};
             Inputfile   = fullfile(base_dir,InputDir,Tarfile);
+            
+            if  iTar == 1
+                if contains(Tarfile, '-trimmed')
+                    trimmed_flag = 1;
+                    load(Inputfile, "event_timings_after_trimmed");
+                end
+            end
 
             % load filtered EMG (and assign it to Tar)
             Tar     = load(Inputfile);
@@ -125,8 +132,20 @@ for iDir=1:nDir
         current_day = temp{1};
         OutputDir = strrep(OutputDir, prev_day, current_day);
         prev_day = current_day;
-        Outputfile      = fullfile(OutputDir,[InputDir,'.mat']);
-        Outputfile_dat  = fullfile(OutputDir,['t_',InputDir,'.mat']);
+        
+        Y.use_EMG_type = 'full';
+        Y_dat.use_EMG_type = 'full';
+        if trimmed_flag
+            Y.use_EMG_type = 'trimmed';
+            Y_dat.use_EMG_type = 'trimmed';
+            Y.event_timings_after_trimmed = event_timings_after_trimmed;
+            Y_dat.event_timings_after_trimmed = event_timings_after_trimmed;
+        end
+        Outputfile_name = [InputDir '.mat'];
+        Outputfile_dat_name = ['t_',InputDir '.mat'];
+
+        Outputfile      = fullfile(OutputDir, Outputfile_name);
+        Outputfile_dat  = fullfile(OutputDir, Outputfile_dat_name);
         
         % save structure data to the specified path(contents of Outputfile & Outputfile_dat)
         save(Outputfile,'-struct','Y');

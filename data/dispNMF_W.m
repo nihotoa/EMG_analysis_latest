@@ -43,7 +43,7 @@ term_select_type = 'manual'; %'auto' / 'manual'
 term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
 monkeyname = 'Hu';
 syn_num = 5; % number of synergy you want to analyze
-plot_clustering_result = 0; % whether to plot cosine distance & dendrogram of hierarcical clustering
+plot_clustering_result = 1; % whether to plot cosine distance & dendrogram of hierarcical clustering
 save_WDaySynergy = 1;% Whether to save synergy W (to be used for ANOVA)
 save_data = 1; % Whether to store data on synergy orders in 'order_tim_list' folder (should basically be set to 1).
 save_fig = 1; % Whether to save the plotted synergy W figure
@@ -95,6 +95,10 @@ if day_num > 1
         clear aveW;
     end
     [Wt, k_arr] = OrderSynergy(EMG_num, syn_num, W_data, monkeyname, days, base_dir, plot_clustering_result, term_type);
+    if isempty(k_arr)
+        warning('We were unable to match all synergies. We recommend reducing the number of synergy');
+        return; 
+    end
 else
     k_arr = transpose(1:syn_num);
     W_data =  cell(1,1);
