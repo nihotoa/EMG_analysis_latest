@@ -41,7 +41,7 @@ else
             load(fullfile(fold_path, synergy_file_name), 'test');
         else
             % VAF & name list of EMG
-            load(fullfile(fold_path, synergy_file_name), 'test', 'TargetName');
+            load(fullfile(fold_path, synergy_file_name), 'test', 'TargetName', 'use_EMG_type');
         end
     end
 end
@@ -194,20 +194,25 @@ end
 
 %% plot H (temporal pattern of synergy)
 % load timing data (which is created by )
-easyData_path = fullfile(base_dir, 'easyData', [fold_name '_' task]);
-easyData_file_name = [fold_name '_EasyData.mat'];
-easyData_file_path = fullfile(easyData_path, easyData_file_name);
-try
-    load(easyData_file_path, 'Tp', 'SampleRate');
-catch
-    stack = dbstack;
-    disp(['(Error occured: line ' num2str(stack(1).line + 1) ') EasyData(' easyData_file_path ') is not found. Please run "runnningEasyfunc.m" first!']);
-    return;
-end
+switch use_EMG_type
+    case 'full'
+        easyData_path = fullfile(base_dir, 'easyData', [fold_name '_' task]);
+        easyData_file_name = [fold_name '_EasyData.mat'];
+        easyData_file_path = fullfile(easyData_path, easyData_file_name);
+        try
+            load(easyData_file_path, 'Tp', 'SampleRate');
+        catch
+            stack = dbstack;
+            disp(['(Error occured: line ' num2str(stack(1).line + 1) ') EasyData(' easyData_file_path ') is not found. Please run "runnningEasyfunc.m" first!']);
+            return;
+        end
+        SUC_Timing_A = floor(Tp.*(100/SampleRate));
 
-% 
-SUC_Timing_A = floor(Tp.*(100/SampleRate));
-SUC_num = length(Tp(:,1))-1;
+    case 'trimmed'
+        load(fullfile(fold_path, synergy_file_name), 'event_timings_after_trimmed');
+        SUC_Timing_A = event_timings_after_trimmed;
+end
+SUC_num = length(SUC_Timing_A(:, 1)) - 1;
 
 % concatenate all test data to create a temporal pattern of synergy in the entire recording interval (as All_H)
 H_data = test.H(pcNum, :);
@@ -232,11 +237,14 @@ figure('Position',[900,1000,800,1300]);
 % each synergy
 for ii=1:pcNum
     % each trial
-   for jj=1:SUC_num-1
+   for jj=2:SUC_num
       subplot(pcNum,1,ii);
 
       % cut out temporal data for 'lever1 off' timng +-1 [sec] for each trial
-      pullData(jj, :) = All_H(ii, SUC_Timing_A(jj,3)+TIMEr(1):SUC_Timing_A(jj, 3)+TIMEr(2));
+      cutout_start_timing = SUC_Timing_A(jj, 3) + TIMEr(1);
+      cutout_end_timing = SUC_Timing_A(jj, 3)+TIMEr(2);
+      
+      pullData(jj, :) = All_H(ii,  cutout_start_timing: cutout_end_timing);
 
        % plot each trial temporal data (around 'lever1 off' timing)
       plot(pullData(jj,:));

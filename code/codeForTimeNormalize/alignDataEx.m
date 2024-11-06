@@ -110,8 +110,10 @@ for muscle_id = 1:EMG_num
         % store TimeNormalized data
         Re.(['tData' num2str(timing_id)]){muscle_id} = cell2mat(Re_sel.(data_name));
         
+        ref_tData = Re.(['tData' num2str(timing_id)]){muscle_id};
+        validate_ref_tData = ref_tData(any(ref_tData, 2), :);
         % store average data of all trials
-        Re.(['tData' num2str(timing_id) '_AVE']){muscle_id} = mean(Re.(['tData' num2str(timing_id)]){muscle_id});
+        Re.(['tData' num2str(timing_id) '_AVE']){muscle_id} = mean(validate_ref_tData);
     end
     [Re_sel.tDTask]=AlignDatasets(Re_sel.tDTask,round(TIME_W*sum(per_struct.pertask)));
     Re.tDataTask{muscle_id} = cell2mat(Re_sel.tDTask);
