@@ -23,7 +23,7 @@ term_select_type = 'manual'; %'auto' / 'manual'
 term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
 monkeyname = 'Hu';
 use_style = 'test'; % test/train
-VAF_plot_type = 'stack'; %'stack' or 'mean'
+first_judge_type = 'dVAF'; % 'VAF' / 'dVAF'
 VAF_threshold = 0.8; % param to draw threshold_line
 coffen_coefficient_threshold = 0.90;
 font_size = 20; % Font size of text in the figure
@@ -41,6 +41,7 @@ end
 % create the data array of VAF & date array of spatial pattern
 % some dates may not have synergy data files, so the method of appending to an empty cell array is adopted
 VAF_data_list = {};
+shuffle_VAF_data_list = {};
 spatial_pattern_data_list = {};
 eliminated_date_list = {};
 day_num = length(Allfiles_S);
@@ -51,8 +52,8 @@ for day_id = 1:day_num
 
     % load VAF data & synergy data
     try
-        VAF_data = load(VAF_data_path, use_style);
-        synergy_data = load(spatial_pattern_data_path, use_style);
+        VAF_data = load(VAF_data_path);
+        synergy_data = load(spatial_pattern_data_path);
     catch
         disp([Allfiles_S{day_id} ' have no synergy data']);
         eliminated_date_list{end+1} = Allfiles_S{day_id};
@@ -61,12 +62,14 @@ for day_id = 1:day_num
 
     % calcurate the average value of VAF for all test (or train) data & shuffle data
     VAF_data_list{end+1} = mean(VAF_data.(use_style).r2, 2);
+    shuffle_VAF_data_list{end+1} = mean(VAF_data.shuffle.r2, 2);
     spatial_pattern_data_list{end+1} = synergy_data.(use_style).W;
     if day_id == 1
         [muscle_num, kf] = size(synergy_data.(use_style).W);
     end
 end
 VAF_data_list = cell2mat(VAF_data_list);
+shuffle_VAF_data_list = cell2mat(shuffle_VAF_data_list);
 
 % update the list of sessions with reference to eliminated_date_list
 Allfiles_S = setdiff(Allfiles_S, eliminated_date_list);
@@ -80,10 +83,18 @@ optimal_synergy_num_struct = struct();
 
 for day_id = 1:day_num
     ref_VAF_data = VAF_data_list(:, day_id);
+    ref_shuffle_VAF_data = shuffle_VAF_data_list(: ,day_id);
     ref_spatial_pattern_data = spatial_pattern_data_list{day_id};
     
     % find candidate of optimal number of synergy by refer VAF value
-    optimal_synergy_num_candidate = find(ref_VAF_data > VAF_threshold, 1);
+    switch first_judge_type
+        case 'VAF'
+            optimal_synergy_num_candidate = find(ref_VAF_data > VAF_threshold, 1);
+        case 'dVAF'
+            ref_dVAF_data = diff(ref_VAF_data, 1);
+            ref_shffule_dVAF_data = diff(ref_shuffle_VAF_data, 1);
+            optimal_synergy_num_candidate = find(ref_dVAF_data > ref_shffule_dVAF_data, 1, 'last' ) + 1;
+    end
 
     % decide optimal number of synergy by refer the result of hierarcical clustering
     candidate_synergy_spatial_pattern = ref_spatial_pattern_data(optimal_synergy_num_candidate, :);
