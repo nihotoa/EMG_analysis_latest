@@ -34,7 +34,7 @@ each_plot = 0; % whether you want to plot spatial_pattern figure for each synerg
 
 % save_setting
 save_setting.save_fig_W = 1; % whether you want to save figure of spatial pattern of synergy(synergy W)
-save_setting.save_fig_H = 0; % whether you want to save figure of temporal pattern of synergy(synergy H)
+save_setting.save_fig_H = 1; % whether you want to save figure of temporal pattern of synergy(synergy H)
 save_setting.save_fig_r2 = 1; % whether you want to save figure of VAF of synergy
 save_setting.save_data = 1; % whether you want to save data about synergy W & synergy H
 

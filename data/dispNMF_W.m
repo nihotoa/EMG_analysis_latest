@@ -42,7 +42,7 @@ clear;
 term_select_type = 'manual'; %'auto' / 'manual'
 term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
 monkeyname = 'Hu';
-syn_num = 5; % number of synergy you want to analyze
+syn_num = 4; % number of synergy you want to analyze
 plot_clustering_result = 1; % whether to plot cosine distance & dendrogram of hierarcical clustering
 save_WDaySynergy = 1;% Whether to save synergy W (to be used for ANOVA)
 save_data = 1; % Whether to store data on synergy orders in 'order_tim_list' folder (should basically be set to 1).

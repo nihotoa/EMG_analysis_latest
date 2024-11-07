@@ -41,7 +41,14 @@ else
             load(fullfile(fold_path, synergy_file_name), 'test');
         else
             % VAF & name list of EMG
-            load(fullfile(fold_path, synergy_file_name), 'test', 'TargetName', 'use_EMG_type');
+            synergy_detail_struct = load(fullfile(fold_path, synergy_file_name));
+            test = synergy_detail_struct.test;
+            TargetName = synergy_detail_struct.TargetName;
+            if isfield(synergy_detail_struct, 'use_EMG_type')
+                use_EMG_type = synergy_detail_struct.use_EMG_type; 
+            else
+                use_EMG_type = 'full';
+            end
         end
     end
 end
@@ -68,6 +75,7 @@ end
 
 % if difference are found between segments
 if isempty(k_arr)
+    warning(['The ' num2str(kf) ' segments in the "' fold_name '" data were inconsistent when the number of synergies is ' num2str(pcNum) '.'])
     return;
 end
 
