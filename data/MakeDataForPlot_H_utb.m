@@ -32,7 +32,7 @@ clear;
 term_select_type = 'manual'; %'auto' / 'manual'
 term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
 monkeyname = 'Hu';
-synergy_num = 5; % number of synergy you want to analyze
+synergy_num = 4; % number of synergy you want to analyze
 save_data = 1; % whether you want to save data (basically, set 1)
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
@@ -83,18 +83,12 @@ all_H = cell(1, date_num);
 
 % load order information (as order_data_struct)
 order_fold_path = fullfile(base_dir, 'order_tim_list', [prefix_date_name_list{1} 'to' date_name_list{end} '_' num2str(length(prefix_date_name_list))]);
-if not(exist(order_fold_path, 'dir'))
-    error(['The "order_tim_list" corresponding to the date combination you selected has not yet been created. ' ...
-        '      Please run "dispNMF_W.m" with the same date combination first to create "order_tim_list" file']);
+order_file_name = [prefix_date_name_list{1} 'to' date_name_list{end} '_' num2str(length(prefix_date_name_list)) '_' num2str(synergy_num) '.mat'];
+if not(exist(fullfile(order_fold_path, order_file_name), 'file'))
+    error(['There was no file in the "order_tim_list" directory corresponding to the synergy number and date combination you selected.' ...
+        '      Please run "dispNMF_W.m" with the same date combination & synergy_num first to create "order_tim_list" file']);
 end
-
-disp("Please select the file related to order created with 'dispNMF_W.m'");
-order_data_file_name = uigetfile(order_fold_path, ['*_' sprintf('%d',synergy_num) '.mat']); 
-if not(ischar(order_data_file_name))
-    disp('user pressed "cancel" button');
-    return;
-end
-order_data_struct = load(fullfile(order_fold_path, order_data_file_name));
+order_data_struct = load(fullfile(order_fold_path, order_file_name));
 
 %% Linking temporal pattern data(synergy H) & arrange order of Synergies between each date.
 cutout_flag_list = false(1, date_num);

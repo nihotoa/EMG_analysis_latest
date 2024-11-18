@@ -48,7 +48,7 @@ clear;
 monkeyname = 'Hu'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
 plot_all = 1; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
-plot_type = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
+plot_type = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
 pColor = 'K';  % select 'K'(black plot) or 'C'(color plot) 
 normalizeAmp = 0; % normalize Amplitude a
 YL = inf; % (if nomalize Amp == 0) ylim of graph
@@ -56,6 +56,7 @@ LineW = 1.5; %0.1;a % width of plot line
 timing_name_list = ["Task start ", "Drawer on", "Drawer off", "Grasp on ", "Grasp off ", "Task End"];  % this is used for titling  (ex.) ["Lever1 on ", "Lever1 off ", "Lever2 on ", "Lever2 off"], ["Task start ", "Grasp on ", "Grasp off ", "Task End"]; , ["Task start ", "Drawer on", "Drawer off", "Grasp on ", "Grasp off ", "Task End"];  
 row_num = 4; % how many rows to display in one subplot figure
 fig_type_array = {'stack', 'std'}; % you don't  need to change
+nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
 %% code section
 % get the real name from monkeyname
@@ -234,7 +235,12 @@ if strcmp(pColor, 'C')
 end
 
 %% define save folder path (which is stored all data & figures)
-save_fold_path = fullfile(pwd, realname, 'easyData', 'P-DATA', [ Allfiles{1} 'to' Allfiles{end} '_' sprintf('%d',session_num)]);
+switch plot_type
+    case 'EMG'
+        save_fold_path = fullfile(pwd, realname, 'easyData', 'P-DATA', [ Allfiles{1} 'to' Allfiles{end} '_' sprintf('%d',session_num)]);
+    case 'Synergy'
+        save_fold_path = fullfile(pwd, realname, nmf_fold_name, 'syn_figures', 'H_figures', [ Allfiles{1} 'to' Allfiles{end} '_' sprintf('%d',session_num)]);
+end
 makefold(save_fold_path);
 
 %% plot figure

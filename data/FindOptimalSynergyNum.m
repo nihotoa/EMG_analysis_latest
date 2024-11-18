@@ -13,8 +13,11 @@ pre: makeEMGNMF_btcOya.m
 post: SYNERGYPLOT.m
 
 [Improvement points(Japanaese)]
+・シナジーのクラスタリング処理が何回かあるが、その度に処理をコピペしていて冗長なので、関数にする。
 
 [shared information]
+・t-testによってshuffleデータのdVAFが実際のデータのdVAFよりも有意に大きいかどうか調べているが、正規分布とは限らないので
+t-testを使用していいのかどうかは自信がない。(ノンパラメトリックな検定方法を使うべきかも)
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -25,7 +28,7 @@ monkeyname = 'Hu';
 use_style = 'test'; % test/train
 first_judge_type = 'dVAF'; % 'VAF' / 'dVAF'
 VAF_threshold = 0.8; % param to draw threshold_line
-coffen_coefficient_threshold = 0.90;
+coffen_coefficient_threshold = 0.95;
 font_size = 20; % Font size of text in the figure
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
@@ -83,7 +86,6 @@ optimal_synergy_num_struct = struct();
 
 for day_id = 1:day_num
     ref_VAF_data = VAF_data_list(:, day_id);
-    ref_shuffle_VAF_data = shuffle_VAF_data_list(: ,day_id);
     ref_spatial_pattern_data = spatial_pattern_data_list{day_id};
     
     % find candidate of optimal number of synergy by refer VAF value
@@ -91,9 +93,24 @@ for day_id = 1:day_num
         case 'VAF'
             optimal_synergy_num_candidate = find(ref_VAF_data > VAF_threshold, 1);
         case 'dVAF'
-            ref_dVAF_data = diff(ref_VAF_data, 1);
-            ref_shffule_dVAF_data = diff(ref_shuffle_VAF_data, 1);
-            optimal_synergy_num_candidate = find(ref_dVAF_data > ref_shffule_dVAF_data, 1, 'last' ) + 1;
+            dVAF_list = diff(ref_VAF_data, 1);
+            shuffle_dVAF_data_list = diff(shuffle_VAF_data_list,1);
+
+            % shuffle_dataのdVAFが実際のデータのdVAFのデータよりも有意に大きいかどうか判定する。
+            optimal_synergy_num_candidate = 1;
+            for dsynergy_id = 1: (muscle_num - 1)
+                ref_num_shuffle_dVAF_datas = shuffle_dVAF_data_list(dsynergy_id, :);
+                ref_dVAF = dVAF_list(dsynergy_id);
+
+                % check if 'ref_num_shuffle_dVAF_datas' is significantly greater than 'ref_dVAF' by t-test
+                [isSignificant, p_value] = ttest(ref_num_shuffle_dVAF_datas, ref_dVAF, 0.05, 'right');
+                if not(isSignificant)
+                    optimal_synergy_num_candidate = optimal_synergy_num_candidate + 1;
+                else
+                    break;
+                end
+            end
+            a = 1;
     end
 
     % decide optimal number of synergy by refer the result of hierarcical clustering
@@ -111,8 +128,8 @@ for day_id = 1:day_num
 
     if coffen_coefficient > coffen_coefficient_threshold
         % store the data in the structure
-        optimal_synergy_num_struct.([monkeyname AllDays{day_id}]).optimal_synergy_num = optimal_synergy_num_candidate;
         optimal_synergy_num_struct.([monkeyname AllDays{day_id}]).VAF_cc = coffen_coefficient;
+        optimal_synergy_num_struct.([monkeyname AllDays{day_id}]).optimal_synergy_num = optimal_synergy_num_candidate;
         optimal_synergy_num_struct.([monkeyname AllDays{day_id}]).best_cc =  coffen_coefficient;
     else
         candidate_synergy_num_list = [optimal_synergy_num_candidate - 1, optimal_synergy_num_candidate, optimal_synergy_num_candidate+1];
