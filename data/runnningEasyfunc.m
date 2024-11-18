@@ -70,9 +70,9 @@ mE.downdata_to = 1375; % (if down_E ==1)sampling rate of after resampling
 
 % which save pttern?(if you set all of them to 1, there is basically no problem.)
 saveP = 1; 
-saveE = 1;  
-saveS = 1; 
-saveE_filt = 1; 
+saveE = 0;  
+saveS = 0; 
+saveE_filt = 0; 
 
 %% code section
 % get target files(select standard.mat files which contain file information, e.g. file numbers)

@@ -146,7 +146,7 @@ muscle_name = x;
 zeroBar = zeros(EMG_num,1);
 
 % make folder to save figures
-save_figure_folder_path = fullfile(base_dir, 'syn_figures', [monkeyname mat2str(days(1)) 'to' mat2str(days(end)) '_' sprintf('%d',day_num)]);
+save_figure_folder_path = fullfile(base_dir, 'syn_figures', 'W_figures', [monkeyname mat2str(days(1)) 'to' mat2str(days(end)) '_' sprintf('%d',day_num)]);
 makefold(save_figure_folder_path);
 
 for synergy_id=1:syn_num 
