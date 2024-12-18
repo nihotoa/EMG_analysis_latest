@@ -56,16 +56,17 @@ clear
 %% set param
 % which monkey?
 realname = 'Hugo';  % 'Yachimun', 'SesekiL', 'Nibali' , 'Hugo'
+mE = struct();
+mE.downdata_to = 1375; % (if down_E ==1)sampling rate of after resampling
 task = 'standard'; % you don't need to change
 save_fold = 'easyData'; % you don't need to change
 
 % set param for 'makeEasyData_all'
-mE = struct();
+
 mE.make_EMG = 1; % whether you want to make EMG data
 mE.save_E = 1; % wheter you want to save EMG data
 mE.down_E = 1; % whether you want to perform down sampling
 mE.make_Timing = 1; % whether you want to make timing data
-mE.downdata_to = 1375; % (if down_E ==1)sampling rate of after resampling
 
 % which save pttern?(if you set all of them to 1, there is basically no problem.)
 saveP = 1; 
@@ -109,7 +110,7 @@ for i = 1:session_num
     end
 
     % 2. Check for cross-talk between measured EMGs
-    [Yave,Y3ave] = CTcheck(monkeyname, xpdate, save_fold, 1, task, realname);
+    [Yave,Y3ave] = CTcheck(monkeyname, xpdate, save_fold, realname);
 
     % 3. Cut out EMG for each trial & Focusing on various timings and cut out EMG around them
     [alignedDataAVE,alignedData_all,taskRange,AllT,Timing_ave,TIME_W,Res,D, focus_timing_num] = plotEasyData_utb(monkeyname, xpdate, save_fold, task, realname);
