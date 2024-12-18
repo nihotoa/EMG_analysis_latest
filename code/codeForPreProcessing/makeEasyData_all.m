@@ -220,10 +220,10 @@ if make_Timing == 1
             [Timing,Tp,Tp3] = makeEasyTiming(monkeyname,xpdate,file_num,downdata_to,TimeRange_EMG);
    end
    
-   if exist("is_condition2_active", "var")
-       success_timing = transpose(Tp);
-   else
+   if exist("is_condition2_active", "var") && is_condition2_active
        success_timing = transpose(Tp(:, 1:end-1));
+   else
+       success_timing = transpose(Tp);
    end
    success_timing = [success_timing; success_timing(end, :) - success_timing(1, :)];
 end
