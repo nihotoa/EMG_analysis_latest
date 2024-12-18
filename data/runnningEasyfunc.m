@@ -55,8 +55,7 @@ try catch‚Ì‚¹‚¢‚ÅAƒGƒ‰[‚ª‹N‚«‚Ä‚àƒGƒ‰[•¶Í‚ª•\¦‚³‚ê‚¸‚ÉÀs‚ªi‚ñ‚Å‚µ‚Ü‚¤‚Ì‚
 clear 
 %% set param
 % which monkey?
-realname = 'Hugo';  % 'Yachimun', 'SesekiL', 'Nibali' , 'Hugo'
-
+realname = 'Yachimun';  % 'Yachimun', 'SesekiL', 'Nibali' , 'Hugo'
 task = 'standard'; % you don't need to change
 save_fold = 'easyData'; % you don't need to change
 
@@ -103,8 +102,8 @@ for i = 1:session_num
     % Perform all preprocessing with 3 functions
     
     try 
-        % 1. Perform data concatenation & filtering processing & Obtain information on each timing for EMG trial-by-trial extraction
-        [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, realname, xpdate, file_num, save_fold, mE, task); 
+    % 1. Perform data concatenation & filtering processing & Obtain information on each timing for EMG trial-by-trial extraction
+    [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, realname, xpdate, file_num, save_fold, mE, task); 
     catch
         continue
     end

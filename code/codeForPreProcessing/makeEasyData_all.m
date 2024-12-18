@@ -220,7 +220,7 @@ if make_Timing == 1
             [Timing,Tp,Tp3] = makeEasyTiming(monkeyname,xpdate,file_num,downdata_to,TimeRange_EMG);
    end
    
-   if and(exist("is_condition2_active"), not(is_condition2_active))
+   if exist("is_condition2_active", "var")
        success_timing = transpose(Tp);
    else
        success_timing = transpose(Tp(:, 1:end-1));
@@ -394,7 +394,7 @@ Lp = length(perfect_task);
 Timing_sel = cell(1,Lp);
 for ii = 1:Lp
     % Extract elements with timing(ii) event codes from AllInPort
-    Timing_alt = AllInPort(:,(AllInPort(2,:)==perfect_task(ii))+(AllInPort(2,:)==perfect_task_2(ii)));
+    Timing_alt = AllInPort(:, find((AllInPort(2,:)==perfect_task(ii))+(AllInPort(2,:)==perfect_task_2(ii))));
     % Offset start of TimeRange to 0 (In CInport, original 0 correspond to 'TimeBegin = 0')
     Timing_alt(1,:) = Timing_alt(1,:) - TimeRange_EMG(1) * S1.CInPort_001_KHz * 1000; 
     % Match the sampling frequency after resampling
