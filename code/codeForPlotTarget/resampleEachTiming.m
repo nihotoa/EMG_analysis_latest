@@ -15,6 +15,8 @@ element_num: [double], number of elements (EMG or synergy)
 [output arguments]
 ref_Ptig: [struct], contains various information around the timing to be focused on
 
+[caution!!]
+このコードの実行にはSignal Processing Toolboxが必要です(resample関数を使用するため. (buil-in関数でもresampleはあるが、こっちのresampleは使いたいやつではないし、エラー吐く))
 %}
 
 function [ref_Ptrig] = resampleEachTiming(Allfiles_S, ref_Ptrig, ref_timing, nomalizeAmp, select_folder_path, element_num)  
@@ -38,7 +40,7 @@ function [ref_Ptrig] = resampleEachTiming(Allfiles_S, ref_Ptrig, ref_timing, nom
             end
         else
             for k = 1:element_num%EMG_num loop 
-                plotData(k,:) = resample(data{1,k},ref_Ptrig.AllT_AVE,ref_Ptrig.Tlist(j,1));
+                plotData(k,:) = resample(data{1,k}, ref_Ptrig.AllT_AVE, ref_Ptrig.Tlist(j,1));
             end
         end
 

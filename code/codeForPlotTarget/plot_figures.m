@@ -13,14 +13,6 @@ figure_str: [struct], contains some figure object
 %}
 
 function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type, y_max_value_list)
-    % (if timing_id == last_timing) change center persentage from 100 to 0
-    if strcmp(trim_type, 'each_timing')
-        if data_str.timing_id == data_str.timing_num
-            data_str.Pdata.x = data_str.Pdata.x - 100;
-            data_str.plotWindow = data_str.plotWindow - 100;
-        end
-    end
-
     % stores the field of a structure in a variable of the same name
     field_names = fieldnames(data_str);
     for idx = 1:length(field_names)

@@ -220,24 +220,24 @@ if make_Timing == 1
             [Timing,Tp,Tp3] = makeEasyTiming(monkeyname,xpdate,file_num,downdata_to,TimeRange_EMG);
    end
    
-   if and(exist("is_condition2_active"), not(is_condition2_active))
-       success_timing = transpose(Tp);
-   else
-       success_timing = transpose(Tp(:, 1:end-1));
+   if exist("is_condition2_active", "var") && is_condition2_active
+       % eliminate 'success_button' data
+       Tp = Tp(:, 1:end-1);
    end
+   success_timing = transpose(Tp);
    success_timing = [success_timing; success_timing(end, :) - success_timing(1, :)];
 end
 
 %% get data for Cross-Talk check (getCTcheck)
 [trial_num, ~] = size(Tp);
-CTcheck.data0 = cell(1, trial_num);
-CTcheck.data3 = cell(1, trial_num);
+CTcheck.raw_trial_EMG = cell(1, trial_num);
+CTcheck.diff3_trial_EMG = cell(1, trial_num);
 
 % Check for crosstalk for each trial
-for n = 1:trial_num
-    [crossData, dt3] = getCTcheck(AllData_EMG, Tp, EMG_num, n);
-    CTcheck.data0{n} = crossData;
-    CTcheck.data3{n} = dt3; 
+for trial_id = 1:trial_num
+    [ref_trial_data, ref_trial_data_diff3] = getCTcheck(AllData_EMG, Tp, EMG_num, trial_id, downdata_to);
+    CTcheck.raw_trial_EMG{trial_id} = ref_trial_data;
+    CTcheck.diff3_trial_EMG{trial_id} = ref_trial_data_diff3; 
 end
 
 %% save data
@@ -394,7 +394,7 @@ Lp = length(perfect_task);
 Timing_sel = cell(1,Lp);
 for ii = 1:Lp
     % Extract elements with timing(ii) event codes from AllInPort
-    Timing_alt = AllInPort(:,(AllInPort(2,:)==perfect_task(ii))+(AllInPort(2,:)==perfect_task_2(ii)));
+    Timing_alt = AllInPort(:, find((AllInPort(2,:)==perfect_task(ii))+(AllInPort(2,:)==perfect_task_2(ii))));
     % Offset start of TimeRange to 0 (In CInport, original 0 correspond to 'TimeBegin = 0')
     Timing_alt(1,:) = Timing_alt(1,:) - TimeRange_EMG(1) * S1.CInPort_001_KHz * 1000; 
     % Match the sampling frequency after resampling
@@ -680,25 +680,27 @@ Tp3 = reshape(match_3rd_array(1,:), length(condition3), [])';
 end
 
 %% 4.Confirm cross-talk of each other's electrodes
-function [pullData, dt3] = getCTcheck(AllData_EMG,Tp, EMG_num, n)
+function [ref_trial_data, ref_trial_data_diff3] = getCTcheck(AllData_EMG,Tp, EMG_num, trial_id, sampling_rate)
 % Create EMG dataset per trial
-pullData = zeros(EMG_num,Tp(n,end)-Tp(n,1)+1);
-for i = 1:EMG_num
-    pullData(i,:) = AllData_EMG(Tp(n,1):Tp(n,end),i)';
+ref_trial_start_timing = Tp(trial_id, 1) + 1;
+ref_trial_end_timing = Tp(trial_id, end);
+ref_trial_data = zeros(EMG_num, ref_trial_end_timing - ref_trial_start_timing);
+for EMG_id = 1:EMG_num
+    ref_trial_data(EMG_id,:) = transpose(AllData_EMG(ref_trial_start_timing+1 : ref_trial_end_timing, EMG_id));
 end
 
 % Calculate cross-talk
-dt3s = cell(EMG_num,1);
-h = 1/5000;     % step size
+ref_trial_data_diff3 = cell(EMG_num,1);
+dt = 1/sampling_rate;     % step size
 
-for i = 1:EMG_num
-    f = pullData(i, :);
-    Ds = diff(f)/h;   
-    Ds = diff(Ds)/h;   % second derivative（前のDsをさらにDsする）
-    Ds = diff(Ds)/h;
-    dt3s{i} = downsample(Ds,10);
+for EMG_id = 1:EMG_num
+    ref_data = ref_trial_data(EMG_id, :);
+    ref_data_1diff = diff(ref_data)/dt;   
+    ref_data_2diff = diff(ref_data_1diff)/dt;   % second derivative（前のDsをさらにDsする）
+    ref_data_3diff = diff(ref_data_2diff)/dt;
+    ref_trial_data_diff3{EMG_id} = ref_data_3diff;
 end
 
-dt3 = cell2mat(dt3s);
+ref_trial_data_diff3 = cell2mat(ref_trial_data_diff3);
 end
 
