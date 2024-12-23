@@ -38,10 +38,10 @@ function [] = plot_stack_figures(data_str, m)
                 end
                 
                 % plot
-                plot(Pdata.x, plot_data, 'Color', Csp(day_id,:), 'LineWidth', LineW);
+                plot(Pdata.cutoutRange, plot_data, 'Color', Csp(day_id,:), 'LineWidth', LineW);
             case 'K'
                 % plot
-                plot(Pdata.x, plot_data, 'k', 'LineWidth', LineW);
+                plot(Pdata.cutoutRange, plot_data, 'k', 'LineWidth', LineW);
         end
     end
 end

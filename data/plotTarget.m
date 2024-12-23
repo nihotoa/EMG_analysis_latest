@@ -25,7 +25,7 @@ file name:
 
 [procedure]
 pre : MakeDataForPlot_H_utb.m or runnningEasyfunc.m
-post: nothing
+post: calcXcorr
 
 [caution!!]
 1. Sometimes the function 'uigetfile' is not executed and an error occurs
@@ -33,7 +33,11 @@ post: nothing
 2. Do not select date before 'TT_day' when you use pColor as 'C'
 
 [Improvement points(Japanaese)]
-figure, データに限らず、何かしらセーブしたらログ出すように変更して。
++ figure, データに限らず、何かしらセーブしたらログ出すように変更。
++ 冗長 & 変数名がカスすぎる．この後に行う解析xcorrの計算しかないから、使わないデータは構造体に入れたり、セーブに含めたりしない
+セーブするデータの変数名変えてもxcorr以外に影響が及ばないので思い切って変数名変える
++ preのプロットでもpColor = 'C'を使えるようにする
+
 
 [Remind(Japanese)]
 ・save_dataのセクションを消した。(チュートリアルで必要がないから)
@@ -45,15 +49,14 @@ figure, データに限らず、何かしらセーブしたらログ出すように変更して。
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkeyname = 'Hu'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
+monkeyname = 'F'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
 plot_all = 1; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
-plot_type = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
+plot_type = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
 pColor = 'K';  % select 'K'(black plot) or 'C'(color plot) 
 normalizeAmp = 0; % normalize Amplitude a
-YL = inf; % (if nomalize Amp == 0) ylim of graph
+YL = 3; % (if nomalize Amp == 0) ylim of graph
 LineW = 1.5; %0.1;a % width of plot line 
-timing_name_list = ["Task start ", "Drawer on", "Drawer off", "Grasp on ", "Grasp off ", "Task End"];  % this is used for titling  (ex.) ["Lever1 on ", "Lever1 off ", "Lever2 on ", "Lever2 off"], ["Task start ", "Grasp on ", "Grasp off ", "Task End"]; , ["Task start ", "Drawer on", "Drawer off", "Grasp on ", "Grasp off ", "Task End"];  
 row_num = 4; % how many rows to display in one subplot figure
 fig_type_array = {'stack', 'std'}; % you don't  need to change
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
@@ -66,33 +69,31 @@ realname = get_real_name(monkeyname);
 % set the date list of data to be used as control data & the cutout range around each timing
 switch realname
     case 'Yachimun'
+        timing_name_list = ["Lever1 on ", "Lever1 off ", "Lever2 on ", "Lever2 off"];
         TT_day=  170530;
         % plot window (Xcorr data will be made in this range)
         plotWindow_cell{1} = [-25 5];
         plotWindow_cell{2} = [-15 15];
         plotWindow_cell{3} = [-15 15];
-        plotWindow_cell{4} = [95 125];
+        plotWindow_cell{4} = [-5 25];
     case 'SesekiL'
+        timing_name_list = ["Lever on ", "Lever off ", "Photo on", "Photo off"];
         TT_day=  200121;
         % plot window (Xcorr data will be made in this range)
         plotWindow_cell{1} = [-30 15];
         plotWindow_cell{2} = [-10 15];
         plotWindow_cell{3} = [-15 15];
-        plotWindow_cell{4} = [98 115];
-    case 'Wasa'
-        % plot window (Xcorr data will be made in this range)
-        plotWindow_cell{1} = [-25 5];
-        plotWindow_cell{2} = [-15 15];
-        plotWindow_cell{3} = [-15 15];
-        plotWindow_cell{4} = [95 125];
+        plotWindow_cell{4} = [-2 15];
     case 'Nibali'
+        timing_name_list = ["Task start ", "Grasp on ", "Grasp off ", "Task End"];
         TT_day=  220530;
         % plot window (Xcorr data will be made in this range)
         plotWindow_cell{1} = [-25 5];
         plotWindow_cell{2} = [-15 15];
         plotWindow_cell{3} = [-15 15];
-        plotWindow_cell{4} = [95 125];
+        plotWindow_cell{4} = [-5 25];
     case 'Hugo'
+        timing_name_list = ["Task start ", "Drawer on", "Drawer off", "Grasp on ", "Grasp off ", "Task End"];  
         TT_day=  [];
         % plot window (Xcorr data will be made in this range)
         plotWindow_cell{1} = [-25 5];
@@ -100,7 +101,7 @@ switch realname
         plotWindow_cell{3} = [-15 15];
         plotWindow_cell{4} = [-15 15];
         plotWindow_cell{5} = [-15 15];
-        plotWindow_cell{6} = [95 125];
+        plotWindow_cell{6} = [-5 25];
 end
 
 % compile a list of names of files containing data to be plotted
@@ -144,10 +145,10 @@ for session_id = 1:session_num
         Pall.Tlist = zeros(session_num, 1);
         
         % for each timing
-        Ptrig = cell(timing_num-1, 1);
-        for jj = 1:(timing_num-1)
-            D_AVE.(['timing' num2str(jj)]) = 0;
-            Ptrig{jj}.Tlist = zeros(session_num, 1);
+        Ptrig = cell(timing_num, 1);
+        for timing_id = 1:timing_num
+            D_AVE.(['timing' num2str(timing_id)]) = 0;
+            Ptrig{timing_id}.Tlist = zeros(session_num, 1);
         end
     end
 
@@ -157,11 +158,11 @@ for session_id = 1:session_num
     Pall.Tlist(session_id,1) = AllT;  
     
     % for each timing
-    for jj = 1:(timing_num-1)
-        original_data = D_AVE.(['timing' num2str(jj)]);
-        added_data = D.(['Ld' num2str(jj)]);
-        D_AVE.(['timing' num2str(jj)]) = (original_data * (session_id-1) + added_data)/session_id;
-        Ptrig{jj}.Tlist(session_id,1) = added_data;
+    for timing_id = 1:timing_num
+        original_data = D_AVE.(['timing' num2str(timing_id)]);
+        added_data = D.(['Ld' num2str(timing_id)]);
+        D_AVE.(['timing' num2str(timing_id)]) = (original_data * (session_id-1) + added_data)/session_id;
+        Ptrig{timing_id}.Tlist(session_id,1) = added_data;
     end
 end
 
@@ -173,9 +174,11 @@ Pall.AllT_AVE = round(AllT_AVE);
 Pall.plotData_sel = cell(session_num,1);
 
 % for each timing
-for ii = 1:(timing_num-1)
-    Ptrig{ii}.AllT_AVE = round(D_AVE.(['timing' num2str(ii)]));
-    Ptrig{ii}.plotData_sel = cell(session_num,1);
+for timing_id = 1:timing_num
+    Ptrig{timing_id}.AllT_AVE = round(D_AVE.(['timing' num2str(timing_id)]));
+    Ptrig{timing_id}.plotData_sel = cell(session_num,1);
+    Ptrig{timing_id}.cutoutRange = linspace(-D.(['Range' num2str(timing_id)])(1), D.(['Range' num2str(timing_id)])(2), Ptrig{timing_id}.AllT_AVE);
+    Ptrig{timing_id}.plotRange = plotWindow_cell{timing_id};
 end
 
 % store the data from each session
@@ -204,11 +207,11 @@ end
 [Pall] = makeSDdata(Pall, session_num, element_num);
 
 % for each timing
-for ii = 1:(timing_num-1)
-    [Ptrig{ii}] = resampleEachTiming(Allfiles_S, Ptrig{ii}, ii, normalizeAmp, select_folder_path, element_num);
+for timing_id = 1:timing_num
+    [Ptrig{timing_id}] = resampleEachTiming(Allfiles_S, Ptrig{timing_id}, timing_id, normalizeAmp, select_folder_path, element_num);
 
-    % add data which is related to 'mean+std' to 'Ptrig{ii}' structure
-    [Ptrig{ii}] = makeSDdata(Ptrig{ii}, session_num, element_num);
+    % add data which is related to 'mean+std' to 'Ptrig{timing_id}' structure
+    [Ptrig{timing_id}] = makeSDdata(Ptrig{timing_id}, session_num, element_num);
 end
 
 % make array of colormap for plot
@@ -254,7 +257,7 @@ switch plot_type
         % obtain a list of the percentage of cutouts to the entire task as 'TaskRange' (ex. [-50, 150])
         load(fullfile(select_folder_path, Allfiles_S{1}), 'taskRange');
 end
-Pall.x = linspace(taskRange(1), taskRange(2), Pall.AllT_AVE);
+Pall.cutoutRange = linspace(taskRange(1), taskRange(2), Pall.AllT_AVE);
 
 % add variables which is used in plot function in 'data_struct'
 data_str = struct();
@@ -312,27 +315,25 @@ end
 if plot_each_timing == 1
     % decide the number of created figures (4 muscles(or Synergies) per figure)
     figure_num = ceil(element_num/row_num); 
-    
+    max_amplitude_list = getMaxAmplitudeList(Pall.plotData_sel);
+
     % Create a struct array for figure to plot
     figure_str = struct;
     for idx = 1:length(fig_type_array)
         fig_type = fig_type_array{idx};
         figure_str.(fig_type) = struct;
-        for ii = 1:figure_num
-            figure_str.(fig_type).(['fig' num2str(ii)]) = figure("position", [100, 100, 250 * timing_num, 1000]);
+        for figure_id = 1:figure_num
+            figure_str.(fig_type).(['fig' num2str(figure_id)]) = figure("position", [100, 100, 250 * timing_num, 1000]);
         end
     end
 
     for timing_id = 1:timing_num
         % load activity data and window info around timing to be focused
         timing_name = timing_name_list(timing_id);
-        if or(timing_id==1, timing_id==timing_num)
-            Pdata = Pall;
-        else
-            % add 'x' to 'Ptrig' struct
-            Pdata = Ptrig{timing_id};
-            Pdata.x =  linspace(-D.(['Range' num2str(timing_id)])(1), D.(['Range' num2str(timing_id)])(2), Pdata.AllT_AVE);
-        end
+
+        % extract plot data as 'Pdata'
+        Pdata = Ptrig{timing_id};
+        Pdata.cutoutRange =  linspace(-D.(['Range' num2str(timing_id)])(1), D.(['Range' num2str(timing_id)])(2), Pdata.AllT_AVE);
         plotWindow = plotWindow_cell{timing_id}; % plotWindow at specified timing
         
         % add some variables (which is changed in loop) to 'data_str'
@@ -340,9 +341,6 @@ if plot_each_timing == 1
         data_str.timing_name = timing_name;
         data_str.plotWindow = plotWindow;
         data_str.Pdata = Pdata;
-        if timing_id == 1
-            max_amplitude_list = getMaxAmplitudeList(Pdata.plotData_sel);
-        end
         
         % plot figures
         for idx = 1:length(fig_type_array)
@@ -359,11 +357,11 @@ if plot_each_timing == 1
             added_info = 'color';
     end
 
-    for ii = 1:figure_num
-        save_figure_name =  ['each_timing_figure' num2str(ii) '_' added_info];
+    for figure_id = 1:figure_num
+        save_figure_name =  ['each_timing_figure' num2str(figure_id) '_' added_info];
         for idx = 1:length(fig_type_array)
             fig_type = fig_type_array{idx};
-            figure(figure_str.(fig_type).(['fig' num2str(ii)]));
+            figure(figure_str.(fig_type).(['fig' num2str(figure_id)]));
             saveas(gcf, fullfile(save_fold_path, [save_figure_name '_' fig_type '.fig']))
             saveas(gcf, fullfile(save_fold_path, [save_figure_name '_' fig_type '.png']))
         end
@@ -373,9 +371,9 @@ end
     
 %% save data
 if normalizeAmp == 1
-    save(fullfile(save_fold_path, 'alignedEMG_data(normalizeAmp).mat'), 'Pall', 'Ptrig')
+    save(fullfile(save_fold_path, 'alignedEMG_data(normalizeAmp).mat'), 'Pall', 'Ptrig', 'timing_name_list')
 else
-    save(fullfile(save_fold_path, 'alignedEMG_data.mat'), 'Pall', 'Ptrig')
+    save(fullfile(save_fold_path, 'alignedEMG_data.mat'), 'Pall', 'Ptrig', 'timing_name_list');
 end
 
 
