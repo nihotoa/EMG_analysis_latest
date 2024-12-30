@@ -26,7 +26,7 @@ t-testを使用していいのかどうかは自信がない。(ノンパラメ�
 clear;
 %% set param
 term_select_type = 'auto'; %'auto' / 'manual'
-term_type = 'post'; %(if term_select_type == 'auto') pre / post / all 
+term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
 monkeyname = 'F';
 use_style = 'test'; % test/train
 first_judge_type = 'dVAF'; % 'VAF' / 'dVAF'
@@ -100,7 +100,6 @@ if not(exist(fullfile(save_data_fold_path, save_data_file_name), "file"))
     optimal_synergy_num_struct = struct();
     
     for day_id = 1:date_num
-    %     ref_VAF_data = VAF_data_list(:, day_id);
         ref_VAF_data = VAF_data_list{day_id};
         ref_spatial_pattern_data = spatial_pattern_data_list{day_id};
         

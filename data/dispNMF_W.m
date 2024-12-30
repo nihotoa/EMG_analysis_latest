@@ -39,15 +39,15 @@ cosine distanceとclusteringは他の関数でも使うので、localじゃなくて、外部関数とし
 clear;
 
 %% set param
-term_select_type = 'manual'; %'auto' / 'manual'
+term_select_type = 'auto'; %'auto' / 'manual'
 term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
-monkeyname = 'Hu';
+monkeyname = 'F';
 syn_num = 4; % number of synergy you want to analyze
 plot_clustering_result = 1; % whether to plot cosine distance & dendrogram of hierarcical clustering
 save_WDaySynergy = 1;% Whether to save synergy W (to be used for ANOVA)
 save_data = 1; % Whether to store data on synergy orders in 'order_tim_list' folder (should basically be set to 1).
 save_fig = 1; % Whether to save the plotted synergy W figure
-synergy_combination = 'all'; % dist-dist/prox-dist/all etc..
+synergy_combination = 'dist-dist'; % dist-dist/prox-dist/all etc..
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
 %% code section
@@ -161,9 +161,9 @@ for synergy_id=1:syn_num
     bar(x,[zeroBar plotted_W],'b','EdgeColor','none');
 
     % decoration
-    ylim([0 1]);
+    ylim([0 2.5])
     a = gca;
-    a.FontSize = 20;
+    a.FontSize = 30;
     a.FontWeight = 'bold';
     a.FontName = 'Arial';
     if save_fig == 1

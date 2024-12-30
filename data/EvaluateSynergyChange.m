@@ -29,7 +29,7 @@ All the japanese characters ara garbled, so refer to past commits and fix them
 clear;
 
 %% set param
-monkeyname = 'Ya';  % Name prefix of the folder containing the synergy data for each date
+monkeyname = 'F';  % Name prefix of the folder containing the synergy data for each date
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 session_group_name_list = {'pre', 'post'};
 variance_threshold = 0.8; % Threshold for cumulative contribution rate of principal componeetns
@@ -156,7 +156,7 @@ for synergy_id = 1:synergy_num
     subplot(2,1,1);
     hold on;
     cmap_matrix = [1 1 1; 1 0 0];
-    plot_coeff = transpose(use_coeff);
+    plot_coeff = transpose(round(use_coeff, 2));
     [~, max_indicies] = max(abs(plot_coeff), [], 2);
     colormap_id_matrix = ones(size(plot_coeff));
     for pc_id = 1:use_pc_num
@@ -166,6 +166,7 @@ for synergy_id = 1:synergy_num
     y_labels = arrayfun(@(i) sprintf('pc%d', i), 1:use_pc_num, 'UniformOutput', false);
     title_str = 'Coefficient for each princical component';
     CreateAnnotatedHeatmap(cmap_matrix, plot_coeff, colormap_id_matrix, x_labels, y_labels, title_str)
+    set(gca, 'FontSize', 20);
     
     subplot(2, 1, 2)
     barh(categorical("contribution"), transpose(explained/100), "stacked")
@@ -173,7 +174,7 @@ for synergy_id = 1:synergy_num
     ax.YTickLabelRotation = 90;
     xlim([0 1])
     title('Contribution of each principal component');
-    set(gca, 'FontSize', 15);
+    set(gca, 'FontSize', 25);
 
     % save setting
     coeff_save_dir = fullfile(common_save_dir, 'contribution_and_coeff');

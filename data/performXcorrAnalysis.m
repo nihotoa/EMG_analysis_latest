@@ -4,7 +4,7 @@
 clear;
 %% set param
 monkeyname = 'F';
-must_plot_EMGs = {'EDCprox', 'FDSprox'};
+must_plot_elements = {'Synergy1', 'Synergy2'};
 figure_row_num = 4; % 1ページに含める筋電の数(colはタイミングの数に決まる)
 TT_surgery_day = 20170530;
 
@@ -126,7 +126,7 @@ for timing_id = 1:(timing_num+1)
     for ref_muscle_id = 1:muscle_num
         % plotに使用するデータを格納する構造体を作る
         ref_muscle_name = EMGs{ref_muscle_id};
-        plot_control_muscle_name = unique([ref_muscle_name, must_plot_EMGs]);
+        plot_control_muscle_name = unique([ref_muscle_name, must_plot_elements]);
         plot_control_muscle_num = length(plot_control_muscle_name);
         plot_xcorr_values = zeros(plot_control_muscle_num, all_day_num);
         for control_muscle_id = 1:plot_control_muscle_num

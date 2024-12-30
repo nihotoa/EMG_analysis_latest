@@ -23,15 +23,16 @@ post: SYNERGYPLOT.m
 clear;
 %% set param
 term_select_type = 'auto'; %'auto' / 'manual'
-term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
+term_type = 'post'; %(if term_select_type == 'auto') pre / post / all 
 monkeyname = 'F';
 use_style = 'test'; % test/train
-figure_type = 'VAF'; % 'VAF'/ dVAF
+figure_type = 'dVAF'; % 'VAF'/ dVAF
 VAF_plot_type = 'stack'; %'stack' or 'mean'
 color_type = 'red'; %(if VAF_plot_type == 'stack') 'red' / 'colorful' 
 VAF_threshold = 0.8; % param to draw threshold_line
 font_size = 20; % Font size of text in the figure
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
+TT_day = 20170530;
 
 %% code section
 realname = get_real_name(monkeyname);
@@ -166,7 +167,6 @@ if strcmp(figure_type, 'VAF')
 end
 xlim([0 muscle_num]);
 ylim(y_range);
-set(gca, 'FontSize', 25);
 xlabel('Number of synergy', FontSize=font_size)
 ylabel(['Value of ' figure_type], FontSize=font_size)
 legend('Location', legend_location)
@@ -176,7 +176,7 @@ switch term_select_type
     case 'manual'
         title([figure_type ' value of each session'], FontSize = font_size);
 end
-
+set(gca, 'FontSize', 25);
 grid on;
 
 hold off

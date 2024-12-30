@@ -53,7 +53,7 @@ monkeyname = 'F'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
 plot_all = 1; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
 plot_type = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
-pColor = 'K';  % select 'K'(black plot) or 'C'(color plot) 
+pColor = 'C';  % select 'K'(black plot) or 'C'(color plot) 
 normalizeAmp = 0; % normalize Amplitude a
 YL = 3; % (if nomalize Amp == 0) ylim of graph
 LineW = 1.5; %0.1;a % width of plot line 

@@ -23,17 +23,17 @@ function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type, 
     
     for m = 1:element_num
         % determine the title of this subplot
-        add_str = '';
+        title_str = '';
         if exist('timing_name')
-            add_str = timing_name;
+            title_str = timing_name;
         end
 
         switch plot_type
             case 'EMG'
-                title_str = [add_str EMGs{m}];
+                title_str = [title_str EMGs{m}];
                 ylabel_str = 'Amplitude[uV]';
             case 'Synergy'
-                title_str = [add_str 'Synergy' num2str(m)];
+%                 title_str = [title_str 'Synergy' num2str(m)];
                 ylabel_str = 'Coefficient';
         end
 
@@ -79,8 +79,12 @@ function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type, 
             end
             ylabel(ylabel_str)
         end
+        
+        if exist("row_idx", "var") && row_idx == 1
+            title(title_str);
+        end
 
         % title 
-        title(title_str);
+        set(gca, "FontSize", 15);
     end
 end
