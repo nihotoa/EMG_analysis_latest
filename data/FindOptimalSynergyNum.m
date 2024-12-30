@@ -20,13 +20,14 @@ post: SYNERGYPLOT.m
 [shared information]
 ・t-testによってshuffleデータのdVAFが実際のデータのdVAFよりも有意に大きいかどうか調べているが、正規分布とは限らないので
 t-testを使用していいのかどうかは自信がない。(ノンパラメトリックな検定方法を使うべきかも)
+・TT_surgery_dayを手動で決めているけど、これは猿によって固定なので、それ用の関数をつく他方がいいかも
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-term_select_type = 'manual'; %'auto' / 'manual'
-term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
-monkeyname = 'Hu';
+term_select_type = 'auto'; %'auto' / 'manual'
+term_type = 'post'; %(if term_select_type == 'auto') pre / post / all 
+monkeyname = 'F';
 use_style = 'test'; % test/train
 first_judge_type = 'dVAF'; % 'VAF' / 'dVAF'
 VAF_threshold = 0.8; % param to draw threshold_line
@@ -34,7 +35,8 @@ coffen_coefficient_threshold = 0.95;
 font_size = 20; % Font size of text in the figure
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 significant_level = 0.01;
-TT_surgery_day = 20241021;
+TT_surgery_day = 20170530;
+make_figure = true;
 
 %% code section
 % get date_list by GUI operation
@@ -197,35 +199,38 @@ else
 end
 
 %% plot result
-elapsed_day_list = makeElapsedDateList(date_list, TT_surgery_day);
-
-figure();
-hold on;
-plot(elapsed_day_list, optimal_synergyNum_list, 'o', LineWidth=2);
-
-elapsed_first = 0;
-if any(elapsed_day_list < 0)
-    elapsed_first = elapsed_day_list(1);
-    elapsed_post_first = elapsed_day_list(find(elapsed_day_list > 0, 1));
-    rectangle('Position', [0 0, elapsed_post_first - 1, muscle_num], 'FaceColor',[1, 1, 1], 'EdgeColor', 'K', 'LineWidth',1.2);
+if make_figure
+    elapsed_day_list = makeElapsedDateList(date_list, TT_surgery_day);
+    
+    figure();
+    hold on;
+    plot(elapsed_day_list, optimal_synergyNum_list, 'o', LineWidth=2, MarkerEdgeColor='blue', MarkerFaceColor='blue');
+    plot(elapsed_day_list, optimal_synergyNum_list, LineWidth=2);
+    
+    elapsed_first = 0;
+    if any(elapsed_day_list < 0)
+        elapsed_first = elapsed_day_list(1);
+        elapsed_post_first = elapsed_day_list(find(elapsed_day_list > 0, 1));
+        rectangle('Position', [0 0, elapsed_post_first - 1, muscle_num], 'FaceColor',[1, 1, 1], 'EdgeColor', 'K', 'LineWidth',1.2);
+    end
+    
+    % decoration
+    grid on;
+    xlim([elapsed_first elapsed_day_list(end)]);
+    ylim([0 muscle_num]);
+    set(gca, FontSize=15)
+    
+    ylabel('optimal number of syenrgy');
+    xlabel(['elapsed date since recoring begin'])
+    
+    % save setting
+    save_figure_fold = fullfile(save_data_fold_path, 'figure');
+    save_figure_file_name = ['optimal_synergy_num_' date_list{1} '_to_' date_list{end} '_' num2str(date_num)];
+    
+    makefold(save_figure_fold);
+    
+    saveas(gcf, fullfile(save_figure_fold, [save_figure_file_name '.png']))
+    saveas(gcf, fullfile(save_figure_fold, [save_figure_file_name '.fig']))
+    disp(['figure is saved in:' save_figure_fold])
+    close all;
 end
-
-% decoration
-grid on;
-xlim([elapsed_first elapsed_day_list(end)]);
-ylim([0 muscle_num]);
-set(gca, FontSize=15)
-
-ylabel('optimal number of syenrgy');
-xlabel(['elapsed date since recoring begin'])
-
-% save setting
-save_figure_fold = fullfile(save_data_fold_path, 'figure');
-save_figure_file_name = ['optimal_synergy_num_' date_list{1} '_to_' date_list{end} '_' num2str(date_num)];
-
-makefold(save_figure_fold);
-
-saveas(gcf, fullfile(save_figure_fold, [save_figure_file_name '.png']))
-saveas(gcf, fullfile(save_figure_fold, [save_figure_file_name '.fig']))
-disp(['figure is saved in:' save_figure_fold])
-close all;

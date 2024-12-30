@@ -22,9 +22,9 @@ post: SYNERGYPLOT.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-term_select_type = 'manual'; %'auto' / 'manual'
-term_type = 'post'; %(if term_select_type == 'auto') pre / post / all 
-monkeyname = 'Hu';
+term_select_type = 'auto'; %'auto' / 'manual'
+term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
+monkeyname = 'F';
 use_style = 'test'; % test/train
 figure_type = 'VAF'; % 'VAF'/ dVAF
 VAF_plot_type = 'stack'; %'stack' or 'mean'
@@ -166,7 +166,7 @@ if strcmp(figure_type, 'VAF')
 end
 xlim([0 muscle_num]);
 ylim(y_range);
-set(gca, 'FontSize', 15);
+set(gca, 'FontSize', 25);
 xlabel('Number of synergy', FontSize=font_size)
 ylabel(['Value of ' figure_type], FontSize=font_size)
 legend('Location', legend_location)
