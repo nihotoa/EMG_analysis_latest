@@ -25,9 +25,9 @@ t-testを使用していいのかどうかは自信がない。(ノンパラメ�
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-term_select_type = 'auto'; %'auto' / 'manual'
+term_select_type = 'manual'; %'auto' / 'manual'
 term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
-monkeyname = 'F';
+monkeyname = 'Hu';
 use_style = 'test'; % test/train
 first_judge_type = 'dVAF'; % 'VAF' / 'dVAF'
 VAF_threshold = 0.8; % param to draw threshold_line
@@ -35,7 +35,7 @@ coffen_coefficient_threshold = 0.95;
 font_size = 20; % Font size of text in the figure
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 significant_level = 0.01;
-TT_surgery_day = 20170530;
+TT_surgery_day = 20250120;
 make_figure = true;
 
 %% code section

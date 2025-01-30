@@ -31,7 +31,6 @@ synergy_num_list = [4]; % (if select_synergy_num_type == 'manual')which synergy 
 plot_clustering = 1; % Whether you want to plot & save heatmap of cosine distance and the clustering result.
 nmf_fold_name = 'new_nmf_result'; 
 each_plot = 0; % whether you want to plot spatial_pattern figure for each synergy
-
 % save_setting
 save_setting.save_fig_W = 1; % whether you want to save figure of spatial pattern of synergy(synergy W)
 save_setting.save_fig_H = 1; % whether you want to save figure of temporal pattern of synergy(synergy H)

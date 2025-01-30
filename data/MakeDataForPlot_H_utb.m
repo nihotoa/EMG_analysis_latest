@@ -30,7 +30,7 @@ In order to use the function 'resample', 'signal processing toolbox' must be ins
 clear;
 %% set param
 term_select_type = 'manual'; %'auto' / 'manual'
-term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
+term_type = 'all'; %(if term_select_type == 'auto') pre / post / all 
 monkeyname = 'Hu';
 synergy_num = 4; % number of synergy you want to analyze
 save_data = 1; % whether you want to save data (basically, set 1)

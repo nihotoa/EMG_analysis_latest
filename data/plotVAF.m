@@ -22,17 +22,17 @@ post: SYNERGYPLOT.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-term_select_type = 'auto'; %'auto' / 'manual'
+term_select_type = 'manual'; %'auto' / 'manual'
 term_type = 'post'; %(if term_select_type == 'auto') pre / post / all 
-monkeyname = 'F';
+monkeyname = 'Hu';
 use_style = 'test'; % test/train
-figure_type = 'dVAF'; % 'VAF'/ dVAF
+figure_type = 'VAF'; % 'VAF'/ dVAF
 VAF_plot_type = 'stack'; %'stack' or 'mean'
 color_type = 'red'; %(if VAF_plot_type == 'stack') 'red' / 'colorful' 
 VAF_threshold = 0.8; % param to draw threshold_line
 font_size = 20; % Font size of text in the figure
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
-TT_day = 20170530;
+TT_day = 20241215;
 
 %% code section
 realname = get_real_name(monkeyname);

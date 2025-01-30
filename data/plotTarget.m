@@ -49,13 +49,13 @@ post: calcXcorr
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkeyname = 'F'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
+monkeyname = 'Hu'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
 plot_all = 1; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
-plot_type = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
-pColor = 'C';  % select 'K'(black plot) or 'C'(color plot) 
+plot_type = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
+pColor = 'K';  % select 'K'(black plot) or 'C'(color plot) 
 normalizeAmp = 0; % normalize Amplitude a
-YL = 3; % (if nomalize Amp == 0) ylim of graph
+YL = inf; % (if nomalize Amp == 0) ylim of graph
 LineW = 1.5; %0.1;a % width of plot line 
 row_num = 4; % how many rows to display in one subplot figure
 fig_type_array = {'stack', 'std'}; % you don't  need to change
@@ -94,7 +94,7 @@ switch realname
         plotWindow_cell{4} = [-5 25];
     case 'Hugo'
         timing_name_list = ["Task start ", "Drawer on", "Drawer off", "Grasp on ", "Grasp off ", "Task End"];  
-        TT_day=  [];
+        TT_day=  250120;
         % plot window (Xcorr data will be made in this range)
         plotWindow_cell{1} = [-25 5];
         plotWindow_cell{2} = [-15 15];

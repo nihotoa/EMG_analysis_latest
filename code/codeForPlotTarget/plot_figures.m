@@ -24,7 +24,7 @@ function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type, 
     for m = 1:element_num
         % determine the title of this subplot
         title_str = '';
-        if exist('timing_name')
+        if and(exist('timing_name', 'var'), mod(m, row_num) == 1)
             title_str = timing_name;
         end
 
@@ -80,9 +80,10 @@ function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type, 
             ylabel(ylabel_str)
         end
         
-        if exist("row_idx", "var") && row_idx == 1
-            title(title_str);
-        end
+%         if exist("row_idx", "var") && row_idx == 1
+%             title(title_str);
+%         end
+        title(title_str)
 
         % title 
         set(gca, "FontSize", 15);
