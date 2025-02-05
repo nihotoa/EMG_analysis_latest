@@ -58,6 +58,9 @@ clear
 realname = 'Hugo';  % 'Yachimun', 'SesekiL', 'Nibali' , 'Hugo'
 mE = struct();
 mE.downdata_to = 1375; % (if down_E ==1)sampling rate of after resampling
+mE.time_restriction_flag = true; % true/false
+mE.time_restriction_threshold = 3;  %[s]
+
 task = 'standard'; % you don't need to change
 save_fold = 'easyData'; % you don't need to change
 
@@ -101,13 +104,8 @@ for i = 1:session_num
     file_num = fileInfo.file_num;
     
     % Perform all preprocessing with 3 functions
-    
-    try 
-        % 1. Perform data concatenation & filtering processing & Obtain information on each timing for EMG trial-by-trial extraction
-        [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, realname, xpdate, file_num, save_fold, mE, task); 
-    catch
-        continue
-    end
+    % 1. Perform data concatenation & filtering processing & Obtain information on each timing for EMG trial-by-trial extraction
+    [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, realname, xpdate, file_num, save_fold, mE, task); 
 
     % 2. Check for cross-talk between measured EMGs
     [Yave,Y3ave] = CTcheck(monkeyname, xpdate, save_fold, realname);

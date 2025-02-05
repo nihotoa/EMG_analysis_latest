@@ -42,7 +42,7 @@ SR = EMG_data_struct.SampleRate;
 
 EMGs = EMG_data_struct.EMGs; % name list of EMG
 EMG_num = length(EMGs);% the number of EMGs
-TimingT1 = TimingT1(1:end-1,:);
+TimingT1 = TimingT1(1:end,:);
 [trial_num, ~] = size(TimingT1);  % number of success trial 
 
 %% filter EMG

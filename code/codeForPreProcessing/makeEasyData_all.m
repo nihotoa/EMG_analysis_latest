@@ -34,6 +34,8 @@ down_E =  mE.down_E;
 make_Timing = mE.make_Timing;
 downdata_to = mE.downdata_to;
 success_button_count_threshold = 80;
+time_restriction_flag = mE.time_restriction_flag;
+time_restriction_threshold = mE.time_restriction_threshold; 
 
 %% code section
 xpdate = sprintf('%d',xpdate_num);
@@ -215,7 +217,7 @@ if make_Timing == 1
                warning([real_name '-' xpdate ' does not have "CTTL_003" signal']);
            end
        case 'Hu'
-           [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to, success_button_count_threshold);
+           [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to, success_button_count_threshold, time_restriction_flag, time_restriction_threshold);
        otherwise %if reference monkey is not SesekiR or Wasa. (if you don't have to chage to fotocell）
             [Timing,Tp,Tp3] = makeEasyTiming(monkeyname,xpdate,file_num,downdata_to,TimeRange_EMG);
    end
@@ -261,8 +263,12 @@ if save_E == 1
                                                     'Timing','Tp','Tp3','TTLd','TTLu');
     end
     save(fullfile(save_fold_path, [monkeyname xpdate '_CTcheckData.mat']), 'CTcheck');
-    if exist("success_timing")
-        save(fullfile(save_fold_path, 'success_timing.mat'), 'success_timing');
+    if exist("success_timing", "var")
+        success_timing_file_name = 'success_timing';
+        if time_restriction_flag
+            success_timing_file_name = [success_timing_file_name '(' num2str(time_restriction_threshold) '[sec]_restriction)'];
+        end
+        save(fullfile(save_fold_path, [success_timing_file_name '.mat']), 'success_timing');
     end
     disp(['FINISH TO MAKE & SAVE ' monkeyname xpdate 'file[' sprintf('%d',file_num(1)) ',' sprintf('%d',file_num(end)) ']']);
 else
@@ -567,7 +573,7 @@ Tp: [double array], Data for each timing in each trial is stored.
 Tp3: [double array], Data for each timing in each trial is stored.
 %}
 
-function [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to, success_button_count_threshold)
+function [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to, success_button_count_threshold, time_restriction_flag, time_restriction_threshold)
 load_file_path = fullfile(pwd, real_name, [monkeyname xpdate '-' sprintf('%04d', file_num(1))]);
 make_timing_struct = load(load_file_path, 'CAI*', 'CTTL*');
 timing_struct = struct();
@@ -676,10 +682,11 @@ match_3rd_array = ref_timing_array1(:, necessary_idx);
 
 % create output arguments
 Tp = reshape(Timing(1, :), length(representative_condition), [])';
-trial_time = (Tp(:,end) - Tp(:,1)) / downdata_to;
 
-% 最後のスクリーニング(3秒以上のかかっているものは除く)
-Tp = Tp(trial_time(:, 1) < 3, :);
+if time_restriction_flag
+    trial_time = (Tp(:,end) - Tp(:,1)) / downdata_to;
+    Tp = Tp(trial_time(:, 1) < time_restriction_threshold, :);
+end
 
 Tp3 = reshape(match_3rd_array(1,:), length(condition3), [])';
 end
