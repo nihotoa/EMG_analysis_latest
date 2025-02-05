@@ -42,7 +42,7 @@ clear;
 term_select_type = 'manual'; %'auto' / 'manual'
 term_type = 'all'; %(if term_select_type == 'auto') pre / post / all 
 normalize_flag = true;
-monkeyname = 'F';
+monkeyname = 'Hu';
 syn_num = 4; % number of synergy you want to analyze
 plot_clustering_result = 1; % whether to plot cosine distance & dendrogram of hierarcical clustering
 save_WDaySynergy = 1;% Whether to save synergy W (to be used for ANOVA)
@@ -232,7 +232,7 @@ for synergy_id=1:syn_num
     e1.Color = 'r';
     e1.LineWidth = 2;
     e1.LineStyle = 'none';
-    ylim([0 2.5]);
+    ylim([0 1]);
     a = gca;
     a.FontSize = 20;
     a.FontWeight = 'bold';

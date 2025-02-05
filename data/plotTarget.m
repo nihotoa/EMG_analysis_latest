@@ -30,7 +30,6 @@ post: calcXcorr
 [caution!!]
 1. Sometimes the function 'uigetfile' is not executed and an error occurs
 -> please reboot MATLAB
-2. Do not select date before 'TT_day' when you use pColor as 'C'
 
 [Improvement points(Japanaese)]
 + figure, データに限らず、何かしらセーブしたらログ出すように変更。
@@ -53,9 +52,10 @@ monkeyname = 'Hu'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
 plot_all = 1; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
 plot_type = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
-pColor = 'K';  % select 'K'(black plot) or 'C'(color plot) 
-normalizeAmp = 0; % normalize Amplitude a
-YL = inf; % (if nomalize Amp == 0) ylim of graph
+normalizeAmp = false; % wether normalize Amplitude or not
+ylim_setting_type = 'individual'; % (if nomalize Amp == 0) 'all'/'individual', whether ylim be set individually for each EMG or use a common value
+ylim_max = inf; % (if nomalize Amp == 0 && ylim_setting_type == 'all') ylim of graph
+ylim_max_list = [150, 50, 60, 20, 30, 80, 100, 20, 50, 20, 70, 40, 30, 60, 30, 20]; % (if nomalize Amp == 0 && ylim_setting_type == 'individual') ylim of graph for each EMG
 LineW = 1.5; %0.1;a % width of plot line 
 row_num = 4; % how many rows to display in one subplot figure
 fig_type_array = {'stack', 'std'}; % you don't  need to change
@@ -123,11 +123,6 @@ switch plot_type
         extract_func = @(str) regexp(str, '.*_(\d+)$', 'tokens', 'once');
         days_str = cellfun(extract_func, Allfiles, 'UniformOutput', true);
 end
-
-if pColor == 'C'
-    days_double =str2double(days_str'); % used for matching with 'Csp'
-end
-
 
 %% Get the average data length over all sessions(days)
 
@@ -214,28 +209,26 @@ for timing_id = 1:timing_num
     [Ptrig{timing_id}] = makeSDdata(Ptrig{timing_id}, session_num, element_num);
 end
 
-% make array of colormap for plot
-if strcmp(pColor, 'C')
-    % get TermDays(get dates from the file name of 'Pdtata' and exclude dates before 'TT_day' from this file name list)
-    selected_first_Pdata_name = Allfiles_S{1};
-    [TermDays, term_type] = extract_post_days(TT_day, select_folder_path, plot_type, selected_first_Pdata_name);
+% plot color setting(create color map)
+days_double =str2double(days_str'); % used for matching with 'Csp'
+selected_first_Pdata_name = Allfiles_S{1};
+[TermDays, term_type] = extract_post_days(TT_day, select_folder_path, plot_type, selected_first_Pdata_name);
 
-    % decision of base color(RGB)
-    switch term_type
-        case 'pre'
-            color_id = 2;
-        case 'post'
-            switch realname
-                case 'SesekiL'
-                    color_id = 2;
-                otherwise
-                    color_id = 1;
-            end
-    end
-    PostLength = length(TermDays);
-    Csp = zeros(PostLength, 3);
-    Csp(:, color_id) = ones(PostLength, 1).*linspace(0.3, 1, PostLength)';
+% decision of base color(RGB)
+switch term_type
+    case 'pre'
+        color_id = 2;
+    case 'post'
+        switch realname
+            case 'SesekiL'
+                color_id = 2;
+            otherwise
+                color_id = 1;
+        end
 end
+PostLength = length(TermDays);
+Csp = zeros(PostLength, 3);
+Csp(:, color_id) = ones(PostLength, 1).*linspace(0.3, 1, PostLength)';
 
 %% define save folder path (which is stored all data & figures)
 switch plot_type
@@ -247,6 +240,11 @@ end
 makefold(save_fold_path);
 
 %% plot figure
+if and(strcmp(ylim_setting_type, 'all'), ylim_max == inf)
+    max_amplitude_list = getMaxAmplitudeList(Pall.plotData_sel);
+    max_amplitude_list = transpose(max_amplitude_list);
+    ylim_max_list = ceil(max_amplitude_list / 10) * 10;
+end
 
 % comple the data needed to embelish the figure
 % load taskRange
@@ -261,7 +259,7 @@ Pall.cutoutRange = linspace(taskRange(1), taskRange(2), Pall.AllT_AVE);
 
 % add variables which is used in plot function in 'data_struct'
 data_str = struct();
-use_variable_name_list = {'element_num', 'session_num', 'pColor', 'LineW', 'normalizeAmp', 'YL', 'EMGs', 'plot_type', 'TermDays', 'days_double', 'Csp', 'row_num', 'timing_num'};
+use_variable_name_list = {'element_num', 'session_num', 'LineW', 'normalizeAmp', 'ylim_setting_type', 'ylim_max','ylim_max_list' 'EMGs', 'plot_type', 'TermDays', 'days_double', 'Csp', 'row_num', 'timing_num'};
 
 % store data in a struct
 not_exist_variables = {};
@@ -280,7 +278,6 @@ if not(isempty(not_exist_variables))
 end
 
 %% 1. plot all taks range data(all muscle) -> plot range follows 'plotWindow'
-
 if plot_all == 1
     % save_setting(determine file name for figure)
     save_figure_name =  ['All_' plot_type '(whole task)'];
@@ -315,7 +312,6 @@ end
 if plot_each_timing == 1
     % decide the number of created figures (4 muscles(or Synergies) per figure)
     figure_num = ceil(element_num/row_num); 
-    max_amplitude_list = getMaxAmplitudeList(Pall.plotData_sel);
 
     % Create a struct array for figure to plot
     figure_str = struct;
@@ -345,20 +341,13 @@ if plot_each_timing == 1
         % plot figures
         for idx = 1:length(fig_type_array)
             fig_type = fig_type_array{idx};
-            figure_str.(fig_type) = plot_figures(figure_str.(fig_type), data_str, 'each_timing', fig_type, max_amplitude_list);
+            figure_str.(fig_type) = plot_figures(figure_str.(fig_type), data_str, 'each_timing', fig_type);
         end
     end
 
     % save_figure
-    switch pColor
-        case 'K'
-            added_info = 'monochro';
-        case 'C'
-            added_info = 'color';
-    end
-
     for figure_id = 1:figure_num
-        save_figure_name =  ['each_timing_figure' num2str(figure_id) '_' added_info];
+        save_figure_name =  ['each_timing_figure' num2str(figure_id)];
         for idx = 1:length(fig_type_array)
             fig_type = fig_type_array{idx};
             figure(figure_str.(fig_type).(['fig' num2str(figure_id)]));
@@ -381,7 +370,7 @@ end
 
 % make dates array of post as 'TermDays'(eliminate only Pre days from '_Pdata.mat' name list)
 function [TermDays, term_type] = extract_post_days(TT_day, folder_path, plot_type, first_Pdata_name)
-    files_struct = dir(fullfile(folder_path, '*_Pdata.mat'));
+    files_struct = dirEx(fullfile(folder_path, '*_Pdata.mat'));
     file_names = {files_struct.name};
     day_num = length(file_names);
     date_list = zeros(day_num, 1);
