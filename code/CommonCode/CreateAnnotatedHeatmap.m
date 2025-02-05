@@ -31,10 +31,10 @@ colorbar off;
 axis equal tight;
 
 % 各マスの上にテキストを入れていく
-textStrings = num2str(value_data_matrix(:), '%.4f');
+textStrings = num2str(value_data_matrix(:), '%.2f');
 textStrings = strtrim(cellstr(textStrings));
 [x, y] = meshgrid(1:size(value_data_matrix, 2), 1:size(value_data_matrix, 1));
-hStrings = text(x(:), y(:), textStrings(:), 'HorizontalAlignment', 'center', 'Color', 'k');
+hStrings = text(x(:), y(:), textStrings(:), 'HorizontalAlignment', 'center', 'Color', 'k', 'FontSize',20);
 nanIndex_list = isnan(value_data_matrix(:));
 set(hStrings(nanIndex_list), 'Color', 'k');
 

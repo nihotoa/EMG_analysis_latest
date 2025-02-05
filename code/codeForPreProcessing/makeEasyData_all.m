@@ -676,6 +676,11 @@ match_3rd_array = ref_timing_array1(:, necessary_idx);
 
 % create output arguments
 Tp = reshape(Timing(1, :), length(representative_condition), [])';
+trial_time = (Tp(:,end) - Tp(:,1)) / downdata_to;
+
+% 最後のスクリーニング(3秒以上のかかっているものは除く)
+Tp = Tp(trial_time(:, 1) < 3, :);
+
 Tp3 = reshape(match_3rd_array(1,:), length(condition3), [])';
 end
 

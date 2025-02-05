@@ -24,7 +24,7 @@ clear;
 %% set param
 monkey_name = 'Hu'; % prefix of file
 save_fold = 'new_nmf_result'; % not need to change
-extract_EMG_type = 'full'; % 'only_task', 'full'
+extract_EMG_type = 'only_task'; % 'only_task', 'full'
 padding_time = 0.5; % unit is [second], the seconds of extract data added to the 'task_start' and 'task_end' of each trial
 
 %% code section

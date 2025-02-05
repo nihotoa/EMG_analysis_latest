@@ -12,7 +12,7 @@ figure_str: [struct], contains some figure object
 
 %}
 
-function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type, y_max_value_list)
+function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type)
     % stores the field of a structure in a variable of the same name
     field_names = fieldnames(data_str);
     for idx = 1:length(field_names)
@@ -23,17 +23,16 @@ function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type, 
     
     for m = 1:element_num
         % determine the title of this subplot
-        add_str = '';
-        if exist('timing_name')
-            add_str = timing_name;
+        title_str = '';
+        if and(exist('timing_name', 'var'), mod(m, row_num) == 1)
+            title_str = timing_name;
         end
 
         switch plot_type
             case 'EMG'
-                title_str = [add_str EMGs{m}];
+                title_str = [title_str EMGs{m}];
                 ylabel_str = 'Amplitude[uV]';
             case 'Synergy'
-                title_str = [add_str 'Synergy' num2str(m)];
                 ylabel_str = 'Coefficient';
         end
 
@@ -70,17 +69,26 @@ function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type, 
         if normalizeAmp == 1
             ylim([0 1]);
         else
-            if and(exist("y_max_value_list"), YL==inf)
+            %{
+            if and(exist("y_max_value_list"), ylim_max==inf)
                 ref_y_max_value = y_max_value_list(m);
                 upper_lim = ceil(ref_y_max_value / 10) * 10;
                 ylim([0 upper_lim]);
             else
-                ylim([0 YL]);
+                ylim([0 ylim_max]);
             end
+            %}
+            if and(strcmp(ylim_setting_type, 'all'), not(ylim_max == inf))
+                upper_value = ylim_max;
+            else
+                upper_value = ylim_max_list(m);
+            end
+            ylim([0 upper_value]);
             ylabel(ylabel_str)
         end
+        title(title_str)
 
         % title 
-        title(title_str);
+        set(gca, "FontSize", 15);
     end
 end

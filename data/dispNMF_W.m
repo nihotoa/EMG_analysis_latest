@@ -40,14 +40,15 @@ clear;
 
 %% set param
 term_select_type = 'manual'; %'auto' / 'manual'
-term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
+term_type = 'all'; %(if term_select_type == 'auto') pre / post / all 
+normalize_flag = true;
 monkeyname = 'Hu';
 syn_num = 4; % number of synergy you want to analyze
 plot_clustering_result = 1; % whether to plot cosine distance & dendrogram of hierarcical clustering
 save_WDaySynergy = 1;% Whether to save synergy W (to be used for ANOVA)
 save_data = 1; % Whether to store data on synergy orders in 'order_tim_list' folder (should basically be set to 1).
 save_fig = 1; % Whether to save the plotted synergy W figure
-synergy_combination = 'all'; % dist-dist/prox-dist/all etc..
+synergy_combination = 'dist-dist'; % dist-dist/prox-dist/all etc..
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
 
 %% code section
@@ -88,13 +89,27 @@ if day_num > 1
     for date_id = 1:day_num
         ref_day = days(date_id);
         common_name = [monkeyname num2str(ref_day)];
-        use_W_folder_path = fullfile(base_dir, [common_name '_standard'], [common_name '_syn_result_' num2str(EMG_num)], [common_name '_W']);
+        use_W_folder_path = fullfile(base_dir, [common_name '_standard'], [common_name '_syn_result_' sprintf('%02d', EMG_num)], [common_name '_W']);
         use_W_file_name = [common_name '_aveW_' num2str(syn_num)];
         load(fullfile(use_W_folder_path, use_W_file_name), 'aveW');
+        if not(normalize_flag)  
+            load(fullfile(use_W_folder_path, use_W_file_name), 'Wt_coefficient_matrix');
+            coefficinet_list = mean(cell2mat(cellfun(@(x) x(:), Wt_coefficient_matrix, 'UniformOutput', false)), 2)';
+            aveW = aveW .* coefficinet_list;
+        end
         W_data{date_id} = aveW;
         clear aveW;
     end
     [Wt, k_arr] = OrderSynergy(EMG_num, syn_num, W_data, monkeyname, days, base_dir, plot_clustering_result, term_type);
+
+    %{
+     %Sesekióp(0117, 0212, 0226, 0305, 0310, 0326)Ç»ÇÃÇ≈å„Ç≈è¡ÇµÇƒ
+     k_arr = [[1;2;3;4], [1;3;2;4], [1;4;3;2], [1;4;3;2], [1;3;2;4], [1;4;2;3]];
+     for day_id = 1:day_num
+        Wt{day_id} = W_data{day_id}(:, k_arr(:, day_id));
+    end
+    %}
+
     if isempty(k_arr)
         warning('We were unable to match all synergies. We recommend reducing the number of synergy');
         return; 
@@ -103,7 +118,7 @@ else
     k_arr = transpose(1:syn_num);
     W_data =  cell(1,1);
     % Load the W synergy data created by SYNERGYPLOT
-    synergy_W_file_path = fullfile(base_dir, [monkeyname num2str(days) '_standard'], [monkeyname num2str(days) '_syn_result_' sprintf('%d',EMG_num)], [monkeyname num2str(days) '_W'], [monkeyname num2str(days) '_aveW_' sprintf('%d',syn_num) '.mat']);
+    synergy_W_file_path = fullfile(base_dir, [monkeyname num2str(days) '_standard'], [monkeyname num2str(days) '_syn_result_' sprintf('%02d',EMG_num)], [monkeyname num2str(days) '_W'], [monkeyname num2str(days) '_aveW_' sprintf('%d',syn_num) '.mat']);
     load(synergy_W_file_path, 'aveW');
     Wt{1} = aveW;
 end
@@ -161,9 +176,9 @@ for synergy_id=1:syn_num
     bar(x,[zeroBar plotted_W],'b','EdgeColor','none');
 
     % decoration
-    ylim([0 1]);
+    ylim([0 inf])
     a = gca;
-    a.FontSize = 20;
+    a.FontSize = 30;
     a.FontWeight = 'bold';
     a.FontName = 'Arial';
     if save_fig == 1
@@ -217,7 +232,7 @@ for synergy_id=1:syn_num
     e1.Color = 'r';
     e1.LineWidth = 2;
     e1.LineStyle = 'none';
-    ylim([0 2.5]);
+    ylim([0 1]);
     a = gca;
     a.FontSize = 20;
     a.FontWeight = 'bold';
