@@ -51,10 +51,10 @@ clear;
 monkeyname = 'Hu'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
 plot_all = 1; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
-plot_type = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
+plot_type = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
 normalizeAmp = false; % wether normalize Amplitude or not
-ylim_setting_type = 'individual'; % (if nomalize Amp == 0) 'all'/'individual', whether ylim be set individually for each EMG or use a common value
-ylim_max = inf; % (if nomalize Amp == false && ylim_setting_type == 'all') ylim of graph
+ylim_setting_type = 'all'; % (if nomalize Amp == false) 'all'/'individual', whether ylim be set individually for each EMG or use a common value
+ylim_max = 10; % (if nomalize Amp == false && ylim_setting_type == 'all') ylim of graph
 ylim_max_list = [200, 80, 80, 20, 30, 80, 100, 30, 50, 20, 80, 50, 30, 60, 30, 20]; % (if nomalize Amp == false && ylim_setting_type == 'individual') ylim of graph for each EMG
 LineW = 1.5; %0.1;a % width of plot line 
 row_num = 4; % how many rows to display in one subplot figure
@@ -367,10 +367,15 @@ end
 
 
 %% define local function
-
 % make dates array of post as 'TermDays'(eliminate only Pre days from '_Pdata.mat' name list)
 function [TermDays, term_type] = extract_post_days(TT_day, folder_path, plot_type, first_Pdata_name)
-    files_struct = dirEx(fullfile(folder_path, '*_Pdata.mat'));
+    common_file_name = '_Pdata';
+    if strcmp(plot_type, 'Synergy')
+        tentetive = regexp(first_Pdata_name, '\d+', 'match'); %extract number part
+        synergy_num_string = tentetive{1};
+        common_file_name = ['Syn' synergy_num_string '*' common_file_name];
+    end
+    files_struct = dirEx(fullfile(folder_path, ['*' common_file_name '.mat']));
     file_names = {files_struct.name};
     day_num = length(file_names);
     date_list = zeros(day_num, 1);
