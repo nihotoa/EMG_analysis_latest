@@ -176,7 +176,7 @@ for synergy_id=1:syn_num
     bar(x,[zeroBar plotted_W],'b','EdgeColor','none');
 
     % decoration
-    ylim([0 inf])
+    ylim([0 1])
     a = gca;
     a.FontSize = 30;
     a.FontWeight = 'bold';

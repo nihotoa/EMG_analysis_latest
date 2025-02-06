@@ -54,8 +54,8 @@ plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
 plot_type = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
 normalizeAmp = false; % wether normalize Amplitude or not
 ylim_setting_type = 'individual'; % (if nomalize Amp == 0) 'all'/'individual', whether ylim be set individually for each EMG or use a common value
-ylim_max = inf; % (if nomalize Amp == 0 && ylim_setting_type == 'all') ylim of graph
-ylim_max_list = [150, 50, 60, 20, 30, 80, 100, 20, 50, 20, 70, 40, 30, 60, 30, 20]; % (if nomalize Amp == 0 && ylim_setting_type == 'individual') ylim of graph for each EMG
+ylim_max = inf; % (if nomalize Amp == false && ylim_setting_type == 'all') ylim of graph
+ylim_max_list = [200, 80, 80, 20, 30, 80, 100, 30, 50, 20, 80, 50, 30, 60, 30, 20]; % (if nomalize Amp == false && ylim_setting_type == 'individual') ylim of graph for each EMG
 LineW = 1.5; %0.1;a % width of plot line 
 row_num = 4; % how many rows to display in one subplot figure
 fig_type_array = {'stack', 'std'}; % you don't  need to change

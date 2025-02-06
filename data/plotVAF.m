@@ -18,6 +18,7 @@ post: SYNERGYPLOT.m
 [Improvement points(Japanaese)]
 ・冗長 & 汚い、特にcolorbar_flag周りの処理。
 ・dVAFの処理を加えたが, colorbar_flagがtrueの時の動作確認はしてない
+・plotTargetと同じように、preとpostでカラーバーの色変えたほうがいいかも
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -28,11 +29,10 @@ monkeyname = 'Hu';
 use_style = 'test'; % test/train
 figure_type = 'VAF'; % 'VAF'/ dVAF
 VAF_plot_type = 'stack'; %'stack' or 'mean'
-color_type = 'red'; %(if VAF_plot_type == 'stack') 'red' / 'colorful' 
 VAF_threshold = 0.8; % param to draw threshold_line
 font_size = 20; % Font size of text in the figure
 nmf_fold_name = 'new_nmf_result'; % name of nmf folder
-TT_day = 20241215;
+TT_day = 20250120;
 
 %% code section
 realname = get_real_name(monkeyname);
@@ -48,7 +48,7 @@ AllDays = strrep(Allfiles, monkeyname, '');
 day_num = length(Allfiles_S);
 
 % create a flag to indicate whether or not to add  a color bar to thefigure
-if exist("TT_day")
+if exist("TT_day", "var")
     colorbar_flag = 1;
 else
     colorbar_flag = 0;
@@ -107,15 +107,18 @@ errorbar(x_axis, shuffle_mean, shuffle_std, 'o-', 'LineWidth', 2, 'Color', 'blue
 switch VAF_plot_type
     case 'stack'
         if colorbar_flag == 1
-            switch color_type
-                case 'red'
-                    color_matrix = zeros(day_num, 3);
-                    color_vector = linspace(0.4, 1, day_num);
-                    color_matrix(:, 1) = color_vector;
-                case 'colorful'
-                    color_matrix = turbo(day_num);
+            day_range = zeros(1,2);
+            day_range(1) = CountElapsedDate(AllDays{1}, TT_day);
+            day_range(2) = CountElapsedDate(AllDays{end}, TT_day);
+
+            color_matrix = zeros(day_num, 3);
+            color_vector = linspace(0.4, 1, day_num);
+            % preとpostで色分けする(preとpostが混同している場合は赤ベースにする)
+            if all(day_range < 0)
+                color_matrix(:, 2) = color_vector;
+            else
+                color_matrix(:, 1) = color_vector;
             end
-            day_range = [0 0];
         else
             color_matrix = zeros(day_num, 3);
             color_vector = linspace(0.4, 1, day_num);
@@ -126,32 +129,16 @@ switch VAF_plot_type
             plot_VAF = use_VAF_data_list(:, day_id);
 
             % plot
-            switch color_type
-                case 'red'
-                    plot(x_axis, plot_VAF, 'LineWidth', 2, 'Color', color_matrix(day_id, :), HandleVisibility='off');
-                    plot(x_axis, plot_VAF, 'o', 'LineWidth', 2, 'Color', color_matrix(day_id, :), HandleVisibility='off');
-                case 'colorful'
-                    plot(x_axis, plot_VAF, 'LineWidth', 2, 'Color', color_matrix(day_id, :), DisplayName = AllDays{day_id});
-                    plot(x_axis, plot_VAF, 'o', 'LineWidth', 2, 'Color', color_matrix(day_id, :), HandleVisibility='off');
-            end
-            
-            if colorbar_flag == 1
-                if day_id==1
-                    day_range(1) = CountElapsedDate(AllDays{day_id}, TT_day);
-                elseif day_id==day_num
-                    day_range(2) = CountElapsedDate(AllDays{day_id}, TT_day);
-                end
-            end
+            plot(x_axis, plot_VAF, 'LineWidth', 2, 'Color', color_matrix(day_id, :), HandleVisibility='off');
+            plot(x_axis, plot_VAF, 'o', 'LineWidth', 2, 'Color', color_matrix(day_id, :), HandleVisibility='off');
         end
     
         if colorbar_flag == 1
             % setting of color bar
-            if strcmp(color_type, 'red')
-                clim(day_range);
-                colormap(color_matrix)
-                h = colorbar;
-                ylabel(h, 'Elapsed day(criterion = TT)', 'FontSize', font_size)
-            end
+            clim(day_range);
+            colormap(color_matrix)
+            h = colorbar;
+            ylabel(h, 'Elapsed day(criterion = TT)', 'FontSize', font_size)
         end
     case 'mean'
         plot_VAF = mean(use_VAF_data_list, 2);
