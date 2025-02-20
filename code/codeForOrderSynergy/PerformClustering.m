@@ -73,10 +73,12 @@ if plot_setting == 1
     dendrogram_axes = gca;
     dendrogram_axes.XTickLabelRotation = 90;
     dendrogram_axes.FontSize = 25;
+    ylabel('cosine distance');
     title_str = sprintf(['cosine distance between synergies(' term_type ' ' num2str(session_num) 'sessions)(synNum = ' num2str(syn_num) ')' '\n' '(cophenetic correlation coefficient = ' num2str(coffen_coefficient) ')']);
     title(title_str, 'FontSize', 25);
 
     % save
+    makefold(save_fold_path);
     saveas(gcf, fullfile(save_fold_path, ['dendrogram(' term_type '-synNum=' num2str(syn_num) ').png']));
     saveas(gcf, fullfile(save_fold_path, ['dendrogram(' term_type '-synNum=' num2str(syn_num) ').fig']));
     close all;

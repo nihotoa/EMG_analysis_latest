@@ -3,9 +3,7 @@
 Unpack the fields of each data structure & save these data as .mat file 
 
 [input arguments]
-base_dir: [char], path of based directory
-exp_day: [char], recorded day
-monkeyname: [char], prefix of recorded data
+save_dir: [char], path of based directory
 CEMG_struct:[struct], struct contains various fields which is ralated to CEMG data
 CAI_struct: [struct], struct contains various fields which is ralated to CAI data
 CRAW_struct: [struct], struct contains various fields which is ralated to CRAW data
@@ -14,7 +12,7 @@ CTTL_struct: [struct], struct contains various fields which is ralated to CTTL d
 
 [output arguments]
 %}
-function [] = saveRawData(base_dir, exp_day, monkeyname, CEMG_struct, CAI_struct, CRAW_struct, CLFP_struct, CTTL_struct)
+function [] = saveRawData(save_file_path, CEMG_struct, CAI_struct, CRAW_struct, CLFP_struct, CTTL_struct)
 struct_list = {CEMG_struct, CAI_struct, CRAW_struct, CLFP_struct, CTTL_struct};
 EMG_pattern = '^CEMG_\d{3}$';
 Begin_data_name = 'CAI_struct.CAI_001_TimeBegin'; 
@@ -42,11 +40,7 @@ end
 clear CEMG_struct CAI_struct CRAW_struct CLFP_struct CTTL_struct;
 
 % save data
-save_file_path = fullfile(base_dir, [monkeyname exp_day(3:end) '-' sprintf('%04d', 1) '.mat']);
-all_data_file_path = fullfile(base_dir, ['AllData_' monkeyname exp_day '.mat']); % data to provde to Roland.  contents is same as save_file_path
-save(save_file_path, 'CEMG*', 'CAI*', 'CRAW*', 'CLFP*', 'CTTL*');
-save(all_data_file_path, 'CEMG*', 'CAI*', 'CRAW*', 'CLFP*', 'CTTL*'); 
-disp(['[saved]: ' save_file_path])
-disp(['[saved]: ' all_data_file_path])
+save(save_file_path, 'CEMG*', 'CAI*', 'CRAW*', 'CLFP*', 'CTTL*'); 
+disp(['[saved]: ' save_file_path]);
 end
 

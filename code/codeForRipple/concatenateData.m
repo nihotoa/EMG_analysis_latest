@@ -17,9 +17,8 @@ CRAW_str: [struct], contains various file which is related to CRAW signal
 CTTL_str:  [struct], contains various file which is related to CTTL signal
 
 [Improvement Point]
-・CTTL==2の場合にも対応していたが、流石に3つ無いとダメなので消した
-=> エラー吐いたらその時対応する => 吐かなかった
-・1ファイルの中でCTTL_003のUPとDOWNの数の差分における条件分位が冗長だからもう少し簡潔にする
+・1ファイルの中でのCTTL_002のUPとDOWNの数の差分における処理の条件分岐を書いていないので定義する
+・1ファイルの中でのCTTL_003のUPとDOWNの数の差分における条件分岐が冗長だからもう少し簡潔にする
 %}
 
 function [CAI_str, CLFP_str, CRAW_str, CTTL_str] = concatenateData(base_dir, exp_day, monkeyname, downHz, record_time)
@@ -96,12 +95,14 @@ for file_id = 1:AO_file_num
             disp([exp_day '_' AO_file_list(file_id).name ' does not have CTTL' sprintf('%03d', TTL_id)]);
             continue;
         end
-
+        
+        Up_data = each_CTTL_str.(Up_data_name{1});
+        Down_data = each_CTTL_str.(Down_data_name{1});
+        if TTL_id == 2
+            % ここフツーに考える必要ある
+            a = 1;
         % exclude timing data (which is so close to adjacent timing data)
-        if TTL_id == 3
-            Up_data = each_CTTL_str.(Up_data_name{1});
-            Down_data = each_CTTL_str.(Down_data_name{1});
-
+        elseif TTL_id == 3
             if length(Up_data) == length(Down_data)
                 success_signal = [Up_data; Down_data];
             elseif length(Up_data) > length(Down_data)

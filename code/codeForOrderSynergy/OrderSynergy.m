@@ -2,44 +2,8 @@
 
 %}
 
-function [Wt, k_arr] = OrderSynergy(EMG_num, syn_num, W_data, monkeyname, sessions, base_dir, plot_clustering_result, term_type, save_fold_path)
-if not(exist('term_type', 'var')) || not(exist("plot_clustering_result", 'var')) || plot_clustering_result == 0
-    plot_setting = 0;
-else
-    plot_setting = 1;
-    % setting of save_folder
-    if exist("save_fold_path", 'var')
-        hierarchical_cluster_result_path = save_fold_path;
-    else
-        hierarchical_cluster_result_path = fullfile(base_dir, 'hierarchical_cluster_result');
-    end
-    makefold(hierarchical_cluster_result_path);
-end
-
-%% find session_num
-if exist('sessions', 'var')
-    if and(isa(sessions, "double"), isscalar(sessions))
-        session_num = sessions;
-    else
-        session_num = length(sessions);
-    end
-else % currently, this situation is estimated when using 'test' data in 'SYNERGYPLOT'
-    session_num = length(W_data);
-end
-
-%% Create an empty array to store synergy W values
-if isempty(W_data)
-    W_data =  cell(1,session_num);
-    % Read the daily synergy W values & create an array.
-    for session_id = 1:session_num
-        % Load the W synergy data created by SYNERGYPLOT
-        synergy_W_file_path = fullfile(base_dir, [monkeyname mat2str(sessions(session_id)) '_standard'], [monkeyname mat2str(sessions(session_id)) '_syn_result_' sprintf('%d',EMG_num)], [monkeyname mat2str(sessions(session_id)) '_W'], [monkeyname mat2str(sessions(session_id)) '_aveW_' sprintf('%d',syn_num) '.mat']);
-        load(synergy_W_file_path, 'aveW');
-        W_data{session_id} = aveW;
-    end
-end
-
-if plot_setting == 1
+function [Wt, k_arr] = OrderSynergy(syn_num, W_data, session_num, plot_clustering_result_flag, save_figure_dir, unique_name)
+if plot_clustering_result_flag == 1
     % prepare empty list for labeling
     labels = {}; % name list of synergies before sorting
     sorted_labels = {}; % name list of synergies after sorting
@@ -62,19 +26,21 @@ W_data = cell2mat(W_data);
 [~, condition_num] = size(W_data);
 
 %% calcurate cosine distance of all pairs of spatial pattern vectors & plot this as heatmap & store them in a square matrix
-if plot_setting == 1
-    title_str = ['cosine distance between each synergies' '\n' 'original order (' term_type ' ' num2str(session_num) 'sessions)(synNum = ' num2str(syn_num) ')'];
-    save_file_name =  ['original_order_heatmap(' term_type ')_syn_num = ' num2str(syn_num)];
-    cosine_distance_matrix = PerformCosineDistanceAnalysis(condition_num, W_data, plot_setting, labels, title_str, hierarchical_cluster_result_path, save_file_name);
+if plot_clustering_result_flag == true
+    heatmap_save_fold_path = fullfile(save_figure_dir, 'cosine_distance_heatmap');
+    clustering_save_fold_path = fullfile(save_figure_dir, 'hierarchical_clustering_dendrogram');
+    title_str = ['cosine distance between each synergies' '\n' 'original order (' unique_name ' ' num2str(session_num) 'sessions)(synNum = ' num2str(syn_num) ')'];
+    non_ordererd_heatmap_file_name =  ['original_order_heatmap(' unique_name ')_syn_num = ' num2str(syn_num)];
+    cosine_distance_matrix = PerformCosineDistanceAnalysis(condition_num, W_data, plot_clustering_result_flag, labels, title_str, heatmap_save_fold_path, non_ordererd_heatmap_file_name);
 else
-    cosine_distance_matrix = PerformCosineDistanceAnalysis(condition_num, W_data, plot_setting);
+    cosine_distance_matrix = PerformCosineDistanceAnalysis(condition_num, W_data, plot_clustering_result_flag);
 end
 
 %% perform clustering & plot dendrogram
-if plot_setting == 1
-    [sort_idx, k_arr] = PerformClustering(condition_num, cosine_distance_matrix, syn_num, session_num, plot_setting, labels, term_type, hierarchical_cluster_result_path);
+if plot_clustering_result_flag == true
+    [sort_idx, k_arr] = PerformClustering(condition_num, cosine_distance_matrix, syn_num, session_num, plot_clustering_result_flag, labels, unique_name, clustering_save_fold_path);
 else
-    [sort_idx, k_arr] = PerformClustering(condition_num, cosine_distance_matrix, syn_num, session_num, plot_setting);
+    [sort_idx, k_arr] = PerformClustering(condition_num, cosine_distance_matrix, syn_num, session_num, plot_clustering_result_flag);
 end
 
 % 
@@ -84,14 +50,14 @@ if isempty(k_arr)
 end
 
 %%  plot cosine distance between each pair of synergy by grid after sorting synergies
-if plot_setting==1
+if plot_clustering_result_flag==1
     sort_idx = cell2mat(sort_idx);
     sorted_cosine_distance_matrix = cosine_distance_matrix(sort_idx, sort_idx);
     
     % plot
-    title_str = ['cosine distance between each synergies' '\n' 'sorted (' term_type ' ' num2str(session_num) 'sessions)(synNum = ' num2str(syn_num) ')'];
-    save_file_name = ['ordered_heatmap(' term_type '-synNum=' num2str(syn_num) ')'];
-    plotCosineDistance(sorted_cosine_distance_matrix, condition_num, sorted_labels, title_str, hierarchical_cluster_result_path, save_file_name)
+    title_str = ['cosine distance between each synergies' '\n' 'sorted (' unique_name ' ' num2str(session_num) 'sessions)(synNum = ' num2str(syn_num) ')'];
+    save_file_name = ['ordered_heatmap(' unique_name '-synNum=' num2str(syn_num) ')'];
+    plotCosineDistance(sorted_cosine_distance_matrix, condition_num, sorted_labels, title_str, heatmap_save_fold_path, save_file_name)
 end
 
 %% make Wt

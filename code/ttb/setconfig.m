@@ -4,7 +4,6 @@ function setconfig(mfile,name,value)
 % setconfig(mfilename,'lastdir',y)
 
 try
-
     workpath    = userpath;
     if(isempty(workpath))
       workpath  = fullfile(matlabroot,'work');
