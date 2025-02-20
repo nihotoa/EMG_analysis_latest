@@ -30,10 +30,8 @@ xpdate = sprintf('%d',xpdate_num);
 disp(['START TO MAKE & SAVE ' monkeyname xpdate '_Plot Data']);
 
 % get the path of save_fold
-save_fold_path = fullfile(pwd, real_name, save_fold, [monkeyname xpdate '_' task]);
-
 %load EasyData
-EMG_data_struct = load(fullfile(save_fold_path, [monkeyname xpdate '_EasyData.mat'])); 
+EMG_data_struct = load(fullfile(save_fold, 'cutout_EMG_data_list', [monkeyname xpdate '_cutout_EMG_data.mat'])); 
 
 % get EMG data & timing data & SamplingRate 
 EMGd = EMG_data_struct.AllData_EMG;
@@ -98,6 +96,8 @@ D.RangeTask = D.task_per;
 D.filtP = filtP;
 down_Hz = filtP.down;
 
+save_fold_path = fullfile(save_fold, 'alignedData_list');
+makefold(save_fold_path);
 % save data
 save(fullfile(save_fold_path, [monkeyname xpdate '_alignedData_' filtP.whose '.mat']), 'monkeyname', 'xpdate','EMGs', ...
                                           'alignedData', 'alignedDataAVE','filtP','trial_num','taskRange', 'down_Hz', 'TIME_W', 'Timing_ave', 'Timing_std', 'Timing_std_diff','Timing_ave_ratio');

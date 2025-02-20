@@ -29,6 +29,7 @@ set(gca, 'FontSize', 25)
 title_str = sprintf(title_str);
 title(title_str, 'FontSize', 25)
 
+makefold(save_fold_path);
 % save
 saveas(gcf, fullfile(save_fold_path, [save_file_name '.fig']))
 saveas(gcf, fullfile(save_fold_path, [save_file_name '.png']))

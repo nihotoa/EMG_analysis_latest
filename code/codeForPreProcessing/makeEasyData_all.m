@@ -7,7 +7,6 @@ Perform data concatenation & filtering processing & Obtain information on each t
 monkeyname: [char], prefix of file
 real_name: [char], full name of monkey
 xpdate_num: [double], date of experiment
-file_num: [double list], List of numbered experimental data files for the date of interest  (ex.) [2, 4]
 save_fold: [char], 'easyData' (don't need to change)
 mE: [struct], Contains parameters on whether or not processing is performed and information on the sampling frequency after downsampling.
 task: [char], 'standard' (don't need to change)
@@ -26,7 +25,7 @@ CTTL_003がうまく計測できなかったように、success_button_count_thresholdを設けて、
 (というか共通化できないかどうか考える)
 %}
 
-function [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, real_name, xpdate_num, file_num, save_fold, mE, task)
+function [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, real_name, xpdate_num, file_num, common_save_fold_path, mE, task)
 %% set parameters
 make_EMG = mE.make_EMG;
 save_E = mE.save_E;
@@ -39,13 +38,6 @@ time_restriction_threshold = mE.time_restriction_threshold;
 
 %% code section
 xpdate = sprintf('%d',xpdate_num);
-easyData_fold_path = fullfile(pwd, real_name, save_fold);
-save_fold_path = fullfile(easyData_fold_path, [monkeyname xpdate '_' task]);
-
-% make save fold
-makefold(save_fold_path);
-disp(['START TO MAKE & SAVE ' monkeyname xpdate 'file[' sprintf('%d',file_num(1)) ',' sprintf('%d',file_num(end)) ']']);
-
 % Store the name of the muscle corresponding to each electrode in the cell array
 switch monkeyname
     case 'Wa'%Wasa
@@ -246,29 +238,37 @@ end
 if save_E == 1
     Unit = 'uV';
     SampleRate = downdata_to;
+    cutout_EMG_data_save_fold_path = fullfile(common_save_fold_path, 'cutout_EMG_data_list');
+    makefold(cutout_EMG_data_save_fold_path);
     switch monkeyname
         case {'Ya','Ma','F', 'Wa', 'Ni', 'Hu'}
-            save(fullfile(save_fold_path, [monkeyname xpdate '_EasyData.mat']), 'monkeyname', 'xpdate', 'file_num', 'EMGs',...
+            save(fullfile(cutout_EMG_data_save_fold_path, [monkeyname xpdate '_cutout_EMG_data.mat']), 'monkeyname', 'xpdate', 'file_num', 'EMGs',...
                                                     'AllData_EMG', ...
                                                     'TimeRange_EMG',...
                                                     'EMG_Hz',... '
                                                     'Unit','SampleRate',...
                                                     'Timing','Tp','Tp3');
        case {'Su','Se'}
-            save(fullfile(save_fold_path, [monkeyname xpdate '_EasyData.mat']), 'monkeyname', 'xpdate', 'file_num', 'EMGs',...
+            save(fullfile(cutout_EMG_data_save_fold_path, [monkeyname xpdate '_cutout_EMG_data.mat']), 'monkeyname', 'xpdate', 'file_num', 'EMGs',...
                                                     'AllData_EMG', ...
                                                     'TimeRange_EMG',...
                                                     'EMG_Hz',... 
                                                     'Unit','SampleRate',...
                                                     'Timing','Tp','Tp3','TTLd','TTLu');
     end
-    save(fullfile(save_fold_path, [monkeyname xpdate '_CTcheckData.mat']), 'CTcheck');
+
+    CT_check_data_save_fold_path = fullfile(common_save_fold_path, 'CT_check_data_list');
+    makefold(CT_check_data_save_fold_path);
+    save(fullfile(CT_check_data_save_fold_path, [monkeyname xpdate '_CT_check_data.mat']), 'CTcheck');
+
     if exist("success_timing", "var")
+        success_timing_data_save_fold_path = fullfile(common_save_fold_path, 'success_timing_data_list', xpdate);
+        makefold(success_timing_data_save_fold_path);
         success_timing_file_name = 'success_timing';
         if time_restriction_flag
             success_timing_file_name = [success_timing_file_name '(' num2str(time_restriction_threshold) '[sec]_restriction)'];
         end
-        save(fullfile(save_fold_path, [success_timing_file_name '.mat']), 'success_timing');
+        save(fullfile(success_timing_data_save_fold_path, [success_timing_file_name '.mat']), 'success_timing');
     end
     disp(['FINISH TO MAKE & SAVE ' monkeyname xpdate 'file[' sprintf('%d',file_num(1)) ',' sprintf('%d',file_num(end)) ']']);
 else
@@ -281,7 +281,8 @@ end
 function [AllData_EMG, TimeRange, EMG_Hz] = makeEasyEMG(monkeyname, xpdate, file_num, EMG_num, real_name)
 file_count = (file_num(end) - file_num(1)) + 1;
 AllData_EMG_sel = cell(file_count,1);
-load(fullfile(pwd, real_name, [monkeyname xpdate '-' sprintf('%04d',file_num(1,1))]),'CEMG_001_TimeBegin');
+root_dir = fileparts(pwd);
+load(fullfile(root_dir, 'useDataFold', real_name, [monkeyname xpdate '-' sprintf('%04d',file_num(1,1))]),'CEMG_001_TimeBegin');
 TimeRange = zeros(1,2);
 TimeRange(1,1) = CEMG_001_TimeBegin;
 EMG_prefix = 'CEMG';
@@ -290,14 +291,14 @@ get_first_data = 1;
 for i = file_num(1,1):file_num(end)
     for j = 1:EMG_num
         if get_first_data
-            load(fullfile(pwd, real_name, [monkeyname xpdate '-' sprintf('%04d',i)]), [EMG_prefix '_001*']);
+            load(fullfile(root_dir, 'useDataFold', real_name, [monkeyname xpdate '-' sprintf('%04d',i)]), [EMG_prefix '_001*']);
             EMG_Hz = eval([EMG_prefix '_001_KHz .* 1000;']);
             Data_num_EMG = eval(['length(' EMG_prefix '_001);']);
             AllData1_EMG = zeros(Data_num_EMG, EMG_num);
             AllData1_EMG(:,1) = eval([EMG_prefix '_001;']);
             get_first_data = 0;
         else
-            load([monkeyname xpdate '-' sprintf('%04d',i)],[EMG_prefix '_0' sprintf('%02d',j)]);
+            load(fullfile(root_dir, 'useDataFold', real_name, [monkeyname xpdate '-' sprintf('%04d',i)]), [EMG_prefix '_' sprintf('%03d',j)]);
             eval(['AllData1_EMG(:, j ) = ' EMG_prefix '_0' sprintf('%02d',j) ''';']);
         end
     end
@@ -574,7 +575,7 @@ Tp3: [double array], Data for each timing in each trial is stored.
 %}
 
 function [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to, success_button_count_threshold, time_restriction_flag, time_restriction_threshold)
-load_file_path = fullfile(pwd, real_name, [monkeyname xpdate '-' sprintf('%04d', file_num(1))]);
+load_file_path = fullfile(fileparts(pwd), 'useDataFold', real_name, [monkeyname xpdate '-' sprintf('%04d', file_num(1))]);
 make_timing_struct = load(load_file_path, 'CAI*', 'CTTL*');
 timing_struct = struct();
 multple_value = downdata_to / (make_timing_struct.CTTL_002_KHz * 1000);

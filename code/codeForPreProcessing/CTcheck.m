@@ -24,11 +24,8 @@ function [Yave,Y3ave] = CTcheck(monkeyname, xpdate_num, save_fold, real_name)
 xpdate = sprintf('%d',xpdate_num);
 disp(['START TO MAKE & SAVE ' monkeyname xpdate 'CTcheck ref_trial_EMG']);
 
-% get save folder path
-save_fold_path = fullfile(pwd, real_name, save_fold, [monkeyname num2str(xpdate), '_standard']);
-
 % load EMG data & tget trial number
-S = load(fullfile(save_fold_path, [monkeyname xpdate '_CTcheckData.mat']),'CTcheck');
+S = load(fullfile(save_fold, 'CT_check_data_list', [monkeyname xpdate '_CT_check_data.mat']),'CTcheck');
 trial_num = length(S.CTcheck.raw_trial_EMG);
 [EMG_num, ~] = size(S.CTcheck.raw_trial_EMG{1});
 
@@ -79,6 +76,7 @@ for trial_id = 1:trial_num
 end
 
 % save data
-save(fullfile(save_fold_path, [monkeyname xpdate '_CTR.mat']), 'monkeyname', 'xpdate', 'Yave', 'Y3ave');
+makefold(fullfile(save_fold, 'CTR_list'));
+save(fullfile(save_fold, 'CTR_list', [monkeyname xpdate '_CTR.mat']), 'monkeyname', 'xpdate', 'Yave', 'Y3ave');
 disp(['FINISH TO MAKE & SAVE ' monkeyname xpdate 'CTcheck ref_trial_EMG']);
 end
