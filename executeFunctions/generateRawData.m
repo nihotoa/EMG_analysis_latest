@@ -18,7 +18,9 @@ pre: nothing
 post : SaveFileInfo.m
 
 [Improvement point(Japanese)]
-
+・concatenateDataで、error入った時に、そこで処理終了するんじゃなくて、関数抜けてcontinueして次の日付のiterationへ行くようにする
+・error文章を変えたほうがいい
+・たまにCTTL関連のデータがセーブされない時があるので、原因を探る
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;

@@ -25,7 +25,7 @@ function [CAI_str, CLFP_str, CRAW_str, CTTL_str] = concatenateData(base_dir, exp
 
 %% code section
 base_dir = fullfile(base_dir, exp_day);
-AO_file_list = dir(fullfile(base_dir, [monkeyname '*.mat'])); % get the name of files that are recorded by AlphaOmega
+AO_file_list = dirEx(fullfile(base_dir, [monkeyname '*.mat'])); % get the name of files that are recorded by AlphaOmega
 AO_file_num = length(AO_file_list);
 if isempty(AO_file_list)
     error('There is no .mat file that matches the conditions. Please check whether the prefix of the file matches "monkeyname"');

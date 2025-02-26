@@ -1,52 +1,61 @@
 %{
-ネスト深すぎる．しょうがない気もするけど
-alignData.matのパスがsynegryとEMGで違いすぎる．構造のリファクタリングする際に統一してこのコードもリファクタリングするべき
-構造違うけど、図の出力のための応急処置としてシナジー解析する時のPdataをH＿figuresディレクトリの中にコピペしているが、本来あるべき場所じゃないので、
-リファクタリングするときは注意する
-・loadするデータの名前(alignedDataEMGも変更するべき)
++ ネスト深すぎる．しょうがない気もするけど
++ シナジーの方の条件分岐は確認してない
++ Pdataの使用は、makeStructForXcorrの中でEMGsをロードする時のみなので、
++ 今はすべてのデータを使用する仕様になっているので、使用するpre,postデータをピックアップできるようにする
 %}
 clear;
 %% set param
-monkeyname = 'F';
-plot_data_type = 'Synergy'; %'EMG'/'Synergy'
-must_plot_elements = {'synergy2', 'synergy4'};
-synergy_num = 4;
-figure_row_num = 4; % 1ページに含める筋電の数(colはタイミングの数に決まる)
-TT_surgery_day = 20170530;
+monkeyname = 'Hu';
+plot_data_type = 'EMG'; %'EMG'/'Synergy'
+must_plot_elements = {'EDC', 'FDS'};
+figure_row_num = 4; % 1ページに含める要素の数(列数はタイミングの数に決まる)
+
+% if plot_type == 'Synergy'
+use_EMG_type = 'only_task'; %' full' / 'only_task'
+synergy_num = 4; % number of synergy you want to analyze
 
 %% code section
+root_dir = fileparts(pwd);
 realname = get_real_name(monkeyname);
+
 switch plot_data_type
     case 'EMG'
-        ref_dir_path = fullfile(pwd, realname, 'easyData');
+        base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'EMG_ECoG');
+        Pdata_dir = fullfile(base_dir, 'P-DATA');
     case 'Synergy'
-        ref_dir_path = fullfile(pwd, realname, 'new_nmf_result');
+        base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'Synergy');
+        Pdata_dir = fullfile(base_dir, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(synergy_num)], 'temporal_pattern_data');
 end
 
 % 実験日データをpreとpostに分けてlistにまとめる
-pre_standard_data_list = getGroupedDates(ref_dir_path, monkeyname, 'auto', 'pre');
-post_standard_data_list = getGroupedDates(ref_dir_path, monkeyname, 'auto', 'post');
-all_standard_data_list = getGroupedDates(ref_dir_path, monkeyname, 'auto', 'all');
+pre_file_names = getGroupedDates(Pdata_dir, monkeyname, 'auto', 'pre');
+post_file_names = getGroupedDates(Pdata_dir, monkeyname, 'auto', 'post');
+[all_file_names, TT_surgery_day] = getGroupedDates(Pdata_dir, monkeyname, 'auto', 'all');
 
-pre_day_list = get_days(pre_standard_data_list);
-post_day_list = get_days(post_standard_data_list);
-all_day_list = get_days(all_standard_data_list);
-all_day_num = length(all_day_list);
+if isempty(pre_file_names)
+    warning(['preのデータ(' TT_surgery_day '以前のデータ)が1つも選択されていません．選択し直してください'])
+    return;
+elseif isempty(post_file_names)
+   warning(['postのデータ(' TT_surgery_day '以降のデータ)が1つも選択されていません．選択し直してください'])
+    return;
+end
+
+pre_day_list = get_days(pre_file_names);
+post_day_list = get_days(post_file_names);
+all_day_list = get_days(all_file_names);
 
 % 使用する筋電データのロード
 switch plot_data_type
     case 'EMG'
-        Pdata_base_dir = fullfile(ref_dir_path, 'P-DATA');
-        load_file_path = fullfile(Pdata_base_dir, [monkeyname num2str(all_day_list(1)) 'to' monkeyname num2str(all_day_list(end)) '_' num2str(all_day_num)]);
+        each_timing_pattern_dir = fullfile(base_dir, 'EMG_across_sessions', 'EMG_for_each_timing');
     case 'Synergy'
-        Pdata_base_dir = fullfile(ref_dir_path, 'syn_figures', 'H_figures');
-        load_file_path = fullfile(Pdata_base_dir, [monkeyname '_Syn' num2str(synergy_num)  '_' num2str(all_day_list(1)) 'to' monkeyname '_Syn' num2str(synergy_num)  '_' num2str(all_day_list(end)) '_' num2str(all_day_num)]);
+        each_timing_pattern_dir = 1;
 end
-load(fullfile(load_file_path, 'alignedEMG_data.mat'), 'Pall', 'Ptrig', 'timing_name_list');
 
 % preとpostのPdata.matから必要な情報を抜き取って構造体にまとめる
-[pre_session_data_str, pre_day_num, element_num, timing_num] =  makeStructForXcorr(Pdata_base_dir, monkeyname, pre_day_list, Pall, Ptrig, plot_data_type);
-[all_session_data_str, all_day_num] =  makeStructForXcorr(Pdata_base_dir, monkeyname, all_day_list, Pall, Ptrig, plot_data_type);
+[pre_session_data_str, pre_day_num, element_num, timing_num, timing_name_list] =  makeStructForXcorr(Pdata_dir, each_timing_pattern_dir, monkeyname, pre_day_list, plot_data_type);
+[all_session_data_str, all_day_num] =  makeStructForXcorr(Pdata_dir, each_timing_pattern_dir, monkeyname, all_day_list, plot_data_type);
 
 % 各筋肉のコントロールデータの活動平均を求める
 control_data_activity_str = struct();
@@ -123,7 +132,7 @@ end
 
 % 生成したデータを元に図を作っていく
 % まずは、個々のタイミングの個々の筋肉における、選択したcontrol筋肉に対する図を生成する
-common_save_figure_fold_path = fullfile(ref_dir_path, 'xcorr_result');
+xcorr_figure_fold_path = fullfile(root_dir, 'saveFold', realname, 'figure', 'EMG', 'xcorr_result');
 elapsed_day_list = zeros(1, all_day_num);
 for day_id = 1:all_day_num
     ref_day = all_day_list(day_id);
@@ -183,7 +192,7 @@ for timing_id = 1:(timing_num+1)
         set(gca, fontsize=20)
 
         % save設定
-        save_figure_fold_name = fullfile(common_save_figure_fold_path, unique_timing_name);
+        save_figure_fold_name = fullfile(xcorr_figure_fold_path, unique_timing_name);
         makefold(save_figure_fold_name);
         save_figure_file_name = ref_elements_name;
         saveas(gcf, fullfile(save_figure_fold_name, [save_figure_file_name '.fig']));
@@ -191,7 +200,7 @@ for timing_id = 1:(timing_num+1)
         close all;
     end
 end
-disp(['figures are saved in: ' common_save_figure_fold_path]);
+disp(['figures are saved in: ' xcorr_figure_fold_path]);
 
 % それぞれの図をまとめて、全体の図を作成する
  page_num = ceil(element_num / figure_row_num);

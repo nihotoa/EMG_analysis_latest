@@ -21,16 +21,16 @@ function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type)
         eval([var_name ' = data_str.' var_name ';'])
     end
     
-    for m = 1:element_num
+    for element_id = 1:element_num
         % determine the title of this subplot
         title_str = '';
-        if and(exist('timing_name', 'var'), mod(m, row_num) == 1)
+        if and(exist('timing_name', 'var'), mod(element_id, row_num) == 1)
             title_str = timing_name;
         end
 
         switch plot_type
             case 'EMG'
-                title_str = [title_str EMGs{m}];
+                title_str = [title_str EMGs{element_id}];
                 ylabel_str = 'Amplitude[uV]';
             case 'Synergy'
                 ylabel_str = 'Coefficient';
@@ -41,11 +41,11 @@ function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type)
             case 'whole_task'
                 figure(figure_str.fig1)
                 col_num = ceil(element_num / row_num);
-                subplot(row_num, col_num, m)
+                subplot(row_num, col_num, element_id)
             case  'each_timing'
-                figure_idx = ceil(m / row_num); % figure number to plot
+                figure_idx = ceil(element_id / row_num); % figure number to plot
                 figure(figure_str.(['fig' num2str(figure_idx)]))
-                row_idx = m - row_num * (figure_idx-1) ;
+                row_idx = element_id - row_num * (figure_idx-1) ;
                 subplot_idx = timing_num * (row_idx - 1) + timing_id; % if
                 subplot(row_num, timing_num, subplot_idx);
         end
@@ -54,9 +54,9 @@ function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type)
         % plot according to 'fig_type'
         switch fig_type
             case 'stack'
-                 plot_stack_figures(data_str, m)
+                 plot_stack_figures(data_str, element_id)
             case 'std'
-                plot_std_figures(data_str, m)
+                plot_std_figures(data_str, element_id)
         end
 
         % decoration
@@ -65,27 +65,13 @@ function [figure_str] = plot_figures(figure_str, data_str, trim_type, fig_type)
         xlim(plotWindow);
         xlabel('task range[%]')
         hold off
-
-        if normalizeAmp == 1
-            ylim([0 1]);
+        if and(strcmp(ylim_setting_type, 'all'), not(ylim_max == inf))
+            upper_value = ylim_max;
         else
-            %{
-            if and(exist("y_max_value_list"), ylim_max==inf)
-                ref_y_max_value = y_max_value_list(m);
-                upper_lim = ceil(ref_y_max_value / 10) * 10;
-                ylim([0 upper_lim]);
-            else
-                ylim([0 ylim_max]);
-            end
-            %}
-            if and(strcmp(ylim_setting_type, 'all'), not(ylim_max == inf))
-                upper_value = ylim_max;
-            else
-                upper_value = ylim_max_list(m);
-            end
-            ylim([0 upper_value]);
-            ylabel(ylabel_str)
+            upper_value = ylim_max_list(element_id);
         end
+        ylim([0 upper_value]);
+        ylabel(ylabel_str)
         title(title_str)
 
         % title 

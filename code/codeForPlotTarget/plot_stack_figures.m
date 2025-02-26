@@ -4,12 +4,12 @@ Function to plot stack figure.
 
 [input arguments]
 data_str:[struct], contains various parameters necessary for plot
-m:[double], index of element
+element_id:[double], index of element
 
 [output arguments]
 %}
 
-function [] = plot_stack_figures(data_str, m)
+function [] = plot_stack_figures(data_str, element_id)
     % stores the field of a structure in a variable of the same name
     field_names = fieldnames(data_str);
     for idx = 1:length(field_names)
@@ -19,16 +19,16 @@ function [] = plot_stack_figures(data_str, m)
     end
 
     % plot average activity for each session
-    for d = 1:session_num
+    for session_id = 1:session_num
         
         % formatting of data to be plotted
-        plot_data = Pdata.plotData_sel{d,1}(m,:);
+        plot_data = plotted_data.time_normalized_EMG{session_id}(element_id, :);
         if iscell(plot_data)
             plot_data = cell2mat(plot_data);
         end
 
         % datect days_id
-        ref_day = days_double(d);
+        ref_day = days_double(session_id);
         day_id = find(ref_day == TermDays);
         if isempty(day_id) 
             close all;
@@ -36,6 +36,6 @@ function [] = plot_stack_figures(data_str, m)
         end
         
         % plot
-        plot(Pdata.cutoutRange, plot_data, 'Color', Csp(day_id,:), 'LineWidth', LineW);
+        plot(plotted_data.cutout_range, plot_data, 'Color', Csp(day_id,:), 'LineWidth', LineW);
     end
 end

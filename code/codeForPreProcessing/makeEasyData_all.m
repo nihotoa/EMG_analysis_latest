@@ -9,7 +9,6 @@ real_name: [char], full name of monkey
 xpdate_num: [double], date of experiment
 save_fold: [char], 'easyData' (don't need to change)
 mE: [struct], Contains parameters on whether or not processing is performed and information on the sampling frequency after downsampling.
-task: [char], 'standard' (don't need to change)
 
 [output arguments]:
 EMGs:[cell array], The name of each EMF is stored in a char type.
@@ -17,7 +16,6 @@ Tp: [double array], Data for each timing in each trial is stored.
 Tp3: [double array], Data for each timing in each trial is stored.
 
 [Improvement points(Japanese)]
-pwdじゃなくて,  inputにbase_dir指定してそれを使った方がいいかも
 全体的に冗長
 NibaliのTpの切り出しの関数内も冗長なので削る
 CTTL_003がうまく計測できなかったように、success_button_count_thresholdを設けて、TTL_002のみを使って
@@ -25,7 +23,7 @@ CTTL_003がうまく計測できなかったように、success_button_count_thresholdを設けて、
 (というか共通化できないかどうか考える)
 %}
 
-function [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, real_name, xpdate_num, file_num, common_save_fold_path, mE, task)
+function [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, real_name, xpdate_num, file_num, common_save_fold_path, mE)
 %% set parameters
 make_EMG = mE.make_EMG;
 save_E = mE.save_E;

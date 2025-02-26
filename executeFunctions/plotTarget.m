@@ -1,7 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
-%coded by Naoki Uchida
-% last modification : 2024.3.14(by Ohta)
+%coded by Naoki Uchida(The code this guy writes is all seriously crap)
 
 [role of this code]
 plot EMG (or activty pattern of muslcle Synergy) around each timing and save as figure
@@ -30,19 +29,9 @@ post: calcXcorr
 1. Sometimes the function 'uigetfile' is not executed and an error occurs
 -> please reboot MATLAB
 
-[Improvement points(Japanaese)]
-+ figure, �f�[�^�Ɍ��炸�A��������Z�[�u�����烍�O�o���悤�ɕύX�B
-+ �璷 & �ϐ������J�X������D���̌�ɍs�����xcorr�̌v�Z�����Ȃ�����A�g��Ȃ��f�[�^�͍\���̂ɓ��ꂽ��A�Z�[�u�Ɋ܂߂��肵�Ȃ�
-�Z�[�u����f�[�^�̕ϐ����ς��Ă�xcorr�ȊO�ɉe�����y�΂Ȃ��̂Ŏv���؂��ĕϐ����ς���
-+ pre�̃v���b�g�ł�pColor = 'C'���g����悤�ɂ���
-
-
-[Remind(Japanese)]
-�Esave_data�̃Z�N�V�������������B(�`���[�g���A���ŕK�v���Ȃ�����)
-�EEMG_max�݂����Ȃ��������(���[�����h���񂪂���Ă��ꂽ������K�v�Ȃ�)
-�EforHara��������(plot_figure_type, eliminate_muscles��,local�֐���plot_timing_figures2��������)
-�Esave_xcorr_data�̃Z�N�V������������(�K�v�Ȃ���������������)
-�Enmf_fold_name��������(�ŏ������͂���Έ�ʂɒ�܂邩��)
+[improvement]
++ preとpost混ぜて選んでもエラー吐かないようにする
++ synergyの方の挙動を確かめてない
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -52,7 +41,6 @@ monkeyname = 'Hu'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
 plot_all = 1; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
 plot_type = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
-normalizeAmp = false; % wether normalize Amplitude or not
 ylim_setting_type = 'individual'; % (if nomalize Amp == false) 'all'/'individual', whether ylim be set individually for each EMG or use a common value
 ylim_max = 10; % (if nomalize Amp == false && ylim_setting_type == 'all') ylim of graph
 ylim_max_list = [200, 80, 80, 20, 30, 80, 100, 30, 50, 20, 80, 50, 30, 60, 30, 20]; % (if nomalize Amp == false && ylim_setting_type == 'individual') ylim of graph for each EMG
@@ -121,7 +109,7 @@ switch plot_type
     case 'Synergy'
         Pdata_dir_path = fullfile(base_dir, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(synergy_num)], 'temporal_pattern_data');
 end
-% synergy_across_sessions/only_task/synergy_num==4/temporal_pattern_data'
+
 disp("please select '_Pdata.mat' for all the dates you want to plot")
 Allfiles_S = uigetfile(fullfile(Pdata_dir_path, '*.mat'), 'Select One or More Files', 'MultiSelect', 'on');
 if ischar(Allfiles_S)
@@ -146,32 +134,28 @@ for session_id = 1:session_num
     load_file_path = fullfile(Pdata_dir_path, Allfiles_S{session_id});
     load(load_file_path, "AllT", "TIME_W", "D" )
     
+    % initialize 
     if session_id == 1
-        % Create empty array to store data from each timing
         timing_num = sum(startsWith(fieldnames(D), 'trig'));
-        % for trial
-        AllT_AVE = 0;
-        Pall.Tlist = zeros(session_num, 1);
-        
-        % for each timing
-        Ptrig = cell(timing_num, 1);
+        session_average_length = 0;
+        whole_task_length_list = zeros(session_num, 1);
+
+        tentetive_session_average_length_struct = struct();
+        tentetive_length_list_struct = struct();
         for timing_id = 1:timing_num
-            D_AVE.(['timing' num2str(timing_id)]) = 0;
-            Ptrig{timing_id}.Tlist = zeros(session_num, 1);
+            tentetive_session_average_length_struct.(['timing' num2str(timing_id)]) = 0;
+            tentetive_length_list_struct.(['timing' num2str(timing_id)]) = zeros(session_num, 1);
         end
     end
 
     % store the data from each session
-    % for trial
-    AllT_AVE = (AllT_AVE*(session_id-1) + AllT)/session_id; 
-    Pall.Tlist(session_id,1) = AllT;  
-    
-    % for each timing
+    session_average_length = (session_average_length * (session_id - 1) + AllT) / session_id; 
+    whole_task_length_list(session_id) = AllT;
     for timing_id = 1:timing_num
-        original_data = D_AVE.(['timing' num2str(timing_id)]);
-        added_data = D.(['Ld' num2str(timing_id)]);
-        D_AVE.(['timing' num2str(timing_id)]) = (original_data * (session_id-1) + added_data)/session_id;
-        Ptrig{timing_id}.Tlist(session_id,1) = added_data;
+        tentetive_length_data = tentetive_session_average_length_struct.(['timing' num2str(timing_id)]);
+        ref_timing_length = D.(['Ld' num2str(timing_id)]);
+        tentetive_session_average_length_struct.(['timing' num2str(timing_id)]) = (tentetive_length_data * (session_id-1) + ref_timing_length)/session_id;
+        tentetive_length_list_struct.(['timing' num2str(timing_id)])(session_id) = ref_timing_length;
     end
 end
 
@@ -179,48 +163,48 @@ end
 
 % Create empty structure to store data
 % for trial
-Pall.AllT_AVE = round(AllT_AVE);
-Pall.plotData_sel = cell(session_num,1);
+plotted_whole_task_EMG_struct = struct();
+plotted_each_timing_EMG_cell = cell(timing_num, 1);
+
+plotted_whole_task_EMG_struct.session_average_length = round(session_average_length);
+plotted_whole_task_EMG_struct.length_list = whole_task_length_list;
+plotted_whole_task_EMG_struct.time_normalized_EMG = cell(session_num,1);
 
 % for each timing
 for timing_id = 1:timing_num
-    Ptrig{timing_id}.AllT_AVE = round(D_AVE.(['timing' num2str(timing_id)]));
-    Ptrig{timing_id}.plotData_sel = cell(session_num,1);
-    Ptrig{timing_id}.cutoutRange = linspace(-D.(['Range' num2str(timing_id)])(1), D.(['Range' num2str(timing_id)])(2), Ptrig{timing_id}.AllT_AVE);
-    Ptrig{timing_id}.plotRange = plotWindow_cell{timing_id};
+    plotted_each_timing_EMG_cell{timing_id}.session_average_length = round(tentetive_session_average_length_struct.(['timing' num2str(timing_id)]));
+    plotted_each_timing_EMG_cell{timing_id}.length_list = round(tentetive_length_list_struct.(['timing' num2str(timing_id)]));
+    plotted_each_timing_EMG_cell{timing_id}.time_normalized_EMG = cell(session_num,1);
+    plotted_each_timing_EMG_cell{timing_id}.cutout_range = linspace(-D.(['Range' num2str(timing_id)])(1), D.(['Range' num2str(timing_id)])(2), plotted_each_timing_EMG_cell{timing_id}.session_average_length);
+    plotted_each_timing_EMG_cell{timing_id}.plot_range = plotWindow_cell{timing_id};
 end
 
 % store the data from each session
-% for trial
-for j = 1:session_num
+whole_task_common_length = plotted_whole_task_EMG_struct.session_average_length;
+for session_id = 1:session_num
     % load the data of the average activity pattern of each synergy (ormuscle) for this session
-    load(fullfile(Pdata_dir_path, Allfiles_S{j}), 'alignedDataAVE');
+    load(fullfile(Pdata_dir_path, Allfiles_S{session_id}), 'alignedDataAVE');
 
-    if j == 1
+    if session_id == 1
         element_num = length(alignedDataAVE);
     end
     
     % Eliminate differences in length between sessions (perform time normalisation).
-    plotData = AlignDatasets(alignedDataAVE, Pall.AllT_AVE); 
-
-    if normalizeAmp == 1
-        % divide by the maximum value of each element
-        for mm = 1:element_num          
-           plotData{mm} = plotData{mm} / max(plotData{mm});
-        end
-    end
-    Pall.plotData_sel{j,1} = plotData;
+    plot_data = AlignDatasets(alignedDataAVE, whole_task_common_length); 
+    plotted_whole_task_EMG_struct.time_normalized_EMG{session_id,1} = cell2mat(plot_data);
 end
 
-% add data which is related to 'mean+std' to 'Pall' structure
-[Pall] = makeSDdata(Pall, session_num, element_num);
+% add data which is related to 'mean+std' to 'plotted_whole_task_EMG_struct' structure
+[plotted_whole_task_EMG_struct] = makeSDdata(plotted_whole_task_EMG_struct, session_num, element_num);
 
 % for each timing
 for timing_id = 1:timing_num
-    [Ptrig{timing_id}] = resampleEachTiming(Allfiles_S, Ptrig{timing_id}, timing_id, normalizeAmp, Pdata_dir_path, element_num);
+    ref_timing_EMG_struct = plotted_each_timing_EMG_cell{timing_id};
+    [ref_timing_EMG_struct] = resampleEachTiming(Allfiles_S, ref_timing_EMG_struct, timing_id, Pdata_dir_path, element_num);
 
-    % add data which is related to 'mean+std' to 'Ptrig{timing_id}' structure
-    [Ptrig{timing_id}] = makeSDdata(Ptrig{timing_id}, session_num, element_num);
+    % add data which is related to 'mean+std' to 'plotted_each_timing_EMG_struct{timing_id}' structure
+    [ref_timing_EMG_struct] = makeSDdata(ref_timing_EMG_struct, session_num, element_num);
+    plotted_each_timing_EMG_cell{timing_id} = ref_timing_EMG_struct;
 end
 
 % plot color setting(create color map)
@@ -245,19 +229,19 @@ Csp = zeros(PostLength, 3);
 Csp(:, color_id) = ones(PostLength, 1).*linspace(0.3, 1, PostLength)';
 
 %% define save folder path (which is stored all data & figures)
+unique_name = [Allfiles{1} 'to' days_str{end} '_' num2str(length(Allfiles))];
 switch plot_type
     case 'EMG'
-        save_figure_fold_path = fullfile(root_dir, 'saveFold', realname, 'figure', 'EMG');
+        save_figure_fold_path = fullfile(root_dir, 'saveFold', realname, 'figure', 'EMG', 'each_timing_EMG', unique_name);
     case 'Synergy'
         tentetive = strrep(base_dir, 'data', 'figure');
-        unique_name = [Allfiles{1} 'to' days_str{end} '_' num2str(length(Allfiles))];
         save_figure_fold_path = fullfile(tentetive, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(synergy_num)], unique_name, 'H_figures');
 end
 makefold(save_figure_fold_path);
 
 %% plot figure
 if and(strcmp(ylim_setting_type, 'all'), ylim_max == inf)
-    max_amplitude_list = getMaxAmplitudeList(Pall.plotData_sel);
+    max_amplitude_list = getMaxAmplitudeList(plotted_whole_task_EMG_struct.time_normalized_EMG);
     max_amplitude_list = transpose(max_amplitude_list);
     ylim_max_list = ceil(max_amplitude_list / 10) * 10;
 end
@@ -271,11 +255,11 @@ switch plot_type
         % obtain a list of the percentage of cutouts to the entire task as 'TaskRange' (ex. [-50, 150])
         load(fullfile(Pdata_dir_path, Allfiles_S{1}), 'taskRange');
 end
-Pall.cutoutRange = linspace(taskRange(1), taskRange(2), Pall.AllT_AVE);
+plotted_whole_task_EMG_struct.cutout_range = linspace(taskRange(1), taskRange(2), plotted_whole_task_EMG_struct.session_average_length);
 
 % add variables which is used in plot function in 'data_struct'
 data_str = struct();
-use_variable_name_list = {'element_num', 'session_num', 'LineW', 'normalizeAmp', 'ylim_setting_type', 'ylim_max','ylim_max_list' 'EMGs', 'plot_type', 'TermDays', 'days_double', 'Csp', 'row_num', 'timing_num'};
+use_variable_name_list = {'element_num', 'session_num', 'LineW', 'ylim_setting_type', 'ylim_max','ylim_max_list' 'EMGs', 'plot_type', 'TermDays', 'days_double', 'Csp', 'row_num', 'timing_num'};
 
 % store data in a struct
 not_exist_variables = {};
@@ -297,17 +281,14 @@ end
 if plot_all == 1
     % save_setting(determine file name for figure)
     save_figure_name =  ['All_' plot_type '(whole task)'];
-    if normalizeAmp == 1
-        save_figure_name = [save_figure_name '_normalized'];
-    end
     
-    % add plotWindow & Pdata to 'data_str'  
-    data_str.Pdata = Pall;
+    % add plotWindow & plotted_data to 'data_str'  
+    data_str.plotted_data = plotted_whole_task_EMG_struct;
     data_str.plotWindow = [-25 105];
 
     % create an array identifying 'fig_type'
-    for idx = 1:length(fig_type_array)
-        fig_type = fig_type_array{idx};
+    for fig_type_idx = 1:length(fig_type_array)
+        fig_type = fig_type_array{fig_type_idx};
 
         % generate figure 
         f.fig1 = figure('position', [100, 100, 1000, 1000]);
@@ -331,8 +312,8 @@ if plot_each_timing == 1
 
     % Create a struct array for figure to plot
     figure_str = struct;
-    for idx = 1:length(fig_type_array)
-        fig_type = fig_type_array{idx};
+    for fig_type_idx = 1:length(fig_type_array)
+        fig_type = fig_type_array{fig_type_idx};
         figure_str.(fig_type) = struct;
         for figure_id = 1:figure_num
             figure_str.(fig_type).(['fig' num2str(figure_id)]) = figure("position", [100, 100, 250 * timing_num, 1000]);
@@ -343,20 +324,20 @@ if plot_each_timing == 1
         % load activity data and window info around timing to be focused
         timing_name = timing_name_list(timing_id);
 
-        % extract plot data as 'Pdata'
-        Pdata = Ptrig{timing_id};
-        Pdata.cutoutRange =  linspace(-D.(['Range' num2str(timing_id)])(1), D.(['Range' num2str(timing_id)])(2), Pdata.AllT_AVE);
+        % extract plot data as 'plotted_data'
+        ref_timing_plotted_data = plotted_each_timing_EMG_cell{timing_id};
+        ref_timing_plotted_data.cutout_range =  linspace(-D.(['Range' num2str(timing_id)])(1), D.(['Range' num2str(timing_id)])(2), ref_timing_plotted_data.session_average_length);
         plotWindow = plotWindow_cell{timing_id}; % plotWindow at specified timing
 
         % add some variables (which is changed in loop) to 'data_str'
         data_str.timing_id = timing_id;
         data_str.timing_name = timing_name;
         data_str.plotWindow = plotWindow;
-        data_str.Pdata = Pdata;
+        data_str.plotted_data = ref_timing_plotted_data;
 
         % plot figures
-        for idx = 1:length(fig_type_array)
-            fig_type = fig_type_array{idx};
+        for fig_type_idx = 1:length(fig_type_array)
+            fig_type = fig_type_array{fig_type_idx};
             figure_str.(fig_type) = plot_figures(figure_str.(fig_type), data_str, 'each_timing', fig_type);
         end
     end
@@ -364,14 +345,47 @@ if plot_each_timing == 1
     % save_figure
     for figure_id = 1:figure_num
         save_figure_name =  ['each_timing_figure' num2str(figure_id)];
-        for idx = 1:length(fig_type_array)
-            fig_type = fig_type_array{idx};
+        for fig_type_idx = 1:length(fig_type_array)
+            fig_type = fig_type_array{fig_type_idx};
             figure(figure_str.(fig_type).(['fig' num2str(figure_id)]));
             saveas(gcf, fullfile(save_figure_fold_path, [save_figure_name '_' fig_type '.fig']))
             saveas(gcf, fullfile(save_figure_fold_path, [save_figure_name '_' fig_type '.png']))
         end
     end
     close all;
+end
+
+% save data setting
+switch plot_type
+    case 'EMG'
+        save_data_dir_path = fullfile(base_dir, 'EMG_across_sessions', 'EMG_for_each_timing');
+    case 'Synergy'
+        save_data_dir_path = fullfile(fileparts(Pdata_dir_path), 'temporal_pattern_for_each_timing');
+end
+makefold(save_data_dir_path)
+
+for session_id = 1:session_num
+    whole_task_EMG_struct = struct();
+    each_timing_EMG_cell = cell(timing_num, 1);
+
+    whole_task_EMG_struct.time_normalized_EMG = plotted_whole_task_EMG_struct.time_normalized_EMG{session_id};
+    whole_task_EMG_struct.session_average_length = plotted_whole_task_EMG_struct.session_average_length;
+    whole_task_EMG_struct.cutout_range = plotted_whole_task_EMG_struct.cutout_range;
+    
+    for timing_id = 1:timing_num
+        ref_timing_saved_struct = struct();
+        ref_timing_used_struct = plotted_each_timing_EMG_cell{timing_id};
+        
+        ref_timing_saved_struct.time_normalized_EMG = ref_timing_used_struct.time_normalized_EMG{session_id};
+        ref_timing_saved_struct.session_average_length = ref_timing_used_struct.session_average_length;
+        ref_timing_saved_struct.cutout_range = ref_timing_used_struct.cutout_range;
+        ref_timing_saved_struct.plot_range = ref_timing_used_struct.plot_range;
+
+        each_timing_EMG_cell{timing_id} = ref_timing_saved_struct;
+    end
+    
+    save_file_name = [monkeyname days_str{session_id} '_each_timing_pattern.mat'];
+    save(fullfile(save_data_dir_path, save_file_name), 'whole_task_EMG_struct', 'each_timing_EMG_cell', 'timing_name_list')
 end
 
 %% define local function
