@@ -1,14 +1,19 @@
 %{
 + ネスト深すぎる．しょうがない気もするけど
-+ シナジーの方の条件分岐は確認してない
-+ Pdataの使用は、makeStructForXcorrの中でEMGsをロードする時のみなので、
++ Pdataの使用は、makeStructForXcorrの中でEMGsをロードする時のみなので、EMGsをplotTargetから作成できるファイルに含めてPdataに関する処理を削除する
 + 今はすべてのデータを使用する仕様になっているので、使用するpre,postデータをピックアップできるようにする
++ 参照フォルダがPdata_dirなのおかしい(each_timing_patternフォルダに変更する)
++ 列挙型にするか、もう一つcaseを作ってエラーハンドリングするか
++ 'Synergy'か'synergy'かでめちゃくちゃ変わるので、どうにかする
+
+[caution]
++ シナジーの場合は、1対1対応になっていないと、この解析の意味がないことに注意
 %}
 clear;
 %% set param
 monkeyname = 'Hu';
-plot_data_type = 'EMG'; %'EMG'/'Synergy'
-must_plot_elements = {'EDC', 'FDS'};
+plot_data_type = 'synergy'; %'EMG'/'synergy'
+must_plot_elements = {'synergy1', 'synergy2'};
 figure_row_num = 4; % 1ページに含める要素の数(列数はタイミングの数に決まる)
 
 % if plot_type == 'Synergy'
@@ -23,7 +28,7 @@ switch plot_data_type
     case 'EMG'
         base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'EMG_ECoG');
         Pdata_dir = fullfile(base_dir, 'P-DATA');
-    case 'Synergy'
+    case 'synergy'
         base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'Synergy');
         Pdata_dir = fullfile(base_dir, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(synergy_num)], 'temporal_pattern_data');
 end
@@ -49,8 +54,8 @@ all_day_list = get_days(all_file_names);
 switch plot_data_type
     case 'EMG'
         each_timing_pattern_dir = fullfile(base_dir, 'EMG_across_sessions', 'EMG_for_each_timing');
-    case 'Synergy'
-        each_timing_pattern_dir = 1;
+    case 'synergy'
+        each_timing_pattern_dir = fullfile(fileparts(Pdata_dir), 'temporal_pattern_for_each_timing');
 end
 
 % preとpostのPdata.matから必要な情報を抜き取って構造体にまとめる
@@ -132,7 +137,14 @@ end
 
 % 生成したデータを元に図を作っていく
 % まずは、個々のタイミングの個々の筋肉における、選択したcontrol筋肉に対する図を生成する
-xcorr_figure_fold_path = fullfile(root_dir, 'saveFold', realname, 'figure', 'EMG', 'xcorr_result');
+switch plot_data_type
+    case 'EMG'
+        xcorr_figure_fold_path = fullfile(root_dir, 'saveFold', realname, 'figure', 'EMG', 'xcorr_result');
+    case 'synergy'
+        xcorr_figure_fold_path = fullfile(root_dir, 'saveFold', realname, 'figure', 'Synergy', 'xcorr_result');
+end
+
+
 elapsed_day_list = zeros(1, all_day_num);
 for day_id = 1:all_day_num
     ref_day = all_day_list(day_id);
@@ -143,7 +155,7 @@ post_first_elapsed_day = elapsed_day_list(find((elapsed_day_list > 0), 1 ));
 for timing_id = 1:(timing_num+1)
     if timing_id == (timing_num+1)
         unique_timing_name = 'whole_task';
-        timing_name_for_plot = 'whole_task';
+        timing_name_for_plot = 'whole-task';
     else
         unique_timing_name = ['timing' num2str(timing_id)];
         timing_name_for_plot = timing_name_list{timing_id};

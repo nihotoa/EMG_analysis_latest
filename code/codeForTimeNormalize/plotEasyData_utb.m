@@ -7,8 +7,6 @@ Cut out EMG for each trial & Focusing on various timings and cut out EMG around 
 monkeyname: prefix of data
 xpdate_num: [double], date of experiment
 save_fold: [char], 'easyData', you dont need to change
-task:  [char], 'standard', you dont need to change
-real_name: [char], full name of monkey
 
 [output arguments]:
 alignedDataAVE: [cell array], each cell contains the average activity of all trials of that EMG
@@ -24,7 +22,7 @@ D: [struct], this contains information about cutout range centered on each timin
 pwdじゃなくて,  inputにbase_dir指定してそれを使った方がいいかも
 %}
 
-function [alignedDataAVE,alignedData,taskRange,AllT,Timing_ave,TIME_W,Res,D, focus_timing_num] = plotEasyData_utb(monkeyname, xpdate_num, save_fold, task ,real_name)
+function [alignedDataAVE,alignedData,taskRange,AllT,Timing_ave,TIME_W,Res,D, focus_timing_num] = plotEasyData_utb(monkeyname, xpdate_num, save_fold)
 %% get informations(path of save_folder, EMG data, timing data ,etc...)
 xpdate = sprintf('%d',xpdate_num);
 disp(['START TO MAKE & SAVE ' monkeyname xpdate '_Plot Data']);

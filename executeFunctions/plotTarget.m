@@ -1,7 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
-%coded by Naoki Uchida(The code this guy writes is all seriously crap)
-
 [role of this code]
 plot EMG (or activty pattern of muslcle Synergy) around each timing and save as figure
 
@@ -30,8 +28,8 @@ post: calcXcorr
 -> please reboot MATLAB
 
 [improvement]
++ (シナジーの場合)使用した筋電の数を考慮する必要があるので、ディレクトリをもう一階層追加する
 + preとpost混ぜて選んでもエラー吐かないようにする
-+ synergyの方の挙動を確かめてない
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -40,8 +38,8 @@ clear;
 monkeyname = 'Hu'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
 plot_all = 1; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
-plot_type = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
-ylim_setting_type = 'individual'; % (if nomalize Amp == false) 'all'/'individual', whether ylim be set individually for each EMG or use a common value
+plot_type = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
+ylim_setting_type = 'all'; % (if nomalize Amp == false) 'all'/'individual', whether ylim be set individually for each EMG or use a common value
 ylim_max = 10; % (if nomalize Amp == false && ylim_setting_type == 'all') ylim of graph
 ylim_max_list = [200, 80, 80, 20, 30, 80, 100, 30, 50, 20, 80, 50, 30, 60, 30, 20]; % (if nomalize Amp == false && ylim_setting_type == 'individual') ylim of graph for each EMG
 LineW = 1.5; %0.1;a % width of plot line
@@ -95,8 +93,8 @@ switch realname
         timing_name_list = ["Task start ", "Drawer on", "Drawer off", "Grasp on ", "Grasp off ", "Task End"];  
         TT_day=  250120;
         % plot window (Xcorr data will be made in this range)
-        plotWindow_cell{1} = [-25 5];
-        plotWindow_cell{2} = [-15 15];
+        plotWindow_cell{1} = [-25 15];
+        plotWindow_cell{2} = [-25 15];
         plotWindow_cell{3} = [-15 15];
         plotWindow_cell{4} = [-15 15];
         plotWindow_cell{5} = [-15 15];

@@ -5,8 +5,8 @@
 2. Please run this code & select data by following guidance (which is displayed in command window after Running this code)
 
 [role of this code]
-・cut out the temporal pattern of muscle synergy for each trial and put it into array
-・save data which is related in displaying temporal synergy
++ cut out the temporal pattern of muscle synergy for each trial and put it into array
++ save data which is related in displaying temporal synergy
 
 [Saved data location]
 location: 
@@ -20,12 +20,15 @@ post: plotTarget.m
 In order to use the function 'resample', 'signal processing toolbox' must be installed
 
 [Improvement points(Japanaese)]
-・Kを用いてtestデータを連結させるところがkf=4の前提で書かれているので改善する
-・タイミングの数が4つである前提で書かれているので、改善する(plotEasyData_utbとかなり似ている)
-・timを求める際のダウンサンプリング後のサンプリング周波数が100Hzの前提で書かれているので改善する
-・alignDataと,alignDataEXはplotEasyData_utbと全く同じものを使っているので、ローカル関数ではなくて、独立した関数として作って、
++ 使用した筋電の数を考慮する必要があるので、ディレクトリをもう一階層追加する
++ dispNMF_Wのセーブデータを変更したので、それに対応するようにリファクタリング
++ Kを用いてtestデータを連結させるところがkf=4の前提で書かれているので改善する
++ タイミングの数が4つである前提で書かれているので、改善する(plotEasyData_utbとかなり似てpreといる)
++ timを求める際のダウンサンプリング後のサンプリング周波数が100Hzの前提で書かれているので改善する
++ alignDataと,alignDataEXはplotEasyData_utbと全く同じものを使っているので、ローカル関数ではなくて、独立した関数として作って、
 それを読み込んで使うように変更する
-・use_EMG_type = 'full'の時の動作確認はしてない
++ use_EMG_type = 'full'の時の動作確認はしてない
++ preとpostで空間基底が違うのに同じPdataとして保存されるのは違和感あるので、対策を考える
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;

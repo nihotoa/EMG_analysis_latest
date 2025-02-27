@@ -25,7 +25,7 @@ file_name: ~_Pdata.mat:  contains some data for synergy analysis (timing_data, t
                  ~_PdataTrigSyn.mat:  (not used in any process)
 
 [procedure]
-pre: SaveFileInfo.m
+pre: extractAndSaveLinkageInfo.m
 post: 
         if you want to peform... 
         => EMG analysis: plotTarget.m 
@@ -35,9 +35,9 @@ post:
 
 
 (If you want to get the information shown below, you can get it by executing following function)
-Eif you want to visually confirm the difference of filtered EMG which is caused by the difference of filtering
+ï¿½Eif you want to visually confirm the difference of filtered EMG which is caused by the difference of filtering
     => PerformFFT.m
-EIf you want to confirm the effect of time normalization on activity pattern
+ï¿½EIf you want to confirm the effect of time normalization on activity pattern
     => ConfirmError.m
 
 [caution!!]
@@ -45,10 +45,9 @@ Sometimes the function 'uigetfile' is not executed and an error occurs
 -> please reboot MATLAB
 
 [Improvement points(Japanaese)]
-EmakeEasyData_all/makeEasyTiming“à‚ÌSu, Se‚ÌğŒ•ªŠò‚ÌˆÓ–¡‚ğ”cˆ¬‚µ‚Ä‚¢‚È‚¢ => Seseki‚Å‚· or ƒ`ƒ…[ƒgƒŠƒAƒ‹—p‚ÌƒŠƒ|ƒWƒgƒŠ‚ğì‚Á‚½Œã‚ÉÁ‚·
-E‚±‚ÌŠÖ”‚Ì’†‚Åg‚í‚ê‚Ä‚¢‚éŠÖ”‚Ì’†‚Åg‚í‚ê‚Ä‚¢‚éplotEasyData_utb‚ÆMakeDataForPlot_H_utb.m‚ªŒƒ—‚È‚Ì‚ÅŠÖ”ƒtƒ@ƒCƒ‹‚ğì‚Á‚ÄŠO‚©‚çŒÄ‚Ño‚·‚æ‚¤‚É•ÏX‚·‚é
-Etry catch‚Ì‚¹‚¢‚ÅAƒGƒ‰[‚ª‹N‚«‚Ä‚àƒGƒ‰[•¶Í‚ª•\¦‚³‚ê‚¸‚ÉÀs‚ªi‚ñ‚Å‚µ‚Ü‚¤‚Ì‚ÅA”p~‚·‚é or ƒGƒ‰[‚ª‹N‚«‚Ä‚¢‚é‚±‚Æ‚ğƒƒO‚Æ‚µ‚Äo‚·B
-EmakeEasyData_all‚ÌTp‚ğì‚é‚Æ‚±‚ë‚ÅACTTL_002‚ÌUp‚ÆDown‚ÌƒTƒCƒY‚ª‡‚Á‚Ä‚È‚­‚ÄƒGƒ‰[“f‚­‚±‚Æ‚ª‚ ‚é‚Ì‚ÅA‘Îˆ‚·‚é(20250219‚ª‚»‚ê‚É‘Î‰)
+ï¿½Eï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½EmakeEasyData_allï¿½ï¿½Tpï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ÅACTTL_002ï¿½ï¿½Upï¿½ï¿½Downï¿½ÌƒTï¿½Cï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚È‚ï¿½ï¿½ÄƒGï¿½ï¿½ï¿½[ï¿½fï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÅAï¿½Îï¿½ï¿½ï¿½ï¿½ï¿½(20250219ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É‘Î‰ï¿½)
+ï¿½Eï¿½ï¿½ï¿½sï¿½vï¿½lï¿½Ì’ï¿½`ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear 
@@ -59,9 +58,6 @@ mE = struct();
 mE.downdata_to = 1375; % (if down_E ==1)sampling rate of after resampling
 mE.time_restriction_flag = false; % true/false
 mE.time_restriction_threshold = 3;  %[s]
-
-task = 'linkageInfo'; % you don't need to change
-save_fold = 'easyData'; % you don't need to change
 
 % set param for 'makeEasyData_all'
 
@@ -81,7 +77,7 @@ saveE_filt = 0;
 realname = get_real_name(monkeyname);
 root_dir = fileparts(pwd);
 linkageInfo_fold_path = fullfile(root_dir, 'saveFold', realname, 'data', 'EMG_ECoG', 'linkageInfo_list');
-disp(['yPlease select all "~_linkageInfo.mat" of all dates you want to analyzez'])
+disp(['ï¿½yPlease select all "~_linkageInfo.mat" of all dates you want to analyzeï¿½z'])
 Allfiles_S = uigetfile('*.mat', 'Select One or More Files', 'MultiSelect', 'on', linkageInfo_fold_path);
 
 if isequal(Allfiles_S, 0)
@@ -95,7 +91,7 @@ if ischar(Allfiles_S)
 end
     
 day_num = length(Allfiles_S);
-Allfiles = strrep(Allfiles_S,['_' task '.mat'],'');
+Allfiles = strrep(Allfiles_S, '_linkageInfo.mat','');
 %% RUNNING FUNC LIST (make data)
 common_save_fold_path = fullfile(root_dir, 'saveFold', realname, 'data', 'EMG_ECoG');
 for day_id = 1:day_num
@@ -105,13 +101,13 @@ for day_id = 1:day_num
     
     % Perform all preprocessing with 3 functions
     % 1. Perform data concatenation & filtering processing & Obtain information on each timing for EMG trial-by-trial extraction
-    [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, realname, xpdate, file_num, common_save_fold_path, mE, task); 
+    [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, realname, xpdate, file_num, common_save_fold_path, mE); 
 
     % 2. Check for cross-talk between measured EMGs
     [Yave,Y3ave] = CTcheck(monkeyname, xpdate, common_save_fold_path, realname);
 
     % 3. Cut out EMG for each trial & Focusing on various timings and cut out EMG around them
-    [alignedDataAVE,alignedData_all,taskRange,AllT,Timing_ave,TIME_W,Res,D, focus_timing_num] = plotEasyData_utb(monkeyname, xpdate, common_save_fold_path, task, realname);
+    [alignedDataAVE,alignedData_all,taskRange,AllT,Timing_ave,TIME_W,Res,D, focus_timing_num] = plotEasyData_utb(monkeyname, xpdate, common_save_fold_path);
     
     % create struct(Store the EMG trial average data around each timing in another structure)
     ResAVE = struct();

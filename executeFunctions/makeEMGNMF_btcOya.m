@@ -22,6 +22,7 @@ if you want to find the optimal number of synergy from the synergy data of each 
     =>FindOptimalSynergyNum.m
 
 [Improvement points(Japanaese)]
++ 使用した筋電の数を考慮する必要があるので、ディレクトリをもう一階層追加する(使用した筋電の名前をcsvファイルとして保存するようにも設定する)
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;

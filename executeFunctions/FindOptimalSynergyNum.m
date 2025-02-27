@@ -13,14 +13,13 @@ pre: makeEMGNMF_btcOya.m
 post: SYNERGYPLOT.m
 
 [Improvement points(Japanase)]
-・序盤でシナジーデータがなかった日付のデータをeliminated_date_listを使って取り除く処理をしているが、分かりにくいかつ冗長なので抜本的に変える
-・シナジーのクラスタリング処理が何回かあるが、その度に処理をコピペしていて冗長なので、関数にする。
-・shuffle_dVAF_data_listが選択する日付の数によって変わるのは良くないので、選択した日付に関わらずshuffle_dVAF_data_listは全日文を使用するように変更する
++ 使用した筋電の数を考慮する必要があるので、ディレクトリをもう一階層追加する
++ dVAFを使用したシナジー数の候補の決定において、検定のデータが選択実験日ごとに変わるので固定する
++ TT_surgery_dayを手動で決めているけど、サルによって固定なので、それ用の関数を作る
++ 序盤でシナジーデータがなかった日付のデータをeliminated_date_listを使って取り除く処理をしているが、分かりにくいかつ冗長なので抜本的に変える
 
 [shared information]
-・t-testによってshuffleデータのdVAFが実際のデータのdVAFよりも有意に大きいかどうか調べているが、正規分布とは限らないので
-t-testを使用していいのかどうかは自信がない。(ノンパラメトリックな検定方法を使うべきかも)
-・TT_surgery_dayを手動で決めているけど、これは猿によって固定なので、それ用の関数をつく他方がいいかも
+・t-testによってshuffleデータのdVAFが実際のデータのdVAFよりも有意に大きいかどうか調べているが、これが適切な方法か自信がない
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -222,7 +221,7 @@ if make_figure_flag
     set(gca, FontSize=15)
     
     ylabel('optimal number of syenrgy');
-    xlabel(['elapsed date since recoring begin'])
+    xlabel('elapsed date since recoring begin')
     
     % save setting
     save_figure_fold_path = strrep(save_data_fold_path, 'data', 'figure');

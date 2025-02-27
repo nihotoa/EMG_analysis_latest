@@ -1,26 +1,33 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 [your operation]
-1. Change some parameters (please refer to 'set param' section)
-2. Please run this code
+1. Verify that the prefix of the measurement data is correct.
+2. Navigate to the executeFunctions directory.
+3. Change some parameters (please refer to 'set param' section)
+4. Please run this code
 
 [role of this code]
-1, Read EMG data from ,nev files (contains EMG data)
-2. Read AlphaOmega file (contains ECoG & timing data) & concatenate all files for one day
-3. merge all data which is created 1 & 2 and save as <monkeyname><day>-<file number>.mat
+This script reads EMG data from .nev files and ECoG & timing data from AlphaOmega files. 
+It then concatenates all files for a single day and merges the data into a single file 
+in the format <monkeyname><day>-<file number>.mat. This is useful for consolidating 
+scattered experimental data into a unified format for further analysis.
 
-[Saved data location]
-folder path: <pwd>/Nibali/
-file name: <monkeyname><day>-<file number>.mat  (ex.)Ni220420-0001.mat
+[saved data location]
+- Folder path for AllData_<monkeyname><exp_day>.mat: <root_dir>/saveFold/<realname>/data/EMG_ECoG/AllData_list/
+- Folder path for <monkeyname><day>-<file number>.mat: <root_dir>/useDataFold/<realname>/
 
-[procedure]
-pre: nothing
-post : SaveFileInfo.m
+[execution procedure]
+- Pre: None
+- Post: extractAndSaveLinkageInfo.m
 
 [Improvement point(Japanese)]
-・concatenateDataで、error入った時に、そこで処理終了するんじゃなくて、関数抜けてcontinueして次の日付のiterationへ行くようにする
-・error文章を変えたほうがいい
-・たまにCTTL関連のデータがセーブされない時があるので、原因を探る
+(ok!) concatenateDataで、error入った時に、そこで処理終了するんじゃなくて、関数抜けてcontinueして次の日付のiterationへ行くようにする
+(ok!) error文を変えたほうがいい
++ CTTL002のUp,Downの数が異なる場合があるので、処理を追加(20250219がそれに対応している)
++ CTTL3と2のロジック部分がわからなすぎるので、リファクタリング
++ たまにCTTL関連のデータがセーブされない時があるので、原因を探る
++ データがデカすぎてセーブできないことがあるので、使ってないチャンネルを削るようにする(サルごとに設定)
++ ログが汚いので、治してもらう(composarに頼む)
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -51,12 +58,19 @@ end
 
 for idx = 1:length(folder_name_list)
     exp_day = folder_name_list{idx};
+    disp(['start processing for the data in ' exp_day '...']);
+
     % generate EMG data
     [CEMG_struct, amplitude_unit, record_time] = generateEMG(base_dir, exp_day, down_SR);
     disp([exp_day ' EMG_RecordTime: ' num2str(record_time) '[s]']);
-
-    % generate(concatenate) ECoG & timing data.
-    [CAI_struct, CLFP_struct, CRAW_struct, CTTL_struct] = concatenateData(base_dir, exp_day, monkeyname, down_SR, record_time);
+    
+    try
+        % generate(concatenate) ECoG & timing data.
+        [CAI_struct, CLFP_struct, CRAW_struct, CTTL_struct] = concatenateData(base_dir, exp_day, monkeyname, down_SR, record_time);
+    catch
+        disp("skip to next day's data processing...")
+        continue;
+    end
     
     % save data
     save_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'EMG_ECoG', 'AllData_list');
@@ -68,6 +82,7 @@ for idx = 1:length(folder_name_list)
 
     saveRawData(all_data_file_path, CEMG_struct, CAI_struct, CRAW_struct, CLFP_struct, CTTL_struct);
     saveRawData(row_data_file_path, CEMG_struct, CAI_struct, CRAW_struct, CLFP_struct, CTTL_struct);
+    disp(['The data for' exp_day 'was propely processed!!']);
 
     % clear only struct type
     vars = who;
@@ -77,3 +92,4 @@ for idx = 1:length(folder_name_list)
         end
     end
 end
+disp('All processing is completed');

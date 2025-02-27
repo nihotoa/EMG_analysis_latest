@@ -28,7 +28,9 @@ base_dir = fullfile(base_dir, exp_day);
 AO_file_list = dirEx(fullfile(base_dir, [monkeyname '*.mat'])); % get the name of files that are recorded by AlphaOmega
 AO_file_num = length(AO_file_list);
 if isempty(AO_file_list)
-    error('There is no .mat file that matches the conditions. Please check whether the prefix of the file matches "monkeyname"');
+    warning(['There was a problem with the processing of' exp_day '. Please fix the promlem and run again']);
+    warning(['No .mat files found that match the conditions. Please check if the .mat files prefix in ' exp_day ' folder are "' monkeyname '"']);
+    return;
 end
 
 % load all raw data & store as struct type

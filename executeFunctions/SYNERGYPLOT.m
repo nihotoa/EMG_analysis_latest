@@ -20,7 +20,10 @@ In order to complete this function, in addtion to the analysis flow of synergy a
 ・select_synergy_num_type == 'auto'で解析を行うためには,先にFindOptimalSynergyNum.mを行う必要がある.
 
 [Improvement points(Japanaese)]
-・autoにした時のcancel処理が実装されてない
++ 使用した筋電の数を考慮する必要があるので、ディレクトリをもう一階層追加する
++ マニュアルでシナジー数を指定するのではなく、optimal_synergy_numを参照して解析回すオプションを追加する(現状のautoがそれに対応してる)
++ autoじゃなくて、optimal_synergy_numを参照したっていうニュアンスに変更する
++ autoにした時のcancel処理が実装されてない
 ・構造変えた時に、autoの動作チェックはしてない．
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

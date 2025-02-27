@@ -29,11 +29,11 @@ post: (if you want to cutout temporal pattern of synergy)MakeDataForPlot_H_utb.m
 
 
 [Improvement points(Japanaese)]
-・cosine distanceとclusteringは他の関数でも使うので、localじゃなくて、外部関数としてまとめたほうがいいかも
-・新しい構造において、day_num > 1の場合の挙動を確かめてない
-・次の関数(MakeData~)と一つに統合する．それで、すべての日付のデータを計算して、日毎に分けて、どこかにセーブしておく
-・その上で、そのデータをGUIで選択して、選ばれた日付のfigureを作成して、選ばれた日付から構成されるフォルダ内に図を保存する(データは保存しない．)
-・auto消せ
++ 使用した筋電の数を考慮する必要があるので、ディレクトリをもう一階層追加する
++ 新しい構造において、day_num > 1の場合の挙動を確かめてない
++ autoの処理消す
++ シナジーの順番を初日に合わせる(preとpostで変わってしまうので、どの初日を参照するかをパラメータで設定する('pre', 'post'))
++ dispNMF_Wのデータは、選択されたグループごとではなく、各日付ごとにセーブする
 
 [caution]
 階層クラスタリングを行った時に、全てのクラスタの要素数が一致していない場合はエラー吐く。
@@ -52,7 +52,6 @@ syn_num = 4; % number of synergy you want to analyze
 plot_clustering_result = 1; % whether to plot cosine distance & dendrogram of hierarcical clustering
 save_WDaySynergy = 1;% Whether to save synergy W (to be used for ANOVA)
 save_data = 1; % Whether to store data on synergy orders in 'order_tim_list' folder (should basically be set to 1).
-synergy_combination = 'dist-dist'; % dist-dist/prox-dist/all etc..
 
 %% code section
 realname = get_real_name(monkeyname);

@@ -14,7 +14,7 @@ for day_id = 1:day_num
             load(fullfile(Pdata_dir, ref_Pdata_name), 'EMGs');
             elements = EMGs;
         else
-            synergy_num = size(each_timing_EMG_cell{1}.time_normalized_EMG{1}, 1);
+            synergy_num = size(each_timing_EMG_cell{1}.time_normalized_EMG, 1);
             elements = generateSequentialNames('synergy', synergy_num);
         end
         element_num = length(elements);
