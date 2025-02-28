@@ -1,6 +1,6 @@
 %{
 + ネスト深すぎる．しょうがない気もするけど
-+ Pdataの使用は、makeStructForXcorrの中でEMGsをロードする時のみなので、EMGsをplotTargetから作成できるファイルに含めてPdataに関する処理を削除する
++ Pdataの使用は、makeStructForXcorrの中でEMGsをロードする時のみなので、EMGsをvisualizeEMGAndSynergyから作成できるファイルに含めてPdataに関する処理を削除する
 + 今はすべてのデータを使用する仕様になっているので、使用するpre,postデータをピックアップできるようにする
 + 参照フォルダがPdata_dirなのおかしい(each_timing_patternフォルダに変更する)
 + 列挙型にするか、もう一つcaseを作ってエラーハンドリングするか

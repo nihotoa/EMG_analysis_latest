@@ -13,22 +13,22 @@ location:
     EMG_analysis/data/Yachimun/new_nmf_result/synData/
 
 [procedure]
-pre: dispNMF_W.m
-post: plotTarget.m 
+pre: visualizeSynergyWeights.m
+post: visualizeEMGAndSynergy.m
 
 [caution!!]
 In order to use the function 'resample', 'signal processing toolbox' must be installed
 
 [Improvement points(Japanaese)]
-+ g—p‚µ‚½‹Ø“d‚Ì”‚ğl—¶‚·‚é•K—v‚ª‚ ‚é‚Ì‚ÅAƒfƒBƒŒƒNƒgƒŠ‚ğ‚à‚¤ˆêŠK‘w’Ç‰Á‚·‚é
-+ dispNMF_W‚ÌƒZ[ƒuƒf[ƒ^‚ğ•ÏX‚µ‚½‚Ì‚ÅA‚»‚ê‚É‘Î‰‚·‚é‚æ‚¤‚ÉƒŠƒtƒ@ƒNƒ^ƒŠƒ“ƒO
-+ K‚ğ—p‚¢‚Ätestƒf[ƒ^‚ğ˜AŒ‹‚³‚¹‚é‚Æ‚±‚ë‚ªkf=4‚Ì‘O’ñ‚Å‘‚©‚ê‚Ä‚¢‚é‚Ì‚Å‰ü‘P‚·‚é
-+ ƒ^ƒCƒ~ƒ“ƒO‚Ì”‚ª4‚Â‚Å‚ ‚é‘O’ñ‚Å‘‚©‚ê‚Ä‚¢‚é‚Ì‚ÅA‰ü‘P‚·‚é(plotEasyData_utb‚Æ‚©‚È‚è—‚Äpre‚Æ‚¢‚é)
-+ tim‚ğ‹‚ß‚éÛ‚Ìƒ_ƒEƒ“ƒTƒ“ƒvƒŠƒ“ƒOŒã‚ÌƒTƒ“ƒvƒŠƒ“ƒOü”g”‚ª100Hz‚Ì‘O’ñ‚Å‘‚©‚ê‚Ä‚¢‚é‚Ì‚Å‰ü‘P‚·‚é
-+ alignData‚Æ,alignDataEX‚ÍplotEasyData_utb‚Æ‘S‚­“¯‚¶‚à‚Ì‚ğg‚Á‚Ä‚¢‚é‚Ì‚ÅAƒ[ƒJƒ‹ŠÖ”‚Å‚Í‚È‚­‚ÄA“Æ—§‚µ‚½ŠÖ”‚Æ‚µ‚Äì‚Á‚ÄA
-‚»‚ê‚ğ“Ç‚İ‚ñ‚Åg‚¤‚æ‚¤‚É•ÏX‚·‚é
-+ use_EMG_type = 'full'‚Ì‚Ì“®ìŠm”F‚Í‚µ‚Ä‚È‚¢
-+ pre‚Æpost‚Å‹óŠÔŠî’ê‚ªˆá‚¤‚Ì‚É“¯‚¶Pdata‚Æ‚µ‚Ä•Û‘¶‚³‚ê‚é‚Ì‚Íˆá˜aŠ´‚ ‚é‚Ì‚ÅA‘Îô‚ğl‚¦‚é
++ ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½Ø“dï¿½Ìï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÅAï¿½fï¿½Bï¿½ï¿½ï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Kï¿½wï¿½Ç‰ï¿½ï¿½ï¿½ï¿½ï¿½
++ VisualizeSynergyWeightsï¿½ÌƒZï¿½[ï¿½uï¿½fï¿½[ï¿½^ï¿½ï¿½ÏXï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÅAï¿½ï¿½ï¿½ï¿½É‘Î‰ï¿½ï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½Éƒï¿½ï¿½tï¿½@ï¿½Nï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½O
++ Kï¿½ï¿½pï¿½ï¿½ï¿½ï¿½testï¿½fï¿½[ï¿½^ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ë‚ªkf=4ï¿½Ì‘Oï¿½ï¿½Åï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ì‚Å‰ï¿½ï¿½Pï¿½ï¿½ï¿½ï¿½
++ ï¿½^ï¿½Cï¿½~ï¿½ï¿½ï¿½Oï¿½Ìï¿½ï¿½ï¿½4ï¿½Â‚Å‚ï¿½ï¿½ï¿½Oï¿½ï¿½Åï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ì‚ÅAï¿½ï¿½ï¿½Pï¿½ï¿½ï¿½ï¿½(plotEasyData_utbï¿½Æ‚ï¿½ï¿½È‚è—ï¿½ï¿½preï¿½Æ‚ï¿½ï¿½ï¿½)
++ timï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½Û‚Ìƒ_ï¿½Eï¿½ï¿½ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ÌƒTï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½100Hzï¿½Ì‘Oï¿½ï¿½Åï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ì‚Å‰ï¿½ï¿½Pï¿½ï¿½ï¿½ï¿½
++ alignDataï¿½ï¿½,alignDataEXï¿½ï¿½plotEasyData_utbï¿½Æ‘Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½gï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ì‚ÅAï¿½ï¿½ï¿½[ï¿½Jï¿½ï¿½ï¿½Öï¿½ï¿½Å‚Í‚È‚ï¿½ï¿½ÄAï¿½Æ—ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öï¿½ï¿½Æ‚ï¿½ï¿½Äï¿½ï¿½ï¿½ÄA
+ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½Ågï¿½ï¿½ï¿½æ‚¤ï¿½É•ÏXï¿½ï¿½ï¿½ï¿½
++ use_EMG_type = 'full'ï¿½Ìï¿½ï¿½Ì“ï¿½ï¿½ï¿½mï¿½Fï¿½Í‚ï¿½ï¿½Ä‚È‚ï¿½
++ preï¿½ï¿½postï¿½Å‹ï¿½ÔŠï¿½ê‚ªï¿½á‚¤ï¿½Ì‚É“ï¿½ï¿½ï¿½Pdataï¿½Æ‚ï¿½ï¿½Ä•Û‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Íˆï¿½aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÅAï¿½Îï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -87,7 +87,7 @@ synergy_across_sessions_data_dir = fullfile(base_dir, 'synergy_across_sessions',
 order_data_file_path = fullfile(synergy_across_sessions_data_dir, 'sort_order_info.mat');
 if not(exist(order_data_file_path, "file"))
     error(['There was no file in the "order_tim_list" directory corresponding to the synergy number and date combination you selected.' ...
-        '      Please run "dispNMF_W.m" with the same date combination & synergy_num first to create "order_tim_list" file']);
+        '      Please run "visualizeSynergyWeights.m" with the same date combination & synergy_num first to create "order_tim_list" file']);
 end
 order_data_struct = load(order_data_file_path);
 EMG_num = order_data_struct.EMG_num;

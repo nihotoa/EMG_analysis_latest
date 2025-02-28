@@ -14,15 +14,14 @@ file name: selected_folder_name + .mat (ex.)F170516_standard.mat => this file co
                 t_ + selected_folder_name + .mat (ex.)t_F170516_standard.mat => this file contains synergy data
 
 [procedure]
-pre:fitlerBat_SynNMFPre.m
+pre:filterEMGForNMF.m
 post:
-if you want to plot VAF value 
-    => plotVAF.m
+if you want to plot VAF value
+    => visualizeVAF.m
 if you want to find the optimal number of synergy from the synergy data of each session(day)
-    =>FindOptimalSynergyNum.m
+    =>determineOptimalSynergyNumber.m
 
 [Improvement points(Japanaese)]
-+ g—p‚µ‚½‹Ø“d‚Ì”‚ğl—¶‚·‚é•K—v‚ª‚ ‚é‚Ì‚ÅAƒfƒBƒŒƒNƒgƒŠ‚ğ‚à‚¤ˆêŠK‘w’Ç‰Á‚·‚é(g—p‚µ‚½‹Ø“d‚Ì–¼‘O‚ğcsvƒtƒ@ƒCƒ‹‚Æ‚µ‚Ä•Û‘¶‚·‚é‚æ‚¤‚É‚àİ’è‚·‚é)
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -45,7 +44,7 @@ realname = get_real_name(monkeyname);
 base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'Synergy', 'filtered_EMG_data', use_EMG_type);
 
 % get info about dates of analysis data and used EMG
-disp('yPlease select all day folders you want to analyze (Multiple selections are possible)z)')
+disp('ï¿½yPlease select all day folders you want to analyze (Multiple selections are possible)ï¿½z)')
 day_folder_list   = uiselect(dirdir(base_dir),1,'Please select folders which contains the data you want to analyze');
 
 if isempty(day_folder_list)
@@ -57,7 +56,7 @@ ref_day_folder = day_folder_list{1};
 
 % Assign all file names contained in day_folder_list{1} to filtered_EMG_file_list
 filtered_EMG_file_list = sortxls(dirmat(fullfile(base_dir,ref_day_folder)));
-disp('yPlease select used EMG Dataz')
+disp('ï¿½yPlease select used EMG Dataï¿½z')
 filtered_EMG_file_list = uiselect(filtered_EMG_file_list,1,'Please select all filtered muscle data');
 
 % determine OutputDirs(where to save the result data)

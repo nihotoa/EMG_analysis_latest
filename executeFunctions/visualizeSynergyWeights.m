@@ -5,8 +5,8 @@
 2. Please run this code
 
 [role of this code]
-EOutput a single figure of the spatial pattern of each synergy for all dates selected by the UI operation.
-EStore data on the mapping of each synergy on each date and on the spatial pattern of synergies (synergy W) summarised.
+ï¿½EOutput a single figure of the spatial pattern of each synergy for all dates selected by the UI operation.
+ï¿½EStore data on the mapping of each synergy on each date and on the spatial pattern of synergies (synergy W) summarised.
 
 [Saved data location]
     As for figure:
@@ -23,21 +23,18 @@
 
 [procedure]
 pre: SYNERGYPLOT.m
-post: (if you want to cutout temporal pattern of synergy)MakeDataForPlot_H_utb.m
-         (if you want to confirm whether the significant change is occured in spatial synergy by statistical test) PerformAnova.m
-        (if you want to evaluate the change in spatial synergy by PCA) EvaluateSynergyChange.m
-
+post: (if you want to cutout temporal pattern of synergy)prepareSynergyTemporalData.m
 
 [Improvement points(Japanaese)]
-+ g—p‚µ‚½‹Ø“d‚Ì”‚ğl—¶‚·‚é•K—v‚ª‚ ‚é‚Ì‚ÅAƒfƒBƒŒƒNƒgƒŠ‚ğ‚à‚¤ˆêŠK‘w’Ç‰Á‚·‚é
-+ V‚µ‚¢\‘¢‚É‚¨‚¢‚ÄAday_num > 1‚Ìê‡‚Ì‹““®‚ğŠm‚©‚ß‚Ä‚È‚¢
-+ auto‚Ìˆ—Á‚·
-+ ƒVƒiƒW[‚Ì‡”Ô‚ğ‰“ú‚É‡‚í‚¹‚é(pre‚Æpost‚Å•Ï‚í‚Á‚Ä‚µ‚Ü‚¤‚Ì‚ÅA‚Ç‚Ì‰“ú‚ğQÆ‚·‚é‚©‚ğƒpƒ‰ƒ[ƒ^‚Åİ’è‚·‚é('pre', 'post'))
-+ dispNMF_W‚Ìƒf[ƒ^‚ÍA‘I‘ğ‚³‚ê‚½ƒOƒ‹[ƒv‚²‚Æ‚Å‚Í‚È‚­AŠe“ú•t‚²‚Æ‚ÉƒZ[ƒu‚·‚é
++ ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½Ø“dï¿½Ìï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÅAï¿½fï¿½Bï¿½ï¿½ï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Kï¿½wï¿½Ç‰ï¿½ï¿½ï¿½ï¿½ï¿½
++ ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½ï¿½ÄAday_num > 1ï¿½Ìê‡ï¿½Ì‹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½mï¿½ï¿½ï¿½ß‚Ä‚È‚ï¿½
++ autoï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
++ ï¿½Vï¿½iï¿½Wï¿½[ï¿½Ìï¿½ï¿½Ô‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éï¿½ï¿½í‚¹ï¿½ï¿½(preï¿½ï¿½postï¿½Å•Ï‚ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½Ì‚ÅAï¿½Ç‚Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Qï¿½Æ‚ï¿½ï¿½é‚©ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½Åİ’è‚·ï¿½ï¿½('pre', 'post'))
++ VisualizeSynergyWeightsï¿½Ìƒfï¿½[ï¿½^ï¿½ÍAï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½Oï¿½ï¿½ï¿½[ï¿½vï¿½ï¿½ï¿½Æ‚Å‚Í‚È‚ï¿½ï¿½Aï¿½eï¿½ï¿½ï¿½tï¿½ï¿½ï¿½Æ‚ÉƒZï¿½[ï¿½uï¿½ï¿½ï¿½ï¿½
 
 [caution]
-ŠK‘wƒNƒ‰ƒXƒ^ƒŠƒ“ƒO‚ğs‚Á‚½‚ÉA‘S‚Ä‚ÌƒNƒ‰ƒXƒ^‚Ì—v‘f”‚ªˆê’v‚µ‚Ä‚¢‚È‚¢ê‡‚ÍƒGƒ‰[“f‚­B
-(ƒVƒiƒW[”‚ª•Ï‰»‚µ‚È‚¢ & ƒVƒiƒW[‚Ì\‘¢‚à•Ï‰»‚µ‚È‚¢‘O’ñ‚Åì‚ç‚ê‚Ä‚¢‚é)
+ï¿½Kï¿½wï¿½Nï¿½ï¿½ï¿½Xï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÉAï¿½Sï¿½Ä‚ÌƒNï¿½ï¿½ï¿½Xï¿½^ï¿½Ì—vï¿½fï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ÍƒGï¿½ï¿½ï¿½[ï¿½fï¿½ï¿½ï¿½B
+(ï¿½Vï¿½iï¿½Wï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Ï‰ï¿½ï¿½ï¿½ï¿½È‚ï¿½ & ï¿½Vï¿½iï¿½Wï¿½[ï¿½Ì\ï¿½ï¿½ï¿½ï¿½ï¿½Ï‰ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Oï¿½ï¿½Åï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½)
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -115,7 +112,7 @@ if day_num > 1
     term_unique_name = [monkeyname num2str(selected_days(1)) '-to-' monkeyname num2str(selected_days(end))];
     [Wt, k_arr] = OrderSynergy(syn_num, W_data, day_num, plot_clustering_result, save_heatmap_figure_dir_path, term_unique_name);
     %{
-     %Seseki—p(0117, 0212, 0226, 0305, 0310, 0326)‚È‚Ì‚ÅŒã‚ÅÁ‚µ‚Ä
+     %Sesekiï¿½p(0117, 0212, 0226, 0305, 0310, 0326)ï¿½È‚Ì‚ÅŒï¿½Åï¿½ï¿½ï¿½ï¿½ï¿½
      k_arr = [[1;2;3;4], [1;3;2;4], [1;4;3;2], [1;4;3;2], [1;3;2;4], [1;4;2;3]];
      for day_id = 1:day_num
         Wt{day_id} = W_data{day_id}(:, k_arr(:, day_id));

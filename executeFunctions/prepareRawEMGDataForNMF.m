@@ -12,14 +12,14 @@ location: Yachimun/new_nmf_result/'~_standard' (ex.) F170516_standard
 file name: muscle_name(uV).mat (ex.) PL(uV).mat
 
 [procedure]
-pre:runningEasyfunc.m
-post:filterBat_SynNMFPre.m
+pre: prepareEMGAndTimingData.m
+post: filterEMGForNMF.m
 
 [Improvement points(Japanaese)]
-Eƒtƒ@ƒCƒ‹‚ð˜AŒ‹‚·‚éŽž‚É, ˜A”Ô‚¶‚á–³‚¢‚à‚Ì‚Í‘Î‰ž‚µ‚Ä‚¢‚È‚¢‚±‚Æ‚ð”O“ª‚É’u‚¢‚Ä‚¨‚­
-(—á)file 002, file004‚ªŽg—p‚·‚éƒtƒ@ƒCƒ‹‚¾‚Á‚½Žž‚É‚ÍƒGƒ‰[“f‚­(002, 003, 004‚ðload‚µ‚æ‚¤‚Æ‚·‚é‚©‚ç)
-EYachimun‚Ì‚Ù‚¤‚ÅA'only_task'‚É‘Î‰ž‚µ‚Ä‚¢‚È‚¢? ‚Ì‚ÅA’Ç‰Á‚·‚é
-+ extract_EMG_type‚ÌƒoƒŠƒG[ƒVƒ‡ƒ“‚ð‘‚â‚·(drawer•”•ª‚Ì‚Ý‚Æ‚©Afood•”•ª‚Ì‚Ý‚Æ‚©)(ˆ—‚ÌŽÀ‘•‚ÆAƒZ[ƒuƒtƒ@ƒCƒ‹–¼‚Ì•ÏX)
+ï¿½Eï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½éŽžï¿½ï¿½, ï¿½Aï¿½Ô‚ï¿½ï¿½á–³ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Í‘Î‰ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½Oï¿½ï¿½ï¿½É’uï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
+(ï¿½ï¿½)file 002, file004ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É‚ÍƒGï¿½ï¿½ï¿½[ï¿½fï¿½ï¿½(002, 003, 004ï¿½ï¿½loadï¿½ï¿½ï¿½æ‚¤ï¿½Æ‚ï¿½ï¿½é‚©ï¿½ï¿½)
+ï¿½EYachimunï¿½Ì‚Ù‚ï¿½ï¿½ÅA'only_task'ï¿½É‘Î‰ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½? ï¿½Ì‚ÅAï¿½Ç‰ï¿½ï¿½ï¿½ï¿½ï¿½
++ extract_EMG_typeï¿½Ìƒoï¿½ï¿½ï¿½Gï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ð‘‚â‚·(drawerï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Ý‚Æ‚ï¿½ï¿½Afoodï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Ý‚Æ‚ï¿½)(ï¿½ï¿½ï¿½ï¿½ï¿½ÌŽï¿½ï¿½ï¿½ï¿½ÆAï¿½Zï¿½[ï¿½uï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ì•ÏX)
 + 
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

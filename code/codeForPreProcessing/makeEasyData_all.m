@@ -1,6 +1,6 @@
 %{
 [explanation of this func]:
-this function is used in 'runnningEasyfunc.m'
+this function is used in 'prepareEMGAndTimingData.m'
 Perform data concatenation & filtering processing & Obtain information on each timing for EMG trial-by-trial extraction
 
 [input arguments]:
@@ -8,7 +8,7 @@ monkeyname: [char], prefix of file
 real_name: [char], full name of monkey
 xpdate_num: [double], date of experiment
 save_fold: [char], 'easyData' (don't need to change)
-mE: [struct], Contains parameters on whether or not processing is performed and information on the sampling frequency after downsampling.
+EMG_params_struct: [struct], Contains parameters on whether or not processing is performed and information on the sampling frequency after downsampling.
 
 [output arguments]:
 EMGs:[cell array], The name of each EMF is stored in a char type.
@@ -16,47 +16,20 @@ Tp: [double array], Data for each timing in each trial is stored.
 Tp3: [double array], Data for each timing in each trial is stored.
 
 [Improvement points(Japanese)]
-ëSëÃìIÇ…èÁí∑
-NibaliÇÃTpÇÃêÿÇËèoÇµÇÃä÷êîì‡Ç‡èÁí∑Ç»ÇÃÇ≈çÌÇÈ
-CTTL_003Ç™Ç§Ç‹Ç≠åvë™Ç≈Ç´Ç»Ç©Ç¡ÇΩÇÊÇ§Ç…ÅAsuccess_button_count_thresholdÇê›ÇØÇƒÅATTL_002ÇÃÇ›ÇégÇ¡Çƒ
-ÉCÉxÉìÉgÉ^ÉCÉ~ÉìÉOÇçÏÇÈÇÊÇ§Ç»èåèï™äÚÇé¿åªÇµÇƒÇ¢ÇÈÇ™ÅAdrawerÉ^ÉXÉNÇµÇ©ëŒâûÇµÇƒÇ¢Ç»Ç¢ÇÃÇ≈ÅANibaliÇÃï˚Ç‡èëÇ´ä∑Ç¶ÇÈ
-(Ç∆Ç¢Ç§Ç©ã§í âªÇ≈Ç´Ç»Ç¢Ç©Ç«Ç§Ç©çlÇ¶ÇÈ)
 %}
 
-function [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, real_name, xpdate_num, file_num, common_save_fold_path, mE)
+function [EMGs,Tp,Tp3] = makeEasyData_all(monkeyname, real_name, xpdate_num, file_num, common_save_fold_path, EMG_params_struct)
 %% set parameters
-make_EMG = mE.make_EMG;
-save_E = mE.save_E;
-down_E =  mE.down_E;
-make_Timing = mE.make_Timing;
-downdata_to = mE.downdata_to;
+downsample_rate = EMG_params_struct.downsample_rate;
 success_button_count_threshold = 80;
-time_restriction_flag = mE.time_restriction_flag;
-time_restriction_threshold = mE.time_restriction_threshold; 
+time_restriction_enabled = EMG_params_struct.time_restriction_enabled;
+time_restriction_limit = EMG_params_struct.time_restriction_limit; 
 
 %% code section
 xpdate = sprintf('%d',xpdate_num);
 % Store the name of the muscle corresponding to each electrode in the cell array
 switch monkeyname
-    case 'Wa'%Wasa
-        % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
-        EMGs=cell(14,1) ;
-        EMGs{1,1}= 'Delt';
-        EMGs{2,1}= 'Biceps';
-        EMGs{3,1}= 'Triceps';
-        EMGs{4,1}= 'BRD';
-        EMGs{5,1}= 'cuff';
-        EMGs{6,1}= 'ED23';
-        EMGs{7,1}= 'ED45';
-        EMGs{8,1}= 'ECR';
-        EMGs{9,1}= 'ECU';
-        EMGs{10,1}= 'EDC';
-        EMGs{11,1}= 'FDS';
-        EMGs{12,1}= 'FDP';
-        EMGs{13,1}= 'FCU';
-        EMGs{14,1}= 'FCR';
-    case {'Ya', 'F'}%Yachimun
-        % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
+    case {'Ya', 'F'}
         EMGs=cell(12,1) ;
         EMGs{1,1}= 'FDP';
         EMGs{2,1}= 'FDSprox';
@@ -70,23 +43,7 @@ switch monkeyname
         EMGs{10,1}= 'EDCdist';
         EMGs{11,1}= 'ED23';
         EMGs{12,1}= 'ECU';
-    case 'Su'%Suruku
-        % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
-        EMGs=cell(12,1) ;
-        EMGs{1,1}= 'FDS';
-        EMGs{2,1}= 'FDP';
-        EMGs{3,1}= 'FCR';
-        EMGs{4,1}= 'FCU';
-        EMGs{5,1}= 'PL';
-        EMGs{6,1}= 'BRD';
-        EMGs{7,1}= 'EDC';
-        EMGs{8,1}= 'ED23';
-        EMGs{9,1}= 'ED45';
-        EMGs{10,1}= 'ECU';
-        EMGs{11,1}= 'ECR';
-        EMGs{12,1}= 'Deltoid';
-   case 'Se'%Seseki
-        % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
+   case 'Se'
         EMGs=cell(12, 1) ;
         EMGs{1,1}= 'EDC';
         EMGs{2,1}= 'ED23';
@@ -100,21 +57,7 @@ switch monkeyname
         EMGs{10,1}= 'FCU';
         EMGs{11,1}= 'PL';
         EMGs{12,1}= 'BRD';
-    case 'Ma'
-        Mn = 8;
-        EMGs=cell(Mn,1) ;
-        EMGs{1,1}= 'EDC';
-        EMGs{2,1}= 'ECR';
-        EMGs{3,1}= 'BRD_1';
-        EMGs{4,1}= 'FCU';
-        EMGs{5,1}= 'FCR';
-        EMGs{6,1}= 'BRD_2';
-        if Mn == 8
-           EMGs{7,1}= 'FDPr';
-           EMGs{8,1}= 'FDPu';
-        end
     case 'Ni'
-        % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
         EMGs=cell(16,1) ;
         EMGs{1,1}= 'EDCdist';
         EMGs{2,1}= 'EDCprox';
@@ -153,72 +96,64 @@ switch monkeyname
 end
 EMG_num = length(EMGs);
 
-%% concatenate EMG data from each files(same processing as 'SAVE4NMF.m')
-if make_EMG == 1
-    [AllData_EMG, TimeRange_EMG, EMG_Hz] = makeEasyEMG(monkeyname,xpdate,file_num, EMG_num, real_name);
-end
-
-%% down sampling data
-if down_E == 1
-   AllData_EMG = resample(AllData_EMG,downdata_to,EMG_Hz);
-end
+%% concatenate EMG data from each files(same processing as 'prepareRawEMGDataForNMF.m')
+[AllData_EMG, TimeRange_EMG, EMG_Hz] = makeEasyEMG(monkeyname,xpdate,file_num, EMG_num, real_name);
+AllData_EMG = resample(AllData_EMG,downsample_rate,EMG_Hz);
 
 %% cut  data on task timing
-if make_Timing == 1
-   switch monkeyname
-      case {'Su','Se'}
-         [Timing,Tp,Tp3,TTLd,TTLu] = makeEasyTiming(monkeyname,xpdate,file_num,downdata_to,TimeRange_EMG);
-         % change tiing from 'lever2' to 'photocell'
-         errorlist = '';
-         emp_d = 0;
-         emp_u = 0;
-         ph_d = zeros(length(Tp),1); % photo down clock = Photo On
-         ph_u = zeros(length(Tp),1); % photo up clock = Photo Off
-         for i = 1:length(Tp)
-            if isempty(max(TTLd((Tp(i,3)<TTLd).*(TTLd<Tp(i,5)))))
-                emp_d = 1;
-            else
-                ph_d(i) = min(TTLd((Tp(i,3)<TTLd).*(TTLd<Tp(i,5))));
-            end
-            if isempty(max(TTLu((Tp(i,3)<TTLu).*(TTLu<Tp(i,5)))))
-                emp_u = 1;
-            else
-                ph_u(i) = max(TTLu((Tp(i,3)<TTLu).*(TTLu<Tp(i,5))));
-            end
-            if ph_d(i)>ph_u(i) || emp_d == 1 || emp_u ==1
-                errorlist = [errorlist ' ' sprintf('%d',i)];
-                emp_d = 0;
-                emp_u = 0;
-            end
-            Tp(i,4) = ph_d(i);
-            Tp(i,5) = ph_u(i); % Change timings 4 and 5 to 'photo-on' and 'photo-off' timings
+switch monkeyname
+  case 'Se'
+     [Timing,Tp,Tp3,TTLd,TTLu] = makeEasyTiming(monkeyname,xpdate,file_num,downsample_rate,TimeRange_EMG);
+     % change tiing from 'lever2' to 'photocell'
+     errorlist = '';
+     emp_d = 0;
+     emp_u = 0;
+     ph_d = zeros(length(Tp),1); % photo down clock = Photo On
+     ph_u = zeros(length(Tp),1); % photo up clock = Photo Off
+     for i = 1:length(Tp)
+        if isempty(max(TTLd((Tp(i,3)<TTLd).*(TTLd<Tp(i,5)))))
+            emp_d = 1;
+        else
+            ph_d(i) = min(TTLd((Tp(i,3)<TTLd).*(TTLd<Tp(i,5))));
+        end
+        if isempty(max(TTLu((Tp(i,3)<TTLu).*(TTLu<Tp(i,5)))))
+            emp_u = 1;
+        else
+            ph_u(i) = max(TTLu((Tp(i,3)<TTLu).*(TTLu<Tp(i,5))));
+        end
+        if ph_d(i)>ph_u(i) || emp_d == 1 || emp_u ==1
+            errorlist = [errorlist ' ' sprintf('%d',i)];
+            emp_d = 0;
+            emp_u = 0;
+        end
+        Tp(i,4) = ph_d(i);
+        Tp(i,5) = ph_u(i); % Change timings 4 and 5 to 'photo-on' and 'photo-off' timings
+     end
+     if isempty(errorlist)
+     else ER = str2num(errorlist);
+         for ii = flip(ER)
+             Tp(ii,:) = [];
          end
-         if isempty(errorlist)
-         else ER = str2num(errorlist);
-             for ii = flip(ER)
-                 Tp(ii,:) = [];
-             end
-         end
-        
-       case 'Ni'
-           try
-               [Timing,Tp,Tp3] = makeEasyTiming_Nibali(real_name, monkeyname, xpdate, file_num, downdata_to);
-           catch
-               warning([real_name '-' xpdate ' does not have "CTTL_003" signal']);
-           end
-       case 'Hu'
-           [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to, success_button_count_threshold, time_restriction_flag, time_restriction_threshold);
-       otherwise %if reference monkey is not SesekiR or Wasa. (if you don't have to chage to fotocellÅj
-            [Timing,Tp,Tp3] = makeEasyTiming(monkeyname,xpdate,file_num,downdata_to,TimeRange_EMG);
-   end
-   
-   if exist("is_condition2_active", "var") && is_condition2_active
-       % eliminate 'success_button' data
-       Tp = Tp(:, 1:end-1);
-   end
-   success_timing = transpose(Tp);
-   success_timing = [success_timing; success_timing(end, :) - success_timing(1, :)];
+     end
+    
+   case 'Ni'
+       try
+           [Timing,Tp,Tp3] = makeEasyTiming_Nibali(real_name, monkeyname, xpdate, file_num, downsample_rate);
+       catch
+           warning([real_name '-' xpdate ' does not have "CTTL_003" signal']);
+       end
+   case 'Hu'
+       [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downsample_rate, success_button_count_threshold, time_restriction_enabled, time_restriction_limit);
+   otherwise %if reference monkey is not SesekiR or Wasa. (if you don't have to chage to fotocellÔøΩj
+        [Timing,Tp,Tp3] = makeEasyTiming(monkeyname,xpdate,file_num,downsample_rate,TimeRange_EMG);
 end
+
+if exist("is_condition2_active", "var") && is_condition2_active
+   % eliminate 'success_button' data
+   Tp = Tp(:, 1:end-1);
+end
+success_timing = transpose(Tp);
+success_timing = [success_timing; success_timing(end, :) - success_timing(1, :)];
 
 %% get data for Cross-Talk check (getCTcheck)
 [trial_num, ~] = size(Tp);
@@ -227,15 +162,15 @@ CTcheck.diff3_trial_EMG = cell(1, trial_num);
 
 % Check for crosstalk for each trial
 for trial_id = 1:trial_num
-    [ref_trial_data, ref_trial_data_diff3] = getCTcheck(AllData_EMG, Tp, EMG_num, trial_id, downdata_to);
+    [ref_trial_data, ref_trial_data_diff3] = getCTcheck(AllData_EMG, Tp, EMG_num, trial_id, downsample_rate);
     CTcheck.raw_trial_EMG{trial_id} = ref_trial_data;
     CTcheck.diff3_trial_EMG{trial_id} = ref_trial_data_diff3; 
 end
 
 %% save data
-if save_E == 1
+if save_emg == 1
     Unit = 'uV';
-    SampleRate = downdata_to;
+    SampleRate = downsample_rate;
     cutout_EMG_data_save_fold_path = fullfile(common_save_fold_path, 'cutout_EMG_data_list');
     makefold(cutout_EMG_data_save_fold_path);
     switch monkeyname
@@ -263,8 +198,8 @@ if save_E == 1
         success_timing_data_save_fold_path = fullfile(common_save_fold_path, 'success_timing_data_list', xpdate);
         makefold(success_timing_data_save_fold_path);
         success_timing_file_name = 'success_timing';
-        if time_restriction_flag
-            success_timing_file_name = [success_timing_file_name '(' num2str(time_restriction_threshold) '[sec]_restriction)'];
+        if time_restriction_enabled
+            success_timing_file_name = [success_timing_file_name '(' num2str(time_restriction_limit) '[sec]_restriction)'];
         end
         save(fullfile(success_timing_data_save_fold_path, [success_timing_file_name '.mat']), 'success_timing');
     end
@@ -572,7 +507,7 @@ Tp: [double array], Data for each timing in each trial is stored.
 Tp3: [double array], Data for each timing in each trial is stored.
 %}
 
-function [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to, success_button_count_threshold, time_restriction_flag, time_restriction_threshold)
+function [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(real_name, monkeyname, xpdate, file_num, downdata_to, success_button_count_threshold, time_restriction_enabled, time_restriction_limit)
 load_file_path = fullfile(fileparts(pwd), 'useDataFold', real_name, [monkeyname xpdate '-' sprintf('%04d', file_num(1))]);
 make_timing_struct = load(load_file_path, 'CAI*', 'CTTL*');
 timing_struct = struct();
@@ -682,9 +617,9 @@ match_3rd_array = ref_timing_array1(:, necessary_idx);
 % create output arguments
 Tp = reshape(Timing(1, :), length(representative_condition), [])';
 
-if time_restriction_flag
+if time_restriction_enabled
     trial_time = (Tp(:,end) - Tp(:,1)) / downdata_to;
-    Tp = Tp(trial_time(:, 1) < time_restriction_threshold, :);
+    Tp = Tp(trial_time(:, 1) < time_restriction_limit, :);
 end
 
 Tp3 = reshape(match_3rd_array(1,:), length(condition3), [])';
@@ -707,7 +642,7 @@ dt = 1/sampling_rate;     % step size
 for EMG_id = 1:EMG_num
     ref_data = ref_trial_data(EMG_id, :);
     ref_data_1diff = diff(ref_data)/dt;   
-    ref_data_2diff = diff(ref_data_1diff)/dt;   % second derivativeÅiëOÇÃDsÇÇ≥ÇÁÇ…DsÇ∑ÇÈÅj
+    ref_data_2diff = diff(ref_data_1diff)/dt;   % second derivativeÔøΩiÔøΩOÔøΩÔøΩDsÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩDsÔøΩÔøΩÔøΩÔøΩj
     ref_data_3diff = diff(ref_data_2diff)/dt;
     ref_trial_data_diff3{EMG_id} = ref_data_3diff;
 end

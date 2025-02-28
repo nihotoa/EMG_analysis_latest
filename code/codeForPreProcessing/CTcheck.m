@@ -1,6 +1,6 @@
 %{
 [explanation of this func]:
-this function is used in 'runnningEasyfunc.m'
+this function is used in 'prepareEMGAndTimingData.m'
 Check for cross-talk between measured EMGs
 
 [input arguments]:
@@ -15,9 +15,9 @@ Yave: [double array], Array containing the values of the cross-correlation coeff
 Y3ave: [double array], Array containing the values of the cross-correlation coefficients between EMG.
 
 [points of improvement(Japanese)]   
-‹Ø“d‚É‚µ‚Ä‚àA3ŠK”÷•ª’l‚É‚µ‚Ä‚à‘ŠŒİ‘ŠŠÖŠÖ”‚Ìâ‘Î’l‚ÌÅ‘å’l‚ğ‚Æ‚Á‚Ä‚¢‚é‚ª‚»‚ê‚Å‚¢‚¢‚Ì‚©?
-(‚»‚ÌŠÔ‚ÌˆÊ‘Š‚Í•Û‘¶‚³‚ê‚Ä‚È‚¢? & â‘Î’l‚¾‚Á‚½‚ç-1‚Ì‰Â”\«‚à‚ ‚é‚Ì‚Å‚Í?)
-pwd‚ğg‚í‚È‚¢•û‚ª‚¢‚¢(bsse_dir‚ğimport‚µ‚Äg‚¤)
+ï¿½Ø“dï¿½É‚ï¿½ï¿½Ä‚ï¿½ï¿½A3ï¿½Kï¿½ï¿½ï¿½ï¿½ï¿½lï¿½É‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½İ‘ï¿½ï¿½ÖŠÖï¿½ï¿½Ìï¿½Î’lï¿½ÌÅ‘ï¿½lï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ä‚ï¿½ï¿½é‚ªï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½?
+(ï¿½ï¿½ï¿½Ìï¿½ï¿½Ô‚ÌˆÊ‘ï¿½ï¿½Í•Û‘ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚È‚ï¿½? & ï¿½ï¿½Î’lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½-1ï¿½Ì‰Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Å‚ï¿½?)
+pwdï¿½ï¿½ï¿½gï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(bsse_dirï¿½ï¿½importï¿½ï¿½ï¿½Ägï¿½ï¿½)
 %}
 
 function [Yave,Y3ave] = CTcheck(monkeyname, xpdate_num, save_fold, real_name)

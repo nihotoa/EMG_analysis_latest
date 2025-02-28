@@ -1,6 +1,6 @@
 %{
 [explanation of this func]:
-this function is used in 'runnningEasyfunc.m'
+this function is used in 'prepareEMGAndTimingData.m'
 Cut out EMG for each trial & Focusing on various timings and cut out EMG around them
 
 [input arguments]:

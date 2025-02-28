@@ -1,10 +1,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
-This function has function to extract optimal number of synergy from each session field of strucuture which is genrated in 'FindOptimalSynergyNum.m'
+This function has function to extract optimal number of synergy from each session field of strucuture which is genrated in 'determineOptimalSynergyNumber.m'
 extracted optimal number of synergy data is compiled as double array
 
 [input argument]
-optimal_synergy_num_struct: [structure], structure which is generated in 'FindOptimalSynergyNum.m'
+optimal_synergy_num_struct: [structure], structure which is generated in 'determineOptimalSynergyNumber.m'
 
 [output argument]
 optimal_synergyNum_list:[double array], list of the optimal number of synergy.

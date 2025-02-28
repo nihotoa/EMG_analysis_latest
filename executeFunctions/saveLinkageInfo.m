@@ -13,8 +13,7 @@ This script extracts and saves linkage information for each experimental day, in
 
 [execution procedure]
 - Pre: None
-- Post: (if you want to conduct synergy analysis) SAVE4NMF.m
-       (if you want to conduct EMG analysis) runnningEasyfunc.m
+- Post: prepareEMGAndTimingData.m
 
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

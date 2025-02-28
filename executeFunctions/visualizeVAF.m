@@ -12,14 +12,14 @@ location:
     EMG_analysis_tutorial/data/Yachimun/new_nmf_result/VAF_result/
 
 [procedure]
-pre: makeEMGNMF_btcOya.m
-post: SYNERGYPLOT.m
+pre: synergyExtractionByNMF.m
+post: compileSynergyData.m
 
 [Improvement points(Japanaese)]
 + 使用した筋電の数を考慮する必要があるので、ディレクトリをもう一階層追加する
 ・冗長 & 汚い、特にcolorbar_flag周りの処理。
 ・dVAFの処理を加えたが, colorbar_flagがtrueの時の動作確認はしてない
-・plotTargetと同じように、preとpostでカラーバーの色変えたほうがいいかも
+・visualizeEMGAndSynergyと同じように、preとpostでカラーバーの色変えたほうがいいかも
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;

@@ -3,8 +3,8 @@
 function to unify data length differences between sessions(dates) or trials by resampling.
 This function is used in:
 plotEasyData_utb.m
-MakeDataForPlot_H_utb
-plotTarget.m
+prepareSynergyTemporalData
+visualizeEMGAndSynergy.m
 
 [input arguments]
 DATA: [cell array or double array], each cell contains activity data

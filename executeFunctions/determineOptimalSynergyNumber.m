@@ -9,8 +9,8 @@
 [Saved figure location]
 
 [procedure]
-pre: makeEMGNMF_btcOya.m
-post: SYNERGYPLOT.m
+pre: synergyExtractionByNMF.m
+post: compileSynergyData.m
 
 [Improvement points(Japanase)]
 + 使用した筋電の数を考慮する必要があるので、ディレクトリをもう一階層追加する

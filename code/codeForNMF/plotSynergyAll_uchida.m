@@ -1,7 +1,7 @@
 
 %{
 explanation of this func:
-This function is used in 'SYNERGYPLOT.m'.
+This function is used in 'compileSynergyData.m'.
 Plot the results of the synergy analysis (temporal pattern, spatial pattern, VAF, etc.), focusing on the number of synergies in 'synergy_num' for the date specified in 'unique_name'.
 
 input arguments:
@@ -205,7 +205,7 @@ switch use_EMG_type
             load(cutout_EMG_data_file_path, 'Tp', 'SampleRate');
         catch
             stack = dbstack;
-            disp(['(Error occured: line ' num2str(stack(1).line + 1) ') EasyData(' easyData_file_path ') is not found. Please run "runnningEasyfunc.m" first!']);
+            disp(['(Error occured: line ' num2str(stack(1).line + 1) ') EasyData(' easyData_file_path ') is not found. Please run "prepareEMGAndTimingData.m" first!']);
             return;
         end
         SUC_Timing_A = floor(Tp.*(100/SampleRate));

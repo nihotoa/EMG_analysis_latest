@@ -1,6 +1,6 @@
 %{
 [explanation of this func]:
-this func is used in 'SAVE4NMF.m'
+this func is used in 'prepareRawEMGDataForNMF.m'
 concanenate EMG data for 1 experiment day.
 Extract information necessary for EMG analysis(ex. TimeRange, EMG_Hz etc...) from recorded data
 

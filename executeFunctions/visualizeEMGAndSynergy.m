@@ -20,7 +20,7 @@ file name:
     figure: Many diagrams are saved with the '.fig' and '.png' extensions. Please check the output results
 
 [procedure]
-pre : MakeDataForPlot_H_utb.m or runnningEasyfunc.m
+pre : prepareSynergyTemporalData.m or prepareEMGAndTimingData.m
 post: calcXcorr
 
 [caution!!]

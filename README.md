@@ -29,9 +29,9 @@ This repository provides codes and files for muscle synergy and EMG analysis.
           │   ├── codeForNMF
           │   └── (other function packages)
           ├── data
-          │   ├── runnningEasyfunc.m
-          │   ├── plotTarget.m
-          │   ├── SAVE4NMF.m
+          │   ├── prepareEMGAndTimingData.m
+          │   ├── visualizeEMGAndSynergy.m
+          │   ├── prepareRawEMGDataForNMF.m
           │   └── (other functions you need to execute)
           └── explanation_materials
               └── (some images)

@@ -18,12 +18,12 @@ file name: the file name changes depending on the preprocessing content.
 (ex.) BRD-hp50Hz-rect-lp20Hz-ds100Hz.mat
 
 [procedure]
-pre:SAVE4NMF.m
-post:makeEMGNMFbtc_Oya.m
+pre:prepareRawEMGDataForNMF.m
+post:synergyExtractionByNMF.m
 
 [Improvement points(Japanaese)]
 + 中の処理がどうやって動いているのかわからないから確認する(武井さんが作ったコード?)
-+ 設定したextract_EMG_typeの生データがなかった時のエラーハンドリングの追加(SAVE4NMFを実行しろ!っていう文章)
++ 設定したextract_EMG_typeの生データがなかった時のエラーハンドリングの追加(prepareRawEMGDataForNMFを実行しろ!っていう文章)
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;

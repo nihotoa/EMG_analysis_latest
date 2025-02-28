@@ -18,7 +18,7 @@ scattered experimental data into a unified format for further analysis.
 
 [execution procedure]
 - Pre: None
-- Post: extractAndSaveLinkageInfo.m
+- Post: saveLinkageInfo.m
 
 [Improvement point(Japanese)]
 (ok!) concatenateDataで、error入った時に、そこで処理終了するんじゃなくて、関数抜けてcontinueして次の日付のiterationへ行くようにする
@@ -38,7 +38,7 @@ select_type = 'manual'; % which folder selection type do you want? 'manual' / 'a
 
 %% code section
 % get the real monkey name
-[realname] = get_real_name(monkeyname);
+realname = get_real_name(monkeyname);
 root_dir = fileparts(pwd);
 base_dir = fullfile(root_dir, 'useDataFold', realname);
 

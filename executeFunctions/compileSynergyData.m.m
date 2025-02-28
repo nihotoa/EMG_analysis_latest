@@ -12,12 +12,12 @@ location: Directory youhave chosen as save folder (A dialog box will pop up duri
 file name: 
 
 [procedure]
-pre: plotVAF.m or FindOptimalSynergyNum.m
-post: dispNMF_W.m
+pre: visualizeVAF.m or determineOptimalSynergyNumber.m
+post: visualizeSynergyWeights.m
 
 [caution!!]
 In order to complete this function, in addtion to the analysis flow of synergy analysis, it is necessary to finish the flow up to 'runningEasyfunc.m' of EMG analysis
-・select_synergy_num_type == 'auto'で解析を行うためには,先にFindOptimalSynergyNum.mを行う必要がある.
+・select_synergy_num_type == 'auto'で解析を行うためには,先にdetermineOptimalSynergyNumber.mを行う必要がある.
 
 [Improvement points(Japanaese)]
 + 使用した筋電の数を考慮する必要があるので、ディレクトリをもう一階層追加する

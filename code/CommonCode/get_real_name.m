@@ -13,12 +13,10 @@ function [realname] = get_real_name(prefix)
 switch prefix
     case {'Ya', 'F'}
         realname = 'Yachimun';
-    case 'Wa'
-        realname = 'Wasa';
-    case 'Ni'
-        realname = 'Nibali';
     case 'Se'
         realname = 'SesekiL';
+    case 'Ni'
+        realname = 'Nibali';
     case 'Hu'
         realname = 'Hugo';
 end
