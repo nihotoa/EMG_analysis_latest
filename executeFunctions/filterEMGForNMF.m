@@ -29,7 +29,7 @@ post:synergyExtractionByNMF.m
 clear;
 
 %% set param
-monkeyname = 'Hu'; % prefix of the recorded file
+monkey_prefix = 'Hu'; % prefix of the recorded file
 extract_EMG_type = 'only_task'; % 'only_task', 'full'
 
 % setting of filter 
@@ -46,12 +46,12 @@ low_pass_freq = 20; % cut off frequency[Hz] of high pass filter
 resample_freq = 100; % sampling Rate[Hz] after downsampling
 
 %% code section
-realname = get_real_name(monkeyname);
+full_monkey_name = getFullMonkeyName(monkey_prefix);
 root_dir = fileparts(pwd);
-base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'Synergy', 'row_EMG_data', extract_EMG_type);
+base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy', 'row_EMG_data', extract_EMG_type);
 
 % get the name of the floder that exists directly under 'Parent dir'
-InputDirs   = dirdir(base_dir);
+InputDirs   = dirdir(base_dir_path);
 disp('【Plese select all day fold (which contains the data you want to filter】)')
 InputDirs   = uiselect(InputDirs,1,'Please select folders which contains the data you want to analyze');
 
@@ -61,7 +61,7 @@ if(isempty(InputDirs))
 end
 InputDir = InputDirs{1};
 
-muscle_file_list = dirEx(fullfile(base_dir, InputDir));
+muscle_file_list = dirPlus(fullfile(base_dir_path, InputDir));
 target_files = {muscle_file_list.name};
 disp('【Please select all muscle data(<muscle name>(uV).mat) which you want to filter】')
 target_files = uiselect(target_files,1,'Please select all muscle data');
@@ -75,11 +75,11 @@ if contains(target_files(1), '_trimmed')
     trimmed_flag = true;
 end
 
-common_save_dir = strrep(base_dir, 'row_EMG_data', 'filtered_EMG_data');
+common_save_dir = strrep(base_dir_path, 'row_EMG_data', 'filtered_EMG_data');
 for day_id=1:length(InputDirs)  
     InputDir = InputDirs{day_id};
      for muscle_id =1:length(target_files)
-         target_data = loaddata(fullfile(base_dir,InputDir,target_files{muscle_id}));
+         target_data = loaddata(fullfile(base_dir_path,InputDir,target_files{muscle_id}));
          if band_pass_on
              target_data = makeContinuousChannel([target_data.Name,'-bandpass-' num2str(band_pass_freq(1)) 'Hz_to_' num2str(band_pass_freq(2)) 'Hz'], 'band-pass', target_data, band_pass_freq);
          end

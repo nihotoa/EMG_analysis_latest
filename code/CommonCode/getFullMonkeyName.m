@@ -6,19 +6,19 @@ get the monkey's full name from the filename prefix
 prefix: [char], prefix of file  (ex.) if filename is 'F170516_0002', pleaseinput 'F'
 
 [output arguments]:
-realname: [char], full name of monkey which is correspond to prefix name of file 
+full_monkey_name: [char], full name of monkey which is correspond to prefix name of file 
 %}
 
-function [realname] = get_real_name(prefix)
+function [full_monkey_name] = getFullMonkeyName(prefix)
 switch prefix
     case {'Ya', 'F'}
-        realname = 'Yachimun';
+        full_monkey_name = 'Yachimun';
     case 'Se'
-        realname = 'SesekiL';
+        full_monkey_name = 'SesekiL';
     case 'Ni'
-        realname = 'Nibali';
+        full_monkey_name = 'Nibali';
     case 'Hu'
-        realname = 'Hugo';
+        full_monkey_name = 'Hugo';
 end
 end
 

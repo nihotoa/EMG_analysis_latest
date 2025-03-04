@@ -27,7 +27,7 @@ clear;
 term_select_type = 'manual'; %'auto' / 'manual'
 use_EMG_type = 'only_task'; %' full' / 'only_task'
 term_type = 'post'; %(if term_select_type == 'auto') pre / post / all 
-monkeyname = 'Hu';
+monkey_prefix = 'Hu';
 use_style = 'test'; % test/train
 figure_type = 'VAF'; % 'VAF'/ dVAF
 VAF_plot_type = 'stack'; %'stack' or 'mean'
@@ -36,17 +36,17 @@ font_size = 20; % Font size of text in the figure
 TT_day = 20250120;
 
 %% code section
-realname = get_real_name(monkeyname);
+full_monkey_name = getFullMonkeyName(monkey_prefix);
 root_dir = fileparts(pwd);
-base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'Synergy');
-synergy_detail_dir = fullfile(base_dir, 'synergy_detail', use_EMG_type);
-Allfiles_S = getGroupedDates(synergy_detail_dir, monkeyname, term_select_type, term_type);
+base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy');
+synergy_detail_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type);
+Allfiles_S = getGroupedDates(synergy_detail_dir, monkey_prefix, term_select_type, term_type);
 if isempty(Allfiles_S)
     disp('user pressed "cancel" button');
     return;
 end
 
-AllDays = strrep(Allfiles_S, monkeyname, '');
+AllDays = strrep(Allfiles_S, monkey_prefix, '');
 day_num = length(Allfiles_S);
 
 % create a flag to indicate whether or not to add  a color bar to thefigure
@@ -171,7 +171,7 @@ grid on;
 hold off
 
 %% save figure(as .fig & .png)
-save_figure_base_fold_path = strrep(base_dir, 'data', 'figure');
+save_figure_base_fold_path = strrep(base_dir_path, 'data', 'figure');
 save_figure_fold_path = fullfile(save_figure_base_fold_path, 'VAF_result', figure_type, VAF_plot_type, use_EMG_type);
 makefold(save_figure_fold_path);
 switch term_select_type

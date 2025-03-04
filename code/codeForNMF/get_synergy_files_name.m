@@ -14,7 +14,7 @@ output arguments:
 synergy_files: [struct], Structure of the file containing 'fold_name' string. (The structure has the same form as that obtained by the 'dir' function)
 %}
 
-candidate_files = dirEx(fold_path, '._*');
+candidate_files = dirPlus(fold_path, '._*');
 
 % filtering (Leaves only files)
 candidate_files = candidate_files(~[candidate_files.isdir]);

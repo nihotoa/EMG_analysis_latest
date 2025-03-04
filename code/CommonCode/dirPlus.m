@@ -11,7 +11,7 @@ additional_name_list: [cell (row vector)], list of file name which you want to r
 dir_list: [struct], contents in the specified directory (same output arguments of 'dir' function)
 %}
 
-function [dir_list] = dirEx(folder_path, additional_name_list)
+function [dir_list] = dirPlus(folder_path, additional_name_list)
 % prepare excluded file list
 excluded_name_list = {'.', '..'};
 if nargin == 2

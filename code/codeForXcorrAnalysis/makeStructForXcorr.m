@@ -1,11 +1,11 @@
-function [data_str, day_num, element_num, timing_num, timing_name_list] =  makeStructForXcorr(Pdata_dir, each_timing_pattern_dir, monkeyname, day_list, plot_data_type)
+function [data_str, day_num, element_num, timing_num, timing_name_list] =  makeStructForXcorr(Pdata_dir, each_timing_pattern_dir, monkey_prefix, day_list, plot_data_type)
 data_str = struct();
 day_num = length(day_list);
 for day_id = 1:day_num
     % 該当する実験日の各種ファイル名を取得 & structに代入する時の実験日固有の名前を作成
     ref_day_name = num2str(day_list(day_id));
-    ref_Pdata_name = [monkeyname ref_day_name '_Pdata.mat'];
-    unique_day_name = [monkeyname ref_day_name];
+    ref_Pdata_name = [monkey_prefix ref_day_name '_Pdata.mat'];
+    unique_day_name = [monkey_prefix ref_day_name];
     load(fullfile(each_timing_pattern_dir, [unique_day_name '_each_timing_pattern.mat']), 'each_timing_EMG_cell', 'whole_task_EMG_struct', 'timing_name_list');
     
     % 筋電の名前と、タイミングの切り出し範囲のデータを取得して構造体に入れる(初日データからのみ抽出すればok)

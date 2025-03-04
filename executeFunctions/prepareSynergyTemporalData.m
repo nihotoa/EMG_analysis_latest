@@ -35,13 +35,13 @@ clear;
 %% set param
 term_select_type = 'manual'; %'auto' / 'manual'
 term_type = 'all'; %(if term_select_type == 'auto') pre / post / all 
-monkeyname = 'Hu';
+monkey_prefix = 'Hu';
 use_EMG_type = 'only_task'; %' full' / 'only_task'
 synergy_num = 4; % number of synergy you want to analyze
 
 range_struct = struct();
 % change the range of trimming for each monkey
-switch monkeyname
+switch monkey_prefix
     case 'Ni'
         range_struct.trig1_per = [50 50];
         range_struct.trig2_per = [50 50];
@@ -65,14 +65,14 @@ switch monkeyname
 end
 
 %% code section
-realname = get_real_name(monkeyname);
+full_monkey_name = getFullMonkeyName(monkey_prefix);
 root_dir = fileparts(pwd);
-base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'Synergy');
-synergy_detail_data_dir = fullfile(base_dir, 'synergy_detail', use_EMG_type);
-daily_synergy_data_dir = fullfile(base_dir, 'daily_synergy_analysis_results');
-extracted_synergy_data_dir = fullfile(base_dir, 'extracted_synergy', use_EMG_type);
+base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy');
+synergy_detail_data_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type);
+daily_synergy_data_dir = fullfile(base_dir_path, 'daily_synergy_analysis_results');
+extracted_synergy_data_dir = fullfile(base_dir_path, 'extracted_synergy', use_EMG_type);
 
-unique_name_cell = getGroupedDates(synergy_detail_data_dir, monkeyname, term_select_type, term_type);
+unique_name_cell = getGroupedDates(synergy_detail_data_dir, monkey_prefix, term_select_type, term_type);
 if isempty(unique_name_cell)
     disp('user pressed "cancel" button');
     return;
@@ -80,10 +80,10 @@ end
 
 % load order information (as order_data_struct)
 selected_day_num = length(unique_name_cell);
-selected_day_name_cell = strrep(unique_name_cell, monkeyname, '');
+selected_day_name_cell = strrep(unique_name_cell, monkey_prefix, '');
 
-day_range_folder_name = [monkeyname selected_day_name_cell{1} 'to' selected_day_name_cell{end} '_' num2str(selected_day_num)];
-synergy_across_sessions_data_dir = fullfile(base_dir, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(synergy_num)], day_range_folder_name);
+day_range_folder_name = [monkey_prefix selected_day_name_cell{1} 'to' selected_day_name_cell{end} '_' num2str(selected_day_num)];
+synergy_across_sessions_data_dir = fullfile(base_dir_path, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(synergy_num)], day_range_folder_name);
 order_data_file_path = fullfile(synergy_across_sessions_data_dir, 'sort_order_info.mat');
 if not(exist(order_data_file_path, "file"))
     error(['There was no file in the "order_tim_list" directory corresponding to the synergy number and date combination you selected.' ...
@@ -175,11 +175,11 @@ for date_id = 1:selected_day_num
    post_per = 50; % How long do you want to see the signals after 'lever2 off' starts.
    
    % Cut out synergyH for each trial
-   [alignedData, alignedDataAVE, AllT, Timing_ave, ~, ~, TIME_W] = alignData(all_H{date_id}', timing_data_for_filtered_EMG, trial_num, pre_per, post_per, synergy_num, monkeyname);
+   [alignedData, alignedDataAVE, AllT, Timing_ave, ~, ~, TIME_W] = alignData(all_H{date_id}', timing_data_for_filtered_EMG, trial_num, pre_per, post_per, synergy_num, monkey_prefix);
    taskRange = [-1*pre_per, 100+post_per];
 
     % Cut out synergyH for each trial, around each timing.
-   [Res, timing_num] = alignDataEx(alignedData, timing_data_for_filtered_EMG, range_struct, pre_per, TIME_W, synergy_num, monkeyname);
+   [Res, timing_num] = alignDataEx(alignedData, timing_data_for_filtered_EMG, range_struct, pre_per, TIME_W, synergy_num, monkey_prefix);
 
    % Store the information about the cut out range around each timing in structure range_struct
   range_struct.LdTask = length(Res.tDataTask_AVE{1});
@@ -201,7 +201,7 @@ for date_id = 1:selected_day_num
    % save data
    makefold(save_fold_path);
    D = range_struct; % to be consistent with legacy codes
-   save(fullfile(save_fold_path, save_file_name), 'monkeyname','xpdate','D',...
+   save(fullfile(save_fold_path, save_file_name), 'monkey_prefix','xpdate','D',...
                                                      'alignedDataAVE', 'ResAVE',...
                                                      'AllT','TIME_W','Timing_ave','taskRange');
    disp(['H_data is saved as: ' fullfile(save_fold_path, save_file_name)]);

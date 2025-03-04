@@ -1,7 +1,7 @@
-function [Allfiles_S, TT_surgery_day] = getGroupedDates(base_dir, monkeyname, term_select_type, term_type)
+function [Allfiles_S, TT_surgery_day] = getGroupedDates(base_dir_path, monkey_prefix, term_select_type, term_type)
 
 % define TT-syurgery date
-switch monkeyname
+switch monkey_prefix
     case {'Ya', 'F'}
         TT_surgery_day = '20170530';
     case 'Se'
@@ -15,9 +15,9 @@ end
 % Create a list of folders containing the synergy data for each date.
 switch term_select_type
     case 'auto'
-        data_folders = dirEx(base_dir);
+        data_folders = dirPlus(base_dir_path);
         folderList = {data_folders.name};
-        Allfiles_S = folderList(startsWith(folderList, monkeyname));
+        Allfiles_S = folderList(startsWith(folderList, monkey_prefix));
         
         [prev_last_idx, post_first_idx] = get_term_id(Allfiles_S, 1, TT_surgery_day);
         
@@ -31,7 +31,7 @@ switch term_select_type
         end
     case 'manual'
         disp('Please select date folders which contains the VAF data you want to plot');
-        Allfiles_S = uiselect(dirdir(base_dir),1,'Please select date folders which contains the VAF data you want to plot');
+        Allfiles_S = uiselect(dirdir(base_dir_path),1,'Please select date folders which contains the VAF data you want to plot');
         if isempty(Allfiles_S)
             return;
         end

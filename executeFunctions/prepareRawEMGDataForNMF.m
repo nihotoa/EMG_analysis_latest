@@ -25,23 +25,23 @@ post: filterEMGForNMF.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkey_name = 'Hu'; % prefix of file
+monkey_prefix = 'Hu'; % prefix of file
 extract_EMG_type = 'only_task'; % 'only_task', 'full'
 padding_time = 0.5; % (if extract_EMG_type == 'only_task') unit is [second], the seconds of extract data added to the 'task_start' and 'task_end' of each trial
 
 %% code section
-switch monkey_name
+switch monkey_prefix
     case 'Hu'
         task_start_end_timing_id = [1, 6];
     case {'F', 'Ya'}
         task_start_end_timing_id = [2, 5];
 end
 
-real_name = get_real_name(monkey_name);
+full_monkey_name = getFullMonkeyName(monkey_prefix);
 root_dir = fileparts(pwd);
 
 %  get the file name of  'cutout_EMG_data'
-cutout_EMG_data_fold_path = fullfile(root_dir, 'saveFold', real_name, 'data', 'EMG_ECoG', 'cutout_EMG_data_list');
+cutout_EMG_data_fold_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG', 'cutout_EMG_data_list');
 disp('Please select all "_cutout_EMG_data" file you want to pre-process');
 cutout_EMG_data_list = uigetfile('MultiSelect', 'on', cutout_EMG_data_fold_path);
 
@@ -53,7 +53,7 @@ elseif ischar(cutout_EMG_data_list)
 end
 
 day_num = length(cutout_EMG_data_list);
-common_save_fold_path = fullfile(root_dir, 'saveFold', real_name, 'data', 'Synergy', 'row_EMG_data', extract_EMG_type);
+common_save_fold_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy', 'row_EMG_data', extract_EMG_type);
 
 % combine multiple data for one day into a single data
 for session_id = 1:day_num

@@ -1,4 +1,4 @@
-function [Re, focus_timing_num, Timing_ave_ratio] = alignDataEx(Data_in,Timing,range_struct,pre_per,TIME_W,EMG_num, monkeyname)
+function [Re, focus_timing_num, Timing_ave_ratio] = alignDataEx(Data_in,Timing,range_struct,pre_per,TIME_W,EMG_num, monkey_prefix)
 %{
 [In case of Yachimun]
 this function estimate that Timing is constructed by 6 kinds of timing.
@@ -29,7 +29,7 @@ this function estimate that Timing is constructed by 5 kinds of timing.
 %}
 
 % Tie id and timing of attention to each monkey
-switch monkeyname
+switch monkey_prefix
     case 'Ni'
         task_start_id = 1;
         task_end_id = 4;

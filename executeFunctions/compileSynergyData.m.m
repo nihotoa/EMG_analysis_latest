@@ -29,7 +29,7 @@ In order to complete this function, in addtion to the analysis flow of synergy a
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkeyname = 'Hu'; % prefix that each monkey has uniquery
+monkey_prefix = 'Hu'; % prefix that each monkey has uniquery
 select_synergy_num_type = 'manual';  % 'manual' / 'auto'
 use_EMG_type = 'only_task'; %' full' / 'only_task'
 synergy_num_list = [4]; % (if select_synergy_num_type == 'manual')which synergy number of synergies to plot(Please decide based onf VAF results)
@@ -44,14 +44,14 @@ save_setting.save_data = 1; % whether you want to save data about synergy W & sy
      
 %% code section
 % get the real monkey name
-realname = get_real_name(monkeyname);
+full_monkey_name = getFullMonkeyName(monkey_prefix);
 root_dir = fileparts(pwd);
-base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'Synergy');
-synergy_detail_data_dir = fullfile(base_dir, 'synergy_detail', use_EMG_type);
-extracted_synergy_data_dir = fullfile(base_dir, 'extracted_synergy', use_EMG_type);
+base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy');
+synergy_detail_data_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type);
+extracted_synergy_data_dir = fullfile(base_dir_path, 'extracted_synergy', use_EMG_type);
 
 if strcmp(select_synergy_num_type, 'auto')
-    optimal_synergy_num_data_path = fullfile(base_dir, nmf_fold_name, 'optimal_synergy_num_data');
+    optimal_synergy_num_data_path = fullfile(base_dir_path, nmf_fold_name, 'optimal_synergy_num_data');
     disp('【Please select optimal_syenrgy_num_data you want to use】');
     optimal_synergy_num_data_name = uigetfile(optimal_synergy_num_data_path);
     load(fullfile(optimal_synergy_num_data_path, optimal_synergy_num_data_name), 'optimal_synergy_num_struct')
@@ -86,14 +86,14 @@ for exp_day_id = 1:exp_days_num
             % loop for each number of synergies 
             for synergy_num_id = 1:length(synergy_num_list)
                 synergy_num = synergy_num_list(synergy_num_id);
-                plotSynergyAll_uchida(base_dir, extracted_synergy_data_dir, synergy_detail_data_dir, use_EMG_type, unique_name, synergy_num, each_plot_flag, save_setting, plot_clustering_flag, select_synergy_num_type)
+                plotSynergyAll_uchida(base_dir_path, extracted_synergy_data_dir, synergy_detail_data_dir, use_EMG_type, unique_name, synergy_num, each_plot_flag, save_setting, plot_clustering_flag, select_synergy_num_type)
             end
         case 'auto'
             synergy_num = optimal_synergy_num_list(exp_day_id);
             if isnan(synergy_num)
                 continue;
             end
-            plotSynergyAll_uchida(unique_name, synergy_num, nmf_fold_name, each_plot_flag, save_setting, base_dir, plot_clustering_flag, select_synergy_num_type);
+            plotSynergyAll_uchida(unique_name, synergy_num, nmf_fold_name, each_plot_flag, save_setting, base_dir_path, plot_clustering_flag, select_synergy_num_type);
     end         
     close all
 end

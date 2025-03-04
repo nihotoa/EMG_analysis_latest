@@ -35,7 +35,7 @@ post: calcXcorr
 clear;
 
 %% set param
-monkeyname = 'Hu'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
+monkey_prefix = 'Hu'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa'/'Ni'/'Hu'
 plot_all = 1; % whether you want to plot figure focus on 'whole task'
 plot_each_timing = 1; % whether you want to plot figure focus on 'each timing'
 plot_type = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
@@ -51,20 +51,20 @@ use_EMG_type = 'only_task'; %' full' / 'only_task'
 synergy_num = 4; % number of synergy you want to analyze
 
 %% code section
-% get the real name from monkeyname
-realname = get_real_name(monkeyname);
+% get the real name from monkey_prefix
+full_monkey_name = getFullMonkeyName(monkey_prefix);
 root_dir = fileparts(pwd);
 
 switch plot_type
     case 'EMG'
-        base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'EMG_ECoG');
+        base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG');
     case 'Synergy'
-        base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'Synergy');
+        base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy');
 end
 
 % Get the plotWindow at each timing and list of the filenames of the files to be read.
 % set the date list of data to be used as control data & the cutout range around each timing
-switch realname
+switch full_monkey_name
     case 'Yachimun'
         timing_name_list = ["Lever1 on ", "Lever1 off ", "Lever2 on ", "Lever2 off"];
         TT_day=  170530;
@@ -103,9 +103,9 @@ end
 
 switch plot_type
     case 'EMG'
-        Pdata_dir_path = fullfile(base_dir, 'P-DATA');
+        Pdata_dir_path = fullfile(base_dir_path, 'P-DATA');
     case 'Synergy'
-        Pdata_dir_path = fullfile(base_dir, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(synergy_num)], 'temporal_pattern_data');
+        Pdata_dir_path = fullfile(base_dir_path, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(synergy_num)], 'temporal_pattern_data');
 end
 
 disp("please select '_Pdata.mat' for all the dates you want to plot")
@@ -122,7 +122,7 @@ end
 
 % make array containing folder name
 Allfiles = strrep(Allfiles_S,'_Pdata.mat',''); % just used for folder name
-days_str = strrep(Allfiles, monkeyname, '');
+days_str = strrep(Allfiles, monkey_prefix, '');
 
 %% Get the average data length over all sessions(days)
 
@@ -215,7 +215,7 @@ switch term_type
     case 'pre'
         color_id = 2;
     case 'post'
-        switch realname
+        switch full_monkey_name
             case 'SesekiL'
                 color_id = 2;
             otherwise
@@ -230,9 +230,9 @@ Csp(:, color_id) = ones(PostLength, 1).*linspace(0.3, 1, PostLength)';
 unique_name = [Allfiles{1} 'to' days_str{end} '_' num2str(length(Allfiles))];
 switch plot_type
     case 'EMG'
-        save_figure_fold_path = fullfile(root_dir, 'saveFold', realname, 'figure', 'EMG', 'each_timing_EMG', unique_name);
+        save_figure_fold_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'figure', 'EMG', 'each_timing_EMG', unique_name);
     case 'Synergy'
-        tentetive = strrep(base_dir, 'data', 'figure');
+        tentetive = strrep(base_dir_path, 'data', 'figure');
         save_figure_fold_path = fullfile(tentetive, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(synergy_num)], unique_name, 'H_figures');
 end
 makefold(save_figure_fold_path);
@@ -356,7 +356,7 @@ end
 % save data setting
 switch plot_type
     case 'EMG'
-        save_data_dir_path = fullfile(base_dir, 'EMG_across_sessions', 'EMG_for_each_timing');
+        save_data_dir_path = fullfile(base_dir_path, 'EMG_across_sessions', 'EMG_for_each_timing');
     case 'Synergy'
         save_data_dir_path = fullfile(fileparts(Pdata_dir_path), 'temporal_pattern_for_each_timing');
 end
@@ -382,14 +382,14 @@ for session_id = 1:session_num
         each_timing_EMG_cell{timing_id} = ref_timing_saved_struct;
     end
     
-    save_file_name = [monkeyname days_str{session_id} '_each_timing_pattern.mat'];
+    save_file_name = [monkey_prefix days_str{session_id} '_each_timing_pattern.mat'];
     save(fullfile(save_data_dir_path, save_file_name), 'whole_task_EMG_struct', 'each_timing_EMG_cell', 'timing_name_list')
 end
 
 %% define local function
 % make dates array of post as 'TermDays'(eliminate only Pre days from '_Pdata.mat' name list)
 function [TermDays, term_type] = extract_post_days(TT_day, folder_path, first_Pdata_name)
-    files_struct = dirEx(fullfile(folder_path, '*_Pdata.mat'));
+    files_struct = dirPlus(fullfile(folder_path, '*_Pdata.mat'));
     file_names = {files_struct.name};
     day_num = length(file_names);
     date_list = zeros(day_num, 1);

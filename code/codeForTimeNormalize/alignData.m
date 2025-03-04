@@ -1,4 +1,4 @@
-function [alignedData, alignedDataAVE,AllT,Timing_ave, Timing_std, Timing_std_diff, TIME_W] = alignData(Data_in, Timing,trial_num,pre_per,post_per, EMG_num, monkeyname)
+function [alignedData, alignedDataAVE,AllT,Timing_ave, Timing_std, Timing_std_diff, TIME_W] = alignData(Data_in, Timing,trial_num,pre_per,post_per, EMG_num, monkey_prefix)
 %{
 [In case of Yachimun]
 this function estimate that Timing is constructed by 6 kinds of timing.
@@ -19,7 +19,7 @@ this function estimate that Timing is constructed by 5 kinds of timing.
 %}
 
 % Tie id and timing of attention to each monkey
-switch monkeyname
+switch monkey_prefix
     case 'Ni'
         task_start_id = 1;
         task_end_id = 4;

@@ -27,7 +27,7 @@ clear;
 term_select_type = 'manual'; %'auto' / 'manual'
 term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
 use_EMG_type = 'only_task'; %' full' / 'only_task'
-monkeyname = 'Hu';
+monkey_prefix = 'Hu';
 use_style = 'test'; % test/train
 first_judge_type = 'dVAF'; % 'VAF' / 'dVAF'
 VAF_threshold = 0.8; % param to draw threshold_line
@@ -39,22 +39,22 @@ make_figure_flag = true;
 
 %% code section
 % get date_list by GUI operation
-realname = get_real_name(monkeyname);
+full_monkey_name = getFullMonkeyName(monkey_prefix);
 root_dir = fileparts(pwd);
-base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'Synergy');
-synergy_detail_data_dir = fullfile(base_dir, 'synergy_detail', use_EMG_type);
-extracted_synergy_data_dir = fullfile(base_dir, 'extracted_synergy', use_EMG_type);
-Allfiles_S = getGroupedDates(synergy_detail_data_dir, monkeyname, term_select_type, term_type);
+base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy');
+synergy_detail_data_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type);
+extracted_synergy_data_dir = fullfile(base_dir_path, 'extracted_synergy', use_EMG_type);
+Allfiles_S = getGroupedDates(synergy_detail_data_dir, monkey_prefix, term_select_type, term_type);
 if isempty(Allfiles_S)
     disp('user pressed "cancel" button');
     return;
 end
 
-date_list = strrep(Allfiles_S, monkeyname, '');
+date_list = strrep(Allfiles_S, monkey_prefix, '');
 date_num = length(Allfiles_S);
 
 % load (or crate) data about optimal number of synergy
-save_data_fold_path = fullfile(base_dir, 'optimal_synergy_num_data', first_judge_type, use_EMG_type);
+save_data_fold_path = fullfile(base_dir_path, 'optimal_synergy_num_data', first_judge_type, use_EMG_type);
 save_data_file_name = ['optimal_synergy_num_data(' Allfiles_S{1} '_to_' Allfiles_S{end} '_' num2str(length(Allfiles_S)) ').mat'];
 
 if not(exist(fullfile(save_data_fold_path, save_data_file_name), "file"))
@@ -93,7 +93,7 @@ if not(exist(fullfile(save_data_fold_path, save_data_file_name), "file"))
     
     % update the list of sessions with reference to eliminated_date_list
     Allfiles_S = setdiff(Allfiles_S, eliminated_date_list);
-    date_list = strrep(Allfiles_S, monkeyname, '');
+    date_list = strrep(Allfiles_S, monkey_prefix, '');
     date_num = length(Allfiles_S);
     
     %% output optimal number of synergy for each session
@@ -148,9 +148,9 @@ if not(exist(fullfile(save_data_fold_path, save_data_file_name), "file"))
     
         if coffen_coefficient > coffen_coefficient_threshold
             % store the data in the structure
-            optimal_synergy_num_struct.([monkeyname date_list{day_id}]).VAF_cc = coffen_coefficient;
-            optimal_synergy_num_struct.([monkeyname date_list{day_id}]).optimal_synergy_num = optimal_synergy_num_candidate;
-            optimal_synergy_num_struct.([monkeyname date_list{day_id}]).best_cc =  coffen_coefficient;
+            optimal_synergy_num_struct.([monkey_prefix date_list{day_id}]).VAF_cc = coffen_coefficient;
+            optimal_synergy_num_struct.([monkey_prefix date_list{day_id}]).optimal_synergy_num = optimal_synergy_num_candidate;
+            optimal_synergy_num_struct.([monkey_prefix date_list{day_id}]).best_cc =  coffen_coefficient;
         else
             candidate_synergy_num_list = [optimal_synergy_num_candidate - 1, optimal_synergy_num_candidate, optimal_synergy_num_candidate+1];
             coffen_coefficient_list = zeros(1, 3);
@@ -174,15 +174,15 @@ if not(exist(fullfile(save_data_fold_path, save_data_file_name), "file"))
                 optimal_synergy_num = candidate_synergy_num_list(best_cc_value_idx);
         
                 % store the data in the structure
-                optimal_synergy_num_struct.([monkeyname date_list{day_id}]).optimal_synergy_num = optimal_synergy_num;
-                optimal_synergy_num_struct.([monkeyname date_list{day_id}]).VAF_cc = coffen_coefficient_list(2);
-                optimal_synergy_num_struct.([monkeyname date_list{day_id}]).best_cc =  best_cc_value;
+                optimal_synergy_num_struct.([monkey_prefix date_list{day_id}]).optimal_synergy_num = optimal_synergy_num;
+                optimal_synergy_num_struct.([monkey_prefix date_list{day_id}]).VAF_cc = coffen_coefficient_list(2);
+                optimal_synergy_num_struct.([monkey_prefix date_list{day_id}]).best_cc =  best_cc_value;
             else
                 % if the optimal number of synergy can not be found even though using this method
                 % store the data in the structure
-                optimal_synergy_num_struct.([monkeyname date_list{day_id}]).optimal_synergy_num = NaN;
-                optimal_synergy_num_struct.([monkeyname date_list{day_id}]).VAF_cc = NaN;
-                optimal_synergy_num_struct.([monkeyname date_list{day_id}]).best_cc =  NaN;
+                optimal_synergy_num_struct.([monkey_prefix date_list{day_id}]).optimal_synergy_num = NaN;
+                optimal_synergy_num_struct.([monkey_prefix date_list{day_id}]).VAF_cc = NaN;
+                optimal_synergy_num_struct.([monkey_prefix date_list{day_id}]).best_cc =  NaN;
             end
         end
     end

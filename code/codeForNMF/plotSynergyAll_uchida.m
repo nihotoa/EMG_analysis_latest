@@ -10,7 +10,7 @@ synergy_num: [double], number of synergies to focus on
 nmf_fold_name: [char], 
 each_plot_flag: [bool], Parameter for changing the layout of diagram.
 save_setting:[struct], structure containing parameters for whether the output diagram should be saved or not.
-base_dir: [char], base path for specifying folder path. (basically, this is correspond to monkeyname folder)
+base_dir_path: [char], base path for specifying folder path. (basically, this is correspond to monkey_prefix folder)
 
 output arguments:
 
@@ -24,7 +24,7 @@ output arguments:
 ・flag系はいらないかも.(強いて言えばeach_plot_flagがいるくらい? コード冗長になるし、引数多すぎて見辛い原因になるので)
 %}
 
-function plotSynergyAll_uchida(base_dir, extracted_synergy_data_dir, synergy_detail_data_dir, cutout_EMG_type, unique_name, synergy_num, each_plot_flag, save_setting, plot_clustering_flag, select_synergy_num_type)
+function plotSynergyAll_uchida(base_dir_path, extracted_synergy_data_dir, synergy_detail_data_dir, cutout_EMG_type, unique_name, synergy_num, each_plot_flag, save_setting, plot_clustering_flag, select_synergy_num_type)
 %% set para & get nmf result
 % load file
 if not(exist(extracted_synergy_data_dir, "dir"))
@@ -58,7 +58,7 @@ save_data = save_setting.save_data;
 
 %% sort synergies extracted from each test data and group them by synergies of similar characteristics
 W_data = all_W_data(synergy_num, :);
-common_save_figure_dir = fullfile(strrep(base_dir, 'data', 'figure'), 'daily_synergy_analysis_results', unique_name, ['synergy_num==' num2str(synergy_num)], cutout_EMG_type);
+common_save_figure_dir = fullfile(strrep(base_dir_path, 'data', 'figure'), 'daily_synergy_analysis_results', unique_name, ['synergy_num==' num2str(synergy_num)], cutout_EMG_type);
 makefold(common_save_figure_dir);
 if plot_clustering_flag == 1
     [Wt, k_arr] = OrderSynergy(synergy_num, W_data, segment_num, 1, common_save_figure_dir, unique_name);
@@ -195,7 +195,7 @@ end
 
 %% plot H (temporal pattern of synergy)
 % load timing data (which is created by )
-EMG_data_dir = strrep(base_dir, 'Synergy', 'EMG_ECoG');
+EMG_data_dir = strrep(base_dir_path, 'Synergy', 'EMG_ECoG');
 cutout_EMG_data_file_path = fullfile(EMG_data_dir, 'cutout_EMG_data_list', [unique_name '_cutout_EMG_data.mat']);
 
 switch use_EMG_type
@@ -234,8 +234,8 @@ TIMEr = [0 200]; %range of cutting out(sample num)
 TIMEl = abs(TIMEr(1))+abs(TIMEr(2))+1; % number of samples to be cut out
 aveH = zeros(synergy_num, TIMEl);
 
-monkey_name = unique_name(isletter(unique_name));
-switch monkey_name
+monkey_prefix = unique_name(isletter(unique_name));
+switch monkey_prefix
     case 'Hu'
         start_timing_id = 1;
     case {'F', 'Ya'}

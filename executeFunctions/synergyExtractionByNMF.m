@@ -26,7 +26,7 @@ if you want to find the optimal number of synergy from the synergy data of each 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkeyname = 'Hu'; % prefix of recorded data
+monkey_prefix = 'Hu'; % prefix of recorded data
 use_EMG_type = 'only_task'; %' full' / 'only_task'
 
 % about algorithm & threshold
@@ -40,12 +40,12 @@ root_dir = fileparts(pwd);
 warning('off');
 
 % get the real monkey name
-realname = get_real_name(monkeyname);
-base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'Synergy', 'filtered_EMG_data', use_EMG_type);
+full_monkey_name = getFullMonkeyName(monkey_prefix);
+base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy', 'filtered_EMG_data', use_EMG_type);
 
 % get info about dates of analysis data and used EMG
 disp('�yPlease select all day folders you want to analyze (Multiple selections are possible)�z)')
-day_folder_list   = uiselect(dirdir(base_dir),1,'Please select folders which contains the data you want to analyze');
+day_folder_list   = uiselect(dirdir(base_dir_path),1,'Please select folders which contains the data you want to analyze');
 
 if isempty(day_folder_list)
     disp('user pressed "cancel" button');
@@ -55,13 +55,13 @@ end
 ref_day_folder = day_folder_list{1};
 
 % Assign all file names contained in day_folder_list{1} to filtered_EMG_file_list
-filtered_EMG_file_list = sortxls(dirmat(fullfile(base_dir,ref_day_folder)));
+filtered_EMG_file_list = sortxls(dirmat(fullfile(base_dir_path,ref_day_folder)));
 disp('�yPlease select used EMG Data�z')
 filtered_EMG_file_list = uiselect(filtered_EMG_file_list,1,'Please select all filtered muscle data');
 
 % determine OutputDirs(where to save the result data)
-common_extracted_synergy_save_dir = strrep(base_dir, 'filtered_EMG_data', 'extracted_synergy');
-common_synergy_detail_save_dir = strrep(base_dir, 'filtered_EMG_data', 'synergy_detail');
+common_extracted_synergy_save_dir = strrep(base_dir_path, 'filtered_EMG_data', 'extracted_synergy');
+common_synergy_detail_save_dir = strrep(base_dir_path, 'filtered_EMG_data', 'synergy_detail');
 
 % prev_day = day_part{1};
 if isempty(filtered_EMG_file_list)
@@ -83,7 +83,7 @@ for day_id=1:day_num
     for muscle_id=1:muscle_num % each muscle
         clear('ref_filtered_EMG_data_struct')
         ref_filtered_EMG_file = filtered_EMG_file_list{muscle_id};
-        ref_filtered_EMG_file_path = fullfile(base_dir,ref_day_folder,ref_filtered_EMG_file);
+        ref_filtered_EMG_file_path = fullfile(base_dir_path,ref_day_folder,ref_filtered_EMG_file);
         
         if  muscle_id == 1
             if contains(ref_filtered_EMG_file, '-trimmed')

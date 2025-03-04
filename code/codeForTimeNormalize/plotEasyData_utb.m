@@ -4,7 +4,7 @@ this function is used in 'prepareEMGAndTimingData.m'
 Cut out EMG for each trial & Focusing on various timings and cut out EMG around them
 
 [input arguments]:
-monkeyname: prefix of data
+monkey_prefix: prefix of data
 xpdate_num: [double], date of experiment
 save_fold: [char], 'easyData', you dont need to change
 
@@ -22,14 +22,14 @@ D: [struct], this contains information about cutout range centered on each timin
 pwdじゃなくて,  inputにbase_dir指定してそれを使った方がいいかも
 %}
 
-function [alignedDataAVE,alignedData,taskRange,AllT,Timing_ave,TIME_W,Res,D, focus_timing_num] = plotEasyData_utb(monkeyname, xpdate_num, save_fold)
+function [alignedDataAVE,alignedData,taskRange,AllT,Timing_ave,TIME_W,Res,D, focus_timing_num] = plotEasyData_utb(monkey_prefix, xpdate_num, save_fold)
 %% get informations(path of save_folder, EMG data, timing data ,etc...)
 xpdate = sprintf('%d',xpdate_num);
-disp(['START TO MAKE & SAVE ' monkeyname xpdate '_Plot Data']);
+disp(['START TO MAKE & SAVE ' monkey_prefix xpdate '_Plot Data']);
 
 % get the path of save_fold
 %load EasyData
-EMG_data_struct = load(fullfile(save_fold, 'cutout_EMG_data_list', [monkeyname xpdate '_cutout_EMG_data.mat'])); 
+EMG_data_struct = load(fullfile(save_fold, 'cutout_EMG_data_list', [monkey_prefix xpdate '_cutout_EMG_data.mat'])); 
 
 % get EMG data & timing data & SamplingRate 
 EMGd = EMG_data_struct.AllData_EMG;
@@ -52,14 +52,14 @@ pre_per = 50; % How long do you want to see the signals before 'lever1 on' start
 post_per = 50; % How long do you want to see the signals after 'lever2 off' starts.
 
 % Trim EMG data for each trial & perform time normalization for each trial
-[alignedData, alignedDataAVE, AllT, Timing_ave, Timing_std, Timing_std_diff,TIME_W] = alignData(filtData_EMG, Timing_EMG,trial_num,pre_per,post_per, EMG_num, monkeyname);
+[alignedData, alignedDataAVE, AllT, Timing_ave, Timing_std, Timing_std_diff,TIME_W] = alignData(filtData_EMG, Timing_EMG,trial_num,pre_per,post_per, EMG_num, monkey_prefix);
 
 % Setting the range to be cut out around each timing
 taskRange = [-1*pre_per, 100+post_per];
 D = struct();
 
 % change the range of trimming for each monkey
-switch monkeyname
+switch monkey_prefix
     case 'Ni'
         D.trig1_per = [50 50];
         D.trig2_per = [50 50];
@@ -83,7 +83,7 @@ switch monkeyname
 end
 
 % Centering on each timing, trim & get EMG data around it
-[Res, focus_timing_num, Timing_ave_ratio] = alignDataEx(alignedData,Timing_EMG, D,pre_per,TIME_W,EMG_num, monkeyname);
+[Res, focus_timing_num, Timing_ave_ratio] = alignDataEx(alignedData,Timing_EMG, D,pre_per,TIME_W,EMG_num, monkey_prefix);
 
 % Summary of trimming details(length of trimmed data, cut out range around each timing)
 for timing_id = 1:focus_timing_num
@@ -97,11 +97,11 @@ down_Hz = filtP.down;
 save_fold_path = fullfile(save_fold, 'alignedData_list');
 makefold(save_fold_path);
 % save data
-save(fullfile(save_fold_path, [monkeyname xpdate '_alignedData_' filtP.whose '.mat']), 'monkeyname', 'xpdate','EMGs', ...
+save(fullfile(save_fold_path, [monkey_prefix xpdate '_alignedData_' filtP.whose '.mat']), 'monkey_prefix', 'xpdate','EMGs', ...
                                           'alignedData', 'alignedDataAVE','filtP','trial_num','taskRange', 'down_Hz', 'TIME_W', 'Timing_ave', 'Timing_std', 'Timing_std_diff','Timing_ave_ratio');
 
 
-disp(['END TO MAKE & SAVE ' monkeyname xpdate '_Plot Data']);
+disp(['END TO MAKE & SAVE ' monkey_prefix xpdate '_Plot Data']);
 end
 
 

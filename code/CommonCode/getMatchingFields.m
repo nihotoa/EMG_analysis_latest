@@ -11,7 +11,7 @@ filtered_struct: [struct], strucuture containing fields extracted from 'original
 
 %}
 
-function [filtered_struct] = extractStruct(original_struct, pattern)
+function [filtered_struct] = getMatchingFields(original_struct, pattern)
 filtered_struct = struct();
 % get fields name of  'original_struct'
 fields = fieldnames(original_struct);

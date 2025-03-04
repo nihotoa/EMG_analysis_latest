@@ -44,20 +44,20 @@ term_select_type = 'manual'; %'auto' / 'manual'
 term_type = 'all'; %(if term_select_type == 'auto') pre / post / all 
 use_EMG_type = 'only_task'; %' full' / 'only_task'
 normalize_flag = true;
-monkeyname = 'Hu';
+monkey_prefix = 'Hu';
 syn_num = 4; % number of synergy you want to analyze
 plot_clustering_result = 1; % whether to plot cosine distance & dendrogram of hierarcical clustering
 save_WDaySynergy = 1;% Whether to save synergy W (to be used for ANOVA)
 save_data = 1; % Whether to store data on synergy orders in 'order_tim_list' folder (should basically be set to 1).
 
 %% code section
-realname = get_real_name(monkeyname);
+full_monkey_name = getFullMonkeyName(monkey_prefix);
 root_dir = fileparts(pwd);
-base_dir = fullfile(root_dir, 'saveFold', realname, 'data', 'Synergy');
-synergy_detail_data_dir = fullfile(base_dir, 'synergy_detail', use_EMG_type);
-daily_synergy_data_dir = fullfile(base_dir, 'daily_synergy_analysis_results');
+base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy');
+synergy_detail_data_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type);
+daily_synergy_data_dir = fullfile(base_dir_path, 'daily_synergy_analysis_results');
 
-Allfiles_S = getGroupedDates(synergy_detail_data_dir, monkeyname, term_select_type, term_type);
+Allfiles_S = getGroupedDates(synergy_detail_data_dir, monkey_prefix, term_select_type, term_type);
 if isempty(Allfiles_S)
     disp('user pressed "cancel" button');
     return;
@@ -67,15 +67,15 @@ end
 selected_days = get_days(Allfiles_S);
 day_num = length(selected_days);
 if and(strcmp(term_select_type, 'auto'), strcmp(term_type, 'post'))
-    pre_file_list = getGroupedDates(base_dir, monkeyname, term_select_type, 'pre');
+    pre_file_list = getGroupedDates(base_dir_path, monkey_prefix, term_select_type, 'pre');
     pre_days = get_days(pre_file_list);
 end
 
 % make folder to save figures
-common_save_figure_dir = strrep(base_dir, 'data', 'figure');
-save_W_figure_dir_path = fullfile(common_save_figure_dir, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(syn_num)], [monkeyname mat2str(selected_days(1)) 'to' mat2str(selected_days(end)) '_' sprintf('%d',day_num)], 'W_figures');
+common_save_figure_dir = strrep(base_dir_path, 'data', 'figure');
+save_W_figure_dir_path = fullfile(common_save_figure_dir, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(syn_num)], [monkey_prefix mat2str(selected_days(1)) 'to' mat2str(selected_days(end)) '_' sprintf('%d',day_num)], 'W_figures');
 makefold(save_W_figure_dir_path);
-save_heatmap_figure_dir_path = fullfile(common_save_figure_dir, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(syn_num)], [monkeyname mat2str(selected_days(1)) 'to' mat2str(selected_days(end)) '_' sprintf('%d',day_num)], 'figures_for_sort');
+save_heatmap_figure_dir_path = fullfile(common_save_figure_dir, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(syn_num)], [monkey_prefix mat2str(selected_days(1)) 'to' mat2str(selected_days(end)) '_' sprintf('%d',day_num)], 'figures_for_sort');
 makefold(save_heatmap_figure_dir_path);
 
 %% Get the name of the EMG used for the synergy analysis
@@ -109,7 +109,7 @@ if day_num > 1
         clear aveW;
     end
     
-    term_unique_name = [monkeyname num2str(selected_days(1)) '-to-' monkeyname num2str(selected_days(end))];
+    term_unique_name = [monkey_prefix num2str(selected_days(1)) '-to-' monkey_prefix num2str(selected_days(end))];
     [Wt, k_arr] = OrderSynergy(syn_num, W_data, day_num, plot_clustering_result, save_heatmap_figure_dir_path, term_unique_name);
     %{
      %Seseki�p(0117, 0212, 0226, 0305, 0310, 0326)�Ȃ̂Ō�ŏ�����
@@ -139,13 +139,13 @@ if and(strcmp(term_select_type, 'auto'), strcmp(term_type, 'post'))
     compair_days = [pre_days(1); selected_days(1)];
     representative_data = cell(1, 2);
     for day_id = 1:2
-        use_W_folder_path = fullfile(base_dir, [common_name '_standard'], [common_name '_syn_result_' num2str(EMG_num)], [common_name '_W']);
+        use_W_folder_path = fullfile(base_dir_path, [common_name '_standard'], [common_name '_syn_result_' num2str(EMG_num)], [common_name '_W']);
         use_W_file_name = [common_name '_aveW_' num2str(syn_num)];
         load(fullfile(use_W_folder_path, use_W_file_name), 'aveW');
         representative_data{day_id} = aveW;
         clear aveW;
     end
-    [~, order_list] = OrderSynergy(EMG_num, syn_num, representative_data, monkeyname, compair_days, base_dir, plot_clustering_result);
+    [~, order_list] = OrderSynergy(EMG_num, syn_num, representative_data, monkey_prefix, compair_days, base_dir_path, plot_clustering_result);
     synergy_order = order_list(:, 2);
 
     % align with using 'synergy_order'
