@@ -11,7 +11,7 @@ This script processes raw EMG data and timing data by performing trimming, filte
 [saved data location]
 - Folder path for processed EMG data: <root_dir>/saveFold/<full_monkey_name>/data/EMG_ECoG/P-DATA/
   - File names include:
-    - <monkey_prefix>_<xpdate>_Pdata.mat: Contains data for synergy analysis, including timing data, trimmed EMG, and more.
+    - <monkey_prefix>_<experiment_day>_Pdata.mat: Contains data for synergy analysis, including timing data, trimmed EMG, and more.
 
 - Data saved by custom functions:
   - `makeEasyData_all`: Saves processed EMG data and timing information.
@@ -66,18 +66,18 @@ common_save_fold_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data',
 
 for day_id = 1:day_num
     load(fullfile(linkageInfo_fold_path, Allfiles_S{day_id}), 'linkageInfo');
-    xpdate = linkageInfo.xpdate;
-    file_num = linkageInfo.file_num;
+    experiment_day = linkageInfo.experiment_day;
+    validate_file_range = linkageInfo.validate_file_range;
     
     % Perform all preprocessing with 3 functions
     % 1. Perform data concatenation & filtering processing & Obtain information on each timing for EMG trial-by-trial extraction
-    [EMGs,Tp,Tp3] = makeEasyData_all(monkey_prefix, full_monkey_name, xpdate, file_num, common_save_fold_path, emg_params_struct); 
+    [EMGs,Tp,Tp3] = makeEasyData_all(monkey_prefix, full_monkey_name, experiment_day, validate_file_range, common_save_fold_path, emg_params_struct); 
 
     % 2. Check for cross-talk between measured EMGs
-    [Yave,Y3ave] = CTcheck(monkey_prefix, xpdate, common_save_fold_path, full_monkey_name);
+    [Yave,Y3ave] = CTcheck(monkey_prefix, experiment_day, common_save_fold_path, full_monkey_name);
 
     % 3. Cut out EMG for each trial & Focusing on various timings and cut out EMG around them
-    [alignedDataAVE,alignedData_all,taskRange,AllT,Timing_ave,TIME_W,Res,D, focus_timing_num] = plotEasyData_utb(monkey_prefix, xpdate, common_save_fold_path);
+    [alignedDataAVE,alignedData_all,taskRange,AllT,Timing_ave,TIME_W,Res,D, focus_timing_num] = plotEasyData_utb(monkey_prefix, experiment_day, common_save_fold_path);
     
     % create struct(Store the EMG trial average data around each timing in another structure)
     ResAVE = struct();
@@ -92,8 +92,8 @@ for day_id = 1:day_num
     % get folder path & make folder
     Pdata_fold_path = fullfile(common_save_fold_path, 'P-DATA');
     makefold(Pdata_fold_path);
-    save(fullfile(Pdata_fold_path, [monkey_prefix sprintf('%d',xpdate) '_Pdata.mat']), ...
-        'monkey_prefix', 'xpdate', 'file_num', 'EMGs', 'Tp', 'Tp3', ...
+    save(fullfile(Pdata_fold_path, [monkey_prefix sprintf('%d',experiment_day) '_Pdata.mat']), ...
+        'monkey_prefix', 'experiment_day', 'validate_file_range', 'EMGs', 'Tp', 'Tp3', ...
         'Yave', 'Y3ave', 'alignedDataAVE', 'taskRange', 'AllT', ...
         'Timing_ave', 'TIME_W', 'ResAVE', 'D');
 end

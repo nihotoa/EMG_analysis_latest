@@ -5,7 +5,7 @@ Check for cross-talk between measured EMGs
 
 [input arguments]:
 monkey_prefix: [char], prefix of data
-xpdate_num: [double], date of experiment
+experiment_day_num: [double], date of experiment
 save_fold: [char], 'easyData', you dont need to change
 task: [char], 'standard', you dont need to change
 full_monkey_name: [char], full name of monkey
@@ -20,12 +20,12 @@ Y3ave: [double array], Array containing the values of the cross-correlation coef
 pwd���g��Ȃ���������(bsse_dir��import���Ďg��)
 %}
 
-function [Yave,Y3ave] = CTcheck(monkey_prefix, xpdate_num, save_fold, full_monkey_name)
-xpdate = sprintf('%d',xpdate_num);
-disp(['START TO MAKE & SAVE ' monkey_prefix xpdate 'CTcheck ref_trial_EMG']);
+function [Yave,Y3ave] = CTcheck(monkey_prefix, experiment_day_num, save_fold, full_monkey_name)
+experiment_day = sprintf('%d',experiment_day_num);
+disp(['START TO MAKE & SAVE ' monkey_prefix experiment_day 'CTcheck ref_trial_EMG']);
 
 % load EMG data & tget trial number
-S = load(fullfile(save_fold, 'CT_check_data_list', [monkey_prefix xpdate '_CT_check_data.mat']),'CTcheck');
+S = load(fullfile(save_fold, 'CT_check_data_list', [monkey_prefix experiment_day '_CT_check_data.mat']),'CTcheck');
 trial_num = length(S.CTcheck.raw_trial_EMG);
 [EMG_num, ~] = size(S.CTcheck.raw_trial_EMG{1});
 
@@ -77,6 +77,6 @@ end
 
 % save data
 makefold(fullfile(save_fold, 'CTR_list'));
-save(fullfile(save_fold, 'CTR_list', [monkey_prefix xpdate '_CTR.mat']), 'monkey_prefix', 'xpdate', 'Yave', 'Y3ave');
-disp(['FINISH TO MAKE & SAVE ' monkey_prefix xpdate 'CTcheck ref_trial_EMG']);
+save(fullfile(save_fold, 'CTR_list', [monkey_prefix experiment_day '_CTR.mat']), 'monkey_prefix', 'experiment_day', 'Yave', 'Y3ave');
+disp(['FINISH TO MAKE & SAVE ' monkey_prefix experiment_day 'CTcheck ref_trial_EMG']);
 end

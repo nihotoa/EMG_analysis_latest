@@ -5,7 +5,7 @@ Cut out EMG for each trial & Focusing on various timings and cut out EMG around 
 
 [input arguments]:
 monkey_prefix: prefix of data
-xpdate_num: [double], date of experiment
+experiment_day_num: [double], date of experiment
 save_fold: [char], 'easyData', you dont need to change
 
 [output arguments]:
@@ -22,14 +22,14 @@ D: [struct], this contains information about cutout range centered on each timin
 pwdじゃなくて,  inputにbase_dir指定してそれを使った方がいいかも
 %}
 
-function [alignedDataAVE,alignedData,taskRange,AllT,Timing_ave,TIME_W,Res,D, focus_timing_num] = plotEasyData_utb(monkey_prefix, xpdate_num, save_fold)
+function [alignedDataAVE,alignedData,taskRange,AllT,Timing_ave,TIME_W,Res,D, focus_timing_num] = plotEasyData_utb(monkey_prefix, experiment_day_num, save_fold)
 %% get informations(path of save_folder, EMG data, timing data ,etc...)
-xpdate = sprintf('%d',xpdate_num);
-disp(['START TO MAKE & SAVE ' monkey_prefix xpdate '_Plot Data']);
+experiment_day = sprintf('%d',experiment_day_num);
+disp(['START TO MAKE & SAVE ' monkey_prefix experiment_day '_Plot Data']);
 
 % get the path of save_fold
 %load EasyData
-EMG_data_struct = load(fullfile(save_fold, 'cutout_EMG_data_list', [monkey_prefix xpdate '_cutout_EMG_data.mat'])); 
+EMG_data_struct = load(fullfile(save_fold, 'cutout_EMG_data_list', [monkey_prefix experiment_day '_cutout_EMG_data.mat'])); 
 
 % get EMG data & timing data & SamplingRate 
 EMGd = EMG_data_struct.AllData_EMG;
@@ -97,11 +97,11 @@ down_Hz = filtP.down;
 save_fold_path = fullfile(save_fold, 'alignedData_list');
 makefold(save_fold_path);
 % save data
-save(fullfile(save_fold_path, [monkey_prefix xpdate '_alignedData_' filtP.whose '.mat']), 'monkey_prefix', 'xpdate','EMGs', ...
+save(fullfile(save_fold_path, [monkey_prefix experiment_day '_alignedData_' filtP.whose '.mat']), 'monkey_prefix', 'experiment_day','EMGs', ...
                                           'alignedData', 'alignedDataAVE','filtP','trial_num','taskRange', 'down_Hz', 'TIME_W', 'Timing_ave', 'Timing_std', 'Timing_std_diff','Timing_ave_ratio');
 
 
-disp(['END TO MAKE & SAVE ' monkey_prefix xpdate '_Plot Data']);
+disp(['END TO MAKE & SAVE ' monkey_prefix experiment_day '_Plot Data']);
 end
 
 

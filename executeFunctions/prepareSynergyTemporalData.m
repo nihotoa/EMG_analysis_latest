@@ -192,7 +192,7 @@ for date_id = 1:selected_day_num
   end
    
    % save data
-   xpdate = selected_day_name_cell(date_id);
+   experiment_day = selected_day_name_cell(date_id);
 
    % Specify the path of the directory to save
    save_fold_path = fullfile(fileparts(synergy_across_sessions_data_dir), 'temporal_pattern_data');
@@ -201,7 +201,7 @@ for date_id = 1:selected_day_num
    % save data
    makefold(save_fold_path);
    D = range_struct; % to be consistent with legacy codes
-   save(fullfile(save_fold_path, save_file_name), 'monkey_prefix','xpdate','D',...
+   save(fullfile(save_fold_path, save_file_name), 'monkey_prefix','experiment_day','D',...
                                                      'alignedDataAVE', 'ResAVE',...
                                                      'AllT','TIME_W','Timing_ave','taskRange');
    disp(['H_data is saved as: ' fullfile(save_fold_path, save_file_name)]);

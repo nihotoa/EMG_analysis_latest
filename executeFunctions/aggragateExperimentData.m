@@ -13,7 +13,7 @@ in the format <monkey_prefix><day>-<file number>.mat. This is useful for consoli
 scattered experimental data into a unified format for further analysis.
 
 [saved data location]
-Please check the log when this function is executed.
+The location of the saved file is shown in the log when this function is executed.
 
 [execution procedure]
 - Pre: None

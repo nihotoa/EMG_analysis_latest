@@ -6,7 +6,7 @@ Perform data concatenation & filtering processing & Obtain information on each t
 [input arguments]:
 monkey_prefix: [char], prefix of file
 full_monkey_name: [char], full name of monkey
-xpdate_num: [double], date of experiment
+experiment_day_num: [double], date of experiment
 save_fold: [char], 'easyData' (don't need to change)
 EMG_params_struct: [struct], Contains parameters on whether or not processing is performed and information on the sampling frequency after downsampling.
 
@@ -18,7 +18,7 @@ Tp3: [double array], Data for each timing in each trial is stored.
 [Improvement points(Japanese)]
 %}
 
-function [EMGs,Tp,Tp3] = makeEasyData_all(monkey_prefix, full_monkey_name, xpdate_num, file_num, common_save_fold_path, EMG_params_struct)
+function [EMGs,Tp,Tp3] = makeEasyData_all(monkey_prefix, full_monkey_name, experiment_day_num, file_num, common_save_fold_path, EMG_params_struct)
 %% set parameters
 downsample_rate = EMG_params_struct.downsample_rate;
 success_button_count_threshold = 80;
@@ -26,7 +26,7 @@ time_restriction_enabled = EMG_params_struct.time_restriction_enabled;
 time_restriction_limit = EMG_params_struct.time_restriction_limit; 
 
 %% code section
-xpdate = sprintf('%d',xpdate_num);
+experiment_day = sprintf('%d',experiment_day_num);
 % Store the name of the muscle corresponding to each electrode in the cell array
 switch monkey_prefix
     case {'Ya', 'F'}
@@ -97,13 +97,13 @@ end
 EMG_num = length(EMGs);
 
 %% concatenate EMG data from each files(same processing as 'prepareRawEMGDataForNMF.m')
-[AllData_EMG, TimeRange_EMG, EMG_Hz] = makeEasyEMG(monkey_prefix,xpdate,file_num, EMG_num, full_monkey_name);
+[AllData_EMG, TimeRange_EMG, EMG_Hz] = makeEasyEMG(monkey_prefix,experiment_day,file_num, EMG_num, full_monkey_name);
 AllData_EMG = resample(AllData_EMG,downsample_rate,EMG_Hz);
 
 %% cut  data on task timing
 switch monkey_prefix
   case 'Se'
-     [Timing,Tp,Tp3,TTLd,TTLu] = makeEasyTiming(monkey_prefix,xpdate,file_num,downsample_rate,TimeRange_EMG);
+     [Timing,Tp,Tp3,TTLd,TTLu] = makeEasyTiming(monkey_prefix,experiment_day,file_num,downsample_rate,TimeRange_EMG);
      % change tiing from 'lever2' to 'photocell'
      errorlist = '';
      emp_d = 0;
@@ -138,14 +138,14 @@ switch monkey_prefix
     
    case 'Ni'
        try
-           [Timing,Tp,Tp3] = makeEasyTiming_Nibali(full_monkey_name, monkey_prefix, xpdate, file_num, downsample_rate);
+           [Timing,Tp,Tp3] = makeEasyTiming_Nibali(full_monkey_name, monkey_prefix, experiment_day, file_num, downsample_rate);
        catch
-           warning([full_monkey_name '-' xpdate ' does not have "CTTL_003" signal']);
+           warning([full_monkey_name '-' experiment_day ' does not have "CTTL_003" signal']);
        end
    case 'Hu'
-       [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(full_monkey_name, monkey_prefix, xpdate, file_num, downsample_rate, success_button_count_threshold, time_restriction_enabled, time_restriction_limit);
+       [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(full_monkey_name, monkey_prefix, experiment_day, file_num, downsample_rate, success_button_count_threshold, time_restriction_enabled, time_restriction_limit);
    otherwise %if reference monkey is not SesekiR or Wasa. (if you don't have to chage to fotocell�j
-        [Timing,Tp,Tp3] = makeEasyTiming(monkey_prefix,xpdate,file_num,downsample_rate,TimeRange_EMG);
+        [Timing,Tp,Tp3] = makeEasyTiming(monkey_prefix,experiment_day,file_num,downsample_rate,TimeRange_EMG);
 end
 
 if exist("is_condition2_active", "var") && is_condition2_active
@@ -174,14 +174,14 @@ cutout_EMG_data_save_fold_path = fullfile(common_save_fold_path, 'cutout_EMG_dat
 makefold(cutout_EMG_data_save_fold_path);
 switch monkey_prefix
     case {'Ya','Ma','F', 'Wa', 'Ni', 'Hu'}
-        save(fullfile(cutout_EMG_data_save_fold_path, [monkey_prefix xpdate '_cutout_EMG_data.mat']), 'monkey_prefix', 'xpdate', 'file_num', 'EMGs',...
+        save(fullfile(cutout_EMG_data_save_fold_path, [monkey_prefix experiment_day '_cutout_EMG_data.mat']), 'monkey_prefix', 'experiment_day', 'file_num', 'EMGs',...
                                                 'AllData_EMG', ...
                                                 'TimeRange_EMG',...
                                                 'EMG_Hz',... '
                                                 'Unit','SampleRate',...
                                                 'Timing','Tp','Tp3');
    case {'Su','Se'}
-        save(fullfile(cutout_EMG_data_save_fold_path, [monkey_prefix xpdate '_cutout_EMG_data.mat']), 'monkey_prefix', 'xpdate', 'file_num', 'EMGs',...
+        save(fullfile(cutout_EMG_data_save_fold_path, [monkey_prefix experiment_day '_cutout_EMG_data.mat']), 'monkey_prefix', 'experiment_day', 'file_num', 'EMGs',...
                                                 'AllData_EMG', ...
                                                 'TimeRange_EMG',...
                                                 'EMG_Hz',... 
@@ -191,10 +191,10 @@ end
 
 CT_check_data_save_fold_path = fullfile(common_save_fold_path, 'CT_check_data_list');
 makefold(CT_check_data_save_fold_path);
-save(fullfile(CT_check_data_save_fold_path, [monkey_prefix xpdate '_CT_check_data.mat']), 'CTcheck');
+save(fullfile(CT_check_data_save_fold_path, [monkey_prefix experiment_day '_CT_check_data.mat']), 'CTcheck');
 
 if exist("success_timing", "var")
-    success_timing_data_save_fold_path = fullfile(common_save_fold_path, 'success_timing_data_list', xpdate);
+    success_timing_data_save_fold_path = fullfile(common_save_fold_path, 'success_timing_data_list', experiment_day);
     makefold(success_timing_data_save_fold_path);
     success_timing_file_name = 'success_timing';
     if time_restriction_enabled
@@ -202,16 +202,16 @@ if exist("success_timing", "var")
     end
     save(fullfile(success_timing_data_save_fold_path, [success_timing_file_name '.mat']), 'success_timing');
 end
-disp(['FINISH TO MAKE & SAVE ' monkey_prefix xpdate 'file[' sprintf('%d',file_num(1)) ',' sprintf('%d',file_num(end)) ']']);
+disp(['FINISH TO MAKE & SAVE ' monkey_prefix experiment_day 'file[' sprintf('%d',file_num(1)) ',' sprintf('%d',file_num(end)) ']']);
 end
 
 %% define local function
 %% 1.concatenate EMG data from each file & return concatenated EMG dataset (AllData_EMG)
-function [AllData_EMG, TimeRange, EMG_Hz] = makeEasyEMG(monkey_prefix, xpdate, file_num, EMG_num, full_monkey_name)
+function [AllData_EMG, TimeRange, EMG_Hz] = makeEasyEMG(monkey_prefix, experiment_day, file_num, EMG_num, full_monkey_name)
 file_count = (file_num(end) - file_num(1)) + 1;
 AllData_EMG_sel = cell(file_count,1);
 root_dir = fileparts(pwd);
-load(fullfile(root_dir, 'useDataFold', full_monkey_name, [monkey_prefix xpdate '-' sprintf('%04d',file_num(1,1))]),'CEMG_001_TimeBegin');
+load(fullfile(root_dir, 'useDataFold', full_monkey_name, [monkey_prefix experiment_day '-' sprintf('%04d',file_num(1,1))]),'CEMG_001_TimeBegin');
 TimeRange = zeros(1,2);
 TimeRange(1,1) = CEMG_001_TimeBegin;
 EMG_prefix = 'CEMG';
@@ -220,19 +220,19 @@ get_first_data = 1;
 for i = file_num(1,1):file_num(end)
     for j = 1:EMG_num
         if get_first_data
-            load(fullfile(root_dir, 'useDataFold', full_monkey_name, [monkey_prefix xpdate '-' sprintf('%04d',i)]), [EMG_prefix '_001*']);
+            load(fullfile(root_dir, 'useDataFold', full_monkey_name, [monkey_prefix experiment_day '-' sprintf('%04d',i)]), [EMG_prefix '_001*']);
             EMG_Hz = eval([EMG_prefix '_001_KHz .* 1000;']);
             Data_num_EMG = eval(['length(' EMG_prefix '_001);']);
             AllData1_EMG = zeros(Data_num_EMG, EMG_num);
             AllData1_EMG(:,1) = eval([EMG_prefix '_001;']);
             get_first_data = 0;
         else
-            load(fullfile(root_dir, 'useDataFold', full_monkey_name, [monkey_prefix xpdate '-' sprintf('%04d',i)]), [EMG_prefix '_' sprintf('%03d',j)]);
+            load(fullfile(root_dir, 'useDataFold', full_monkey_name, [monkey_prefix experiment_day '-' sprintf('%04d',i)]), [EMG_prefix '_' sprintf('%03d',j)]);
             eval(['AllData1_EMG(:, j ) = ' EMG_prefix '_0' sprintf('%02d',j) ''';']);
         end
     end
     AllData_EMG_sel{(i - file_num(1, 1)) + 1, 1} = AllData1_EMG;
-    load([monkey_prefix xpdate '-' sprintf('%04d',i)],[EMG_prefix '_001_TimeEnd']);
+    load([monkey_prefix experiment_day '-' sprintf('%04d',i)],[EMG_prefix '_001_TimeEnd']);
     TimeRange(1,2) = eval([EMG_prefix '_001_TimeEnd;']);
     get_first_data = 1;
 end
@@ -241,18 +241,18 @@ end
 
 
 %% 2. Create a cell array of event codes and extract only the event codes for task timing
-function [Timing,Tp,Tp3,varargout] = makeEasyTiming(monkey_prefix, xpdate, file_num, SampleRate, TimeRange_EMG)
+function [Timing,Tp,Tp3,varargout] = makeEasyTiming(monkey_prefix, experiment_day, file_num, SampleRate, TimeRange_EMG)
 Ld = file_num(end)-file_num(1)+1;
 %number of file
 AllInPort_sel = cell(1,Ld);
 get_first_portin = 1;
 for i = file_num(1,1):file_num(1,end)
     if get_first_portin
-        S1 = load([monkey_prefix xpdate '-' sprintf('%04d', i) '.mat'], 'CInPort*');
+        S1 = load([monkey_prefix experiment_day '-' sprintf('%04d', i) '.mat'], 'CInPort*');
         CInPort = S1.CInPort_001;
     else
         
-        S = load([monkey_prefix xpdate '-' sprintf('%04d', i) '.mat'], 'CInPort_001');
+        S = load([monkey_prefix experiment_day '-' sprintf('%04d', i) '.mat'], 'CInPort_001');
         if ~isempty(struct2cell(S))
            CInPort = S.CInPort_001;
         end
@@ -271,7 +271,7 @@ switch monkey_prefix
             AllTTLu_sel = cell(1,Ld);
             count = 1;
             for t = file_num(1):file_num(end)
-                TTLdata = load([monkey_prefix xpdate '-' sprintf('%04d', t) '.mat'], 'CTTL_001*');
+                TTLdata = load([monkey_prefix experiment_day '-' sprintf('%04d', t) '.mat'], 'CTTL_001*');
                 if isfield(TTLdata,'CTTL_001_TimeBegin')
                     TTL_lag = (TTLdata.CTTL_001_TimeBegin - TimeRange_EMG(1))*TTLdata.CTTL_001_KHz*1000;
                     AllTTLd_sel{count} = TTLdata.CTTL_001_Down+TTL_lag;
@@ -389,8 +389,8 @@ Tp3 = Tp3_sub(Tp3_sub(:,1) ~= 0,:);
 end
 
 %% 3. function to extract timing data for Nibali
-function [Timing,Tp,Tp3] = makeEasyTiming_Nibali(full_monkey_name, monkey_prefix, xpdate, file_num, downdata_to)
-load_file_path = fullfile(pwd, full_monkey_name, [monkey_prefix xpdate '-' sprintf('%04d', file_num(1))]);
+function [Timing,Tp,Tp3] = makeEasyTiming_Nibali(full_monkey_name, monkey_prefix, experiment_day, file_num, downdata_to)
+load_file_path = fullfile(pwd, full_monkey_name, [monkey_prefix experiment_day '-' sprintf('%04d', file_num(1))]);
 make_timing_struct = load(load_file_path, 'CAI*', 'CTTL*');
 timing_struct = struct();
 multple_value = downdata_to / (make_timing_struct.CTTL_002_KHz * 1000);
@@ -493,7 +493,7 @@ Function to obtain the event timing of the 'drawer task'.
 [input arguments]:
 full_monkey_name: [char], full name of monkey
 monkey_prefix: [char], prefix of file
-xpdate_num: [double], date of experiment
+experiment_day_num: [double], date of experiment
 file_num: [double list], List of numbered experimental data files for the date of interest  (ex.) [2, 4]
 downdata_to: [double], Sampling rate of the signal after resampling.
 
@@ -503,8 +503,8 @@ Tp: [double array], Data for each timing in each trial is stored.
 Tp3: [double array], Data for each timing in each trial is stored.
 %}
 
-function [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(full_monkey_name, monkey_prefix, xpdate, file_num, downdata_to, success_button_count_threshold, time_restriction_enabled, time_restriction_limit)
-load_file_path = fullfile(fileparts(pwd), 'useDataFold', full_monkey_name, [monkey_prefix xpdate '-' sprintf('%04d', file_num(1))]);
+function [Timing,Tp,Tp3, is_condition2_active] = makeEasyTiming_drawer(full_monkey_name, monkey_prefix, experiment_day, file_num, downdata_to, success_button_count_threshold, time_restriction_enabled, time_restriction_limit)
+load_file_path = fullfile(fileparts(pwd), 'useDataFold', full_monkey_name, [monkey_prefix experiment_day '-' sprintf('%04d', file_num(1))]);
 make_timing_struct = load(load_file_path, 'CAI*', 'CTTL*');
 timing_struct = struct();
 multple_value = downdata_to / (make_timing_struct.CTTL_002_KHz * 1000);
