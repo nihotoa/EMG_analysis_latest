@@ -19,22 +19,12 @@ post: visualizeEMGAndSynergy.m
 [caution!!]
 In order to use the function 'resample', 'signal processing toolbox' must be installed
 
-[Improvement points(Japanaese)]
-+ �g�p�����ؓd�̐����l������K�v������̂ŁA�f�B���N�g����������K�w�ǉ�����
-+ VisualizeSynergyWeights�̃Z�[�u�f�[�^��ύX�����̂ŁA����ɑΉ�����悤�Ƀ��t�@�N�^�����O
-+ K��p����test�f�[�^��A��������Ƃ��낪kf=4�̑O��ŏ�����Ă���̂ŉ��P����
-+ �^�C�~���O�̐���4�ł���O��ŏ�����Ă���̂ŁA���P����(plotEasyData_utb�Ƃ��Ȃ莗��pre�Ƃ���)
-+ tim�����߂�ۂ̃_�E���T���v�����O��̃T���v�����O���g����100Hz�̑O��ŏ�����Ă���̂ŉ��P����
-+ alignData��,alignDataEX��plotEasyData_utb�ƑS���������̂��g���Ă���̂ŁA���[�J���֐��ł͂Ȃ��āA�Ɨ������֐��Ƃ��č���āA
-�����ǂݍ���Ŏg���悤�ɕύX����
-+ use_EMG_type = 'full'�̎��̓���m�F�͂��ĂȂ�
-+ pre��post�ŋ�Ԋ�ꂪ�Ⴄ�̂ɓ���Pdata�Ƃ��ĕۑ������͈̂�a������̂ŁA�΍���l����
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
 term_select_type = 'manual'; %'auto' / 'manual'
-term_type = 'all'; %(if term_select_type == 'auto') pre / post / all 
+term_type = 'all'; %(if term_select_type == 'auto') pre / post / all
 monkey_prefix = 'Hu';
 use_EMG_type = 'only_task'; %' full' / 'only_task'
 synergy_num = 4; % number of synergy you want to analyze
@@ -43,31 +33,31 @@ range_struct = struct();
 % change the range of trimming for each monkey
 switch monkey_prefix
     case 'Ni'
-        range_struct.trig1_per = [50 50];
-        range_struct.trig2_per = [50 50];
-        range_struct.trig3_per = [50 50];
-        range_struct.trig4_per = [50 50];
-        range_struct.task_per = [25,105];
+        range_struct.timing1_pre_post_percentage = [50 50];
+        range_struct.timing2_pre_post_percentage = [50 50];
+        range_struct.timing3_pre_post_percentage = [50 50];
+        range_struct.timing4_pre_post_percentage = [50 50];
+        range_struct.whole_trial_percentage= [25,105];
     case 'Hu'
-        range_struct.trig1_per = [50 50];
-        range_struct.trig2_per = [50 50];
-        range_struct.trig3_per = [50 50];
-        range_struct.trig4_per = [50 50];
-        range_struct.trig5_per = [50 50];
-        range_struct.trig6_per = [50 50];
-        range_struct.task_per = [25,105];
+        range_struct.timing1_pre_post_percentage = [50 50];
+        range_struct.timing2_pre_post_percentage = [50 50];
+        range_struct.timing3_pre_post_percentage = [50 50];
+        range_struct.timing4_pre_post_percentage = [50 50];
+        range_struct.timing5_pre_post_percentage= [50 50];
+        range_struct.timing6_pre_post_percentage= [50 50];
+        range_struct.whole_trial_percentage= [25,105];
     otherwise
-        range_struct.trig1_per = [50 50];
-        range_struct.trig2_per = [50 50];
-        range_struct.trig3_per = [50 50];
-        range_struct.trig4_per = [50 50];
-        range_struct.task_per = [25,105];
+        range_struct.timing1_pre_post_percentage = [50 50];
+        range_struct.timing2_pre_post_percentage = [50 50];
+        range_struct.timing3_pre_post_percentage = [50 50];
+        range_struct.timing4_pre_post_percentage = [50 50];
+        range_struct.whole_trial_percentage= [25,105];
 end
 
 %% code section
 full_monkey_name = getFullMonkeyName(monkey_prefix);
-root_dir = fileparts(pwd);
-base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy');
+root_dir_path = fileparts(pwd);
+base_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'Synergy');
 synergy_detail_data_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type);
 daily_synergy_data_dir = fullfile(base_dir_path, 'daily_synergy_analysis_results');
 extracted_synergy_data_dir = fullfile(base_dir_path, 'extracted_synergy', use_EMG_type);
@@ -146,11 +136,11 @@ end
 %%  Cut out synergy H around each task timing.
 
 % Creating arrays from which to store data.
-ResAVE.tData1_AVE = cell(1,synergy_num);
-ResAVE.tData2_AVE = cell(1,synergy_num);
-ResAVE.tData3_AVE = cell(1,synergy_num);
-ResAVE.tData4_AVE = cell(1,synergy_num);
-ResAVE.tDataTask_AVE = cell(1,synergy_num);
+each_timing_cutout_mean_EMG_struct.tData1_AVE = cell(1,synergy_num);
+each_timing_cutout_mean_EMG_struct.tData2_AVE = cell(1,synergy_num);
+each_timing_cutout_mean_EMG_struct.tData3_AVE = cell(1,synergy_num);
+each_timing_cutout_mean_EMG_struct.tData4_AVE = cell(1,synergy_num);
+each_timing_cutout_mean_EMG_struct.tDataTask_AVE = cell(1,synergy_num);
 
 % Cutting out synergy H data for each date.
 for date_id = 1:selected_day_num 
@@ -167,28 +157,28 @@ for date_id = 1:selected_day_num
         easy_data_file_name = [ref_day_unique_name '_EasyData.mat'];
     
         timing_data_struct = load(fullfile(easy_data_fold_path, easy_data_file_name)); % load the timing data of each trial
-        timing_data_for_filtered_EMG = floor(timing_data_struct.Tp ./ (timing_data_struct.SampleRate/100)); % down sample (to 100Hz)
+        timing_data_for_filtered_EMG = floor(timing_data_struct.transposed_success_timing ./ (timing_data_struct.SampleRate/100)); % down sample (to 100Hz)
     end
 
    [trial_num, ~] = size(timing_data_for_filtered_EMG);
-   pre_per = 50; % How long do you want to see the signals before 'lever1 on' starts.
-   post_per = 50; % How long do you want to see the signals after 'lever2 off' starts.
+   pre_task_percentage = 50; % How long do you want to see the signals before 'lever1 on' starts.
+   post_task_percentage = 50; % How long do you want to see the signals after 'lever2 off' starts.
    
    % Cut out synergyH for each trial
-   [alignedData, alignedDataAVE, AllT, Timing_ave, ~, ~, TIME_W] = alignData(all_H{date_id}', timing_data_for_filtered_EMG, trial_num, pre_per, post_per, synergy_num, monkey_prefix);
-   taskRange = [-1*pre_per, 100+post_per];
+   [time_normalized_EMG, time_normalized_EMG_average, average_visualized_range_sample_num, Timing_ave, ~, ~, average_trial_sample_num] = createTimeNormalizedTrialData(all_H{date_id}', timing_data_for_filtered_EMG, trial_num, pre_task_percentage, post_task_percentage, synergy_num, monkey_prefix);
+   task_range = [-1*pre_task_percentage, 100+post_task_percentage];
 
     % Cut out synergyH for each trial, around each timing.
-   [Res, timing_num] = alignDataEx(alignedData, timing_data_for_filtered_EMG, range_struct, pre_per, TIME_W, synergy_num, monkey_prefix);
+   [each_timing_cutout_EMG_struct, timing_num] = extractEventCenteredSegments(time_normalized_EMG, timing_data_for_filtered_EMG, range_struct, pre_task_percentage, average_trial_sample_num, synergy_num, monkey_prefix);
 
    % Store the information about the cut out range around each timing in structure range_struct
-  range_struct.LdTask = length(Res.tDataTask_AVE{1});
-  range_struct.RangeTask = range_struct.task_per;
-  ResAVE.tDataTask_AVE = Res.tDataTask_AVE;
+  range_struct.LdTask = length(each_timing_cutout_EMG_struct.tDataTask_AVE{1});
+  range_struct.RangeTask = range_struct.whole_trial_percentage;
+  each_timing_cutout_mean_EMG_struct.tDataTask_AVE = each_timing_cutout_EMG_struct.tDataTask_AVE;
   for timing_id = 1:timing_num
-      range_struct.(['Ld' num2str(timing_id)]) = length(Res.(['tData' num2str(timing_id) '_AVE']){1});
+      range_struct.(['Ld' num2str(timing_id)]) = length(each_timing_cutout_EMG_struct.(['timing' num2str(timing_id) '_AVE']){1});
       range_struct.(['Range' num2str(timing_id)]) = range_struct.(['trig' num2str(timing_id) '_per']);
-      ResAVE.(['tData' num2str(timing_id) '_AVE']) = Res.(['tData' num2str(timing_id) '_AVE']);
+      each_timing_cutout_mean_EMG_struct.(['timing' num2str(timing_id) '_AVE']) = each_timing_cutout_EMG_struct.(['timing' num2str(timing_id) '_AVE']);
   end
    
    % save data
@@ -200,10 +190,10 @@ for date_id = 1:selected_day_num
    
    % save data
    makefold(save_fold_path);
-   D = range_struct; % to be consistent with legacy codes
-   save(fullfile(save_fold_path, save_file_name), 'monkey_prefix','experiment_day','D',...
-                                                     'alignedDataAVE', 'ResAVE',...
-                                                     'AllT','TIME_W','Timing_ave','taskRange');
+   cutout_range_struct = range_struct; % to be consistent with legacy codes
+   save(fullfile(save_fold_path, save_file_name), 'monkey_prefix','experiment_day','cutout_range_struct',...
+                                                     'time_normalized_EMG_average', 'each_timing_cutout_mean_EMG_struct',...
+                                                     'average_visualized_range_sample_num','average_trial_sample_num','Timing_ave','task_range');
    disp(['H_data is saved as: ' fullfile(save_fold_path, save_file_name)]);
 end
 

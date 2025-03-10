@@ -21,15 +21,15 @@ use_EMG_type = 'only_task'; %' full' / 'only_task'
 synergy_num = 4; % number of synergy you want to analyze
 
 %% code section
-root_dir = fileparts(pwd);
+root_dir_path = fileparts(pwd);
 full_monkey_name = getFullMonkeyName(monkey_prefix);
 
 switch plot_data_type
     case 'EMG'
-        base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG');
+        base_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG');
         Pdata_dir = fullfile(base_dir_path, 'P-DATA');
     case 'synergy'
-        base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy');
+        base_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'Synergy');
         Pdata_dir = fullfile(base_dir_path, 'synergy_across_sessions', use_EMG_type, ['synergy_num==' num2str(synergy_num)], 'temporal_pattern_data');
 end
 
@@ -70,7 +70,7 @@ elements = pre_session_data_str.elements;
 
 for timing_id = 1:(timing_num+1)
     if timing_id == timing_num+1
-        unique_timing_name = 'whole_task';
+        unique_timing_name = 'whole_trial';
     else
         unique_timing_name = ['timing' num2str(timing_id)];
     end
@@ -100,7 +100,7 @@ for day_id = 1:all_day_num
     ref_day_activity_data_struct = all_session_data_str.activity_data.(unique_day_name);
     for timing_id = 1:(timing_num+1)
         if timing_id == (timing_num+1)
-            unique_timing_name = 'whole_task';
+            unique_timing_name = 'whole_trial';
         else
             unique_timing_name = ['timing' num2str(timing_id)];
         end
@@ -139,9 +139,9 @@ end
 % まずは、個々のタイミングの個々の筋肉における、選択したcontrol筋肉に対する図を生成する
 switch plot_data_type
     case 'EMG'
-        xcorr_figure_fold_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'figure', 'EMG', 'xcorr_result');
+        xcorr_figure_fold_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'figure', 'EMG', 'xcorr_result');
     case 'synergy'
-        xcorr_figure_fold_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'figure', 'Synergy', 'xcorr_result');
+        xcorr_figure_fold_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'figure', 'Synergy', 'xcorr_result');
 end
 
 
@@ -154,7 +154,7 @@ post_first_elapsed_day = elapsed_day_list(find((elapsed_day_list > 0), 1 ));
 
 for timing_id = 1:(timing_num+1)
     if timing_id == (timing_num+1)
-        unique_timing_name = 'whole_task';
+        unique_timing_name = 'whole_trial';
         timing_name_for_plot = 'whole-task';
     else
         unique_timing_name = ['timing' num2str(timing_id)];

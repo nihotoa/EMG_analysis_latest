@@ -40,22 +40,22 @@ make_figure_flag = true;
 %% code section
 % get date_list by GUI operation
 full_monkey_name = getFullMonkeyName(monkey_prefix);
-root_dir = fileparts(pwd);
-base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy');
+root_dir_path = fileparts(pwd);
+base_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'Synergy');
 synergy_detail_data_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type);
 extracted_synergy_data_dir = fullfile(base_dir_path, 'extracted_synergy', use_EMG_type);
-Allfiles_S = getGroupedDates(synergy_detail_data_dir, monkey_prefix, term_select_type, term_type);
-if isempty(Allfiles_S)
+selected_file_name_list = getGroupedDates(synergy_detail_data_dir, monkey_prefix, term_select_type, term_type);
+if isempty(selected_file_name_list)
     disp('user pressed "cancel" button');
     return;
 end
 
-date_list = strrep(Allfiles_S, monkey_prefix, '');
-date_num = length(Allfiles_S);
+date_list = strrep(selected_file_name_list, monkey_prefix, '');
+date_num = length(selected_file_name_list);
 
 % load (or crate) data about optimal number of synergy
 save_data_fold_path = fullfile(base_dir_path, 'optimal_synergy_num_data', first_judge_type, use_EMG_type);
-save_data_file_name = ['optimal_synergy_num_data(' Allfiles_S{1} '_to_' Allfiles_S{end} '_' num2str(length(Allfiles_S)) ').mat'];
+save_data_file_name = ['optimal_synergy_num_data(' selected_file_name_list{1} '_to_' selected_file_name_list{end} '_' num2str(length(selected_file_name_list)) ').mat'];
 
 if not(exist(fullfile(save_data_fold_path, save_data_file_name), "file"))
     % some dates may not have synergy data files, so the method of appending to an empty cell array is adopted
@@ -63,10 +63,10 @@ if not(exist(fullfile(save_data_fold_path, save_data_file_name), "file"))
     shuffle_VAF_data_list = {};
     spatial_pattern_data_list = {};
     eliminated_date_list = {};
-    date_num = length(Allfiles_S);
+    date_num = length(selected_file_name_list);
     
     for day_id = 1:date_num
-        unique_name = Allfiles_S{day_id};
+        unique_name = selected_file_name_list{day_id};
         VAF_data_path = fullfile(synergy_detail_data_dir, unique_name, [unique_name '.mat']);
         spatial_pattern_data_path = fullfile(extracted_synergy_data_dir, unique_name, ['t_' unique_name '.mat']);
     
@@ -92,9 +92,9 @@ if not(exist(fullfile(save_data_fold_path, save_data_file_name), "file"))
     shuffle_VAF_data_list = cell2mat(shuffle_VAF_data_list);
     
     % update the list of sessions with reference to eliminated_date_list
-    Allfiles_S = setdiff(Allfiles_S, eliminated_date_list);
-    date_list = strrep(Allfiles_S, monkey_prefix, '');
-    date_num = length(Allfiles_S);
+    selected_file_name_list = setdiff(selected_file_name_list, eliminated_date_list);
+    date_list = strrep(selected_file_name_list, monkey_prefix, '');
+    date_num = length(selected_file_name_list);
     
     %% output optimal number of synergy for each session
     % create strucutre to store optimal synergy number

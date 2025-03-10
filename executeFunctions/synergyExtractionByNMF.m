@@ -36,12 +36,12 @@ nshuffle = 1; % whether you want to confirm shuffle
 alg = 'mult'; % algorism of nnmf (mult: Multiplicative Update formula, als: Alternating Least Squares formula)
 
 %% code section
-root_dir = fileparts(pwd);
+root_dir_path = fileparts(pwd);
 warning('off');
 
 % get the real monkey name
 full_monkey_name = getFullMonkeyName(monkey_prefix);
-base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy', 'filtered_EMG_data', use_EMG_type);
+base_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'Synergy', 'filtered_EMG_data', use_EMG_type);
 
 % get info about dates of analysis data and used EMG
 disp('�yPlease select all day folders you want to analyze (Multiple selections are possible)�z)')

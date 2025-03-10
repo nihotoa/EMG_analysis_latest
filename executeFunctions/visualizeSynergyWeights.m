@@ -52,19 +52,19 @@ save_data = 1; % Whether to store data on synergy orders in 'order_tim_list' fol
 
 %% code section
 full_monkey_name = getFullMonkeyName(monkey_prefix);
-root_dir = fileparts(pwd);
-base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy');
+root_dir_path = fileparts(pwd);
+base_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'Synergy');
 synergy_detail_data_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type);
 daily_synergy_data_dir = fullfile(base_dir_path, 'daily_synergy_analysis_results');
 
-Allfiles_S = getGroupedDates(synergy_detail_data_dir, monkey_prefix, term_select_type, term_type);
-if isempty(Allfiles_S)
+selected_file_name_list = getGroupedDates(synergy_detail_data_dir, monkey_prefix, term_select_type, term_type);
+if isempty(selected_file_name_list)
     disp('user pressed "cancel" button');
     return;
 end
 
-% extract only date portion from 'Allfiles_S' and store it into a list
-selected_days = get_days(Allfiles_S);
+% extract only date portion from 'selected_file_name_list' and store it into a list
+selected_days = get_days(selected_file_name_list);
 day_num = length(selected_days);
 if and(strcmp(term_select_type, 'auto'), strcmp(term_type, 'post'))
     pre_file_list = getGroupedDates(base_dir_path, monkey_prefix, term_select_type, 'pre');
@@ -79,15 +79,15 @@ save_heatmap_figure_dir_path = fullfile(common_save_figure_dir, 'synergy_across_
 makefold(save_heatmap_figure_dir_path);
 
 %% Get the name of the EMG used for the synergy analysis
-first_date_fold_name = Allfiles_S{1};
+first_date_fold_name = selected_file_name_list{1};
 
 % Get the path of the file that has name information of EMG used for muscle synergy analysis
 first_date_file_path = fullfile(synergy_detail_data_dir, first_date_fold_name, [first_date_fold_name '.mat']);
 
 % get name information of EMG used for muscle synergy analysis
 load(first_date_file_path, 'TargetName');
-EMGs = get_EMG_name(TargetName);
-EMG_num = length(EMGs);
+EMG_name_list = get_EMG_name(TargetName);
+EMG_num = length(EMG_name_list);
 
 
 %% Reorder the synergies to match the synergies on the first day.
@@ -97,7 +97,7 @@ EMG_num = length(EMGs);
 if day_num > 1
     W_data = cell(1, day_num);
     for day_id = 1:day_num
-        unique_name = Allfiles_S{day_id};
+        unique_name = selected_file_name_list{day_id};
         synergy_W_file_path = fullfile(daily_synergy_data_dir, unique_name, ['synergy_num==' num2str(syn_num)], use_EMG_type, 'W_data', 'mean_W_data.mat');
         load(fullfile(synergy_W_file_path), 'aveW');
         if not(normalize_flag)  
@@ -165,7 +165,7 @@ end
 
 %% plot figure(Synergy_W)
 % Organize the information needed for plot.
-x = categorical(EMGs');
+x = categorical(EMG_name_list');
 muscle_name = x; 
 zeroBar = zeros(EMG_num,1);
 

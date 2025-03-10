@@ -24,8 +24,8 @@ monkey_prefix = 'Hu' ; % prefix of recorded file(ex. F1710516-0002)
 %% code section
 % get the real monkey name
 full_monkey_name = getFullMonkeyName(monkey_prefix);
-root_dir = fileparts(pwd);
-useDataFold_path = fullfile(root_dir, 'useDataFold', full_monkey_name);
+root_dir_path = fileparts(pwd);
+useDataFold_path = fullfile(root_dir_path, 'useDataFold', full_monkey_name);
 
 % get the name of files  which exists in useDataFold_path
 file_list = dirPlus(fullfile(useDataFold_path, '*.mat'));
@@ -41,7 +41,7 @@ experiment_day_list = unique(experiment_day_list);
 day_num = length(experiment_day_list);
 
 % save each date's linkageInfo(including imformation on monkey_prefix, experiment_day, file_num) to a .mat file
-common_save_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG', 'linkageInfo_list');
+common_save_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG', 'linkageInfo_list');
 makefold(common_save_dir_path)
 linkageInfo.monkey_prefix = monkey_prefix;
 for day_id = 1:day_num

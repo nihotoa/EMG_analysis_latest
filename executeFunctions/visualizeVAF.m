@@ -37,17 +37,17 @@ TT_day = 20250120;
 
 %% code section
 full_monkey_name = getFullMonkeyName(monkey_prefix);
-root_dir = fileparts(pwd);
-base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy');
+root_dir_path = fileparts(pwd);
+base_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'Synergy');
 synergy_detail_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type);
-Allfiles_S = getGroupedDates(synergy_detail_dir, monkey_prefix, term_select_type, term_type);
-if isempty(Allfiles_S)
+selected_file_name_list = getGroupedDates(synergy_detail_dir, monkey_prefix, term_select_type, term_type);
+if isempty(selected_file_name_list)
     disp('user pressed "cancel" button');
     return;
 end
 
-AllDays = strrep(Allfiles_S, monkey_prefix, '');
-day_num = length(Allfiles_S);
+AllDays = strrep(selected_file_name_list, monkey_prefix, '');
+day_num = length(selected_file_name_list);
 
 % create a flag to indicate whether or not to add  a color bar to thefigure
 colorbar_flag = 0;
@@ -59,7 +59,7 @@ end
 VAF_data_list = cell(1, day_num);
 shuffle_VAF_data_list = cell(1, day_num);
 for day_id = 1:day_num
-    unique_name = Allfiles_S{day_id};
+    unique_name = selected_file_name_list{day_id};
     VAF_data_path = fullfile(synergy_detail_dir, unique_name, [unique_name '.mat']);
 
     % load VAF data & shuffle data
@@ -147,7 +147,7 @@ switch VAF_plot_type
         plot_VAF_std = std(use_VAF_data_list, 0, 2);
 
         % plot
-        errorbar(x_axis, plot_VAF, plot_VAF_std, 'o-', 'LineWidth', 2, 'Color', 'red', 'DisplayName', [figure_type '-' num2str(muscle_num) 'EMGs']);
+        errorbar(x_axis, plot_VAF, plot_VAF_std, 'o-', 'LineWidth', 2, 'Color', 'red', 'DisplayName', [figure_type '-' num2str(muscle_num) 'EMG_name_list']);
 end
 
 % decoration

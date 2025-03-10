@@ -47,8 +47,8 @@ resample_freq = 100; % sampling Rate[Hz] after downsampling
 
 %% code section
 full_monkey_name = getFullMonkeyName(monkey_prefix);
-root_dir = fileparts(pwd);
-base_dir_path = fullfile(root_dir, 'saveFold', full_monkey_name, 'data', 'Synergy', 'row_EMG_data', extract_EMG_type);
+root_dir_path = fileparts(pwd);
+base_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'Synergy', 'row_EMG_data', extract_EMG_type);
 
 % get the name of the floder that exists directly under 'Parent dir'
 InputDirs   = dirdir(base_dir_path);
