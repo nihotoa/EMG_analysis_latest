@@ -6,7 +6,9 @@
 3. Run this code
 
 [role of this code]
-This script processes raw EMG data and timing data by performing trimming, filtering, and saving the processed data. It prepares the data for further analysis, such as synergy analysis and error assessment.
+This script processes raw EMG data and timing data by performing trimming, 
+filtering, and saving the processed data. It prepares the data for further 
+analysis, such as synergy analysis and error assessment.
 
 [saved data location]
 Please refer to the log messages during execution for saved data locations.
@@ -103,7 +105,7 @@ EMG_num = length(EMG_name_list);
 % Get target files (select linkageInfo.mat files which contain file information)
 full_monkey_name = getFullMonkeyName(monkey_prefix);
 root_dir_path = fileparts(pwd);
-linkageInfo_fold_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG', 'linkageInfo_list');
+linkageInfo_fold_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG', 'linkageInfo');
 disp('Please select all "_linkageInfo.mat" files for the dates you want to analyze')
 selected_file_name_list = uigetfile('*.mat', 'Select One or More Files', 'MultiSelect', 'on', linkageInfo_fold_path);
 
@@ -142,8 +144,8 @@ for day_id = 1:day_num
     end
     cutout_emg_file = [monkey_prefix num2str(experiment_day) '_cutout_EMG_data.mat'];
     
-    success_timing_dir = fullfile(common_save_dir_path, 'success_timing_data_list', num2str(experiment_day));
-    cutout_dir = fullfile(common_save_dir_path, 'cutout_EMG_data_list');
+    success_timing_dir = fullfile(common_save_dir_path, 'success_timing', num2str(experiment_day));
+    cutout_dir = fullfile(common_save_dir_path, 'cutout_EMG_data');
     
     success_timing_path = fullfile(success_timing_dir, success_timing_file);
     cutout_emg_path = fullfile(cutout_dir, cutout_emg_file);

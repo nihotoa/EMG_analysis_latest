@@ -62,7 +62,7 @@ for idx = 1:length(selected_experiment_day_list)
     end
     
     % save data
-    save_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG', 'AllData_list');
+    save_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG', 'AllData');
     if not(exist(save_dir_path, "dir"))
         makefold(save_dir_path)
     end

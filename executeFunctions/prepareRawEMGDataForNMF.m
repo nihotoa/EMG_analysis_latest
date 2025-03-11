@@ -41,7 +41,7 @@ full_monkey_name = getFullMonkeyName(monkey_prefix);
 root_dir_path = fileparts(pwd);
 
 %  get the file name of  'cutout_EMG_data'
-cutout_EMG_data_fold_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG', 'cutout_EMG_data_list');
+cutout_EMG_data_fold_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG', 'cutout_EMG_data');
 disp('Please select all "_cutout_EMG_data" file you want to pre-process');
 cutout_EMG_data_list = uigetfile('MultiSelect', 'on', cutout_EMG_data_fold_path);
 
