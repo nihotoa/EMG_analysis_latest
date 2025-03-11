@@ -16,7 +16,7 @@ plot_data_type = 'synergy'; %'EMG'/'synergy'
 must_plot_elements = {'synergy1', 'synergy2'};
 figure_row_num = 4; % 1ページに含める要素の数(列数はタイミングの数に決まる)
 
-% if plot_type == 'Synergy'
+% if visualize_type == 'Synergy'
 use_EMG_type = 'only_task'; %' full' / 'only_task'
 synergy_num = 4; % number of synergy you want to analyze
 

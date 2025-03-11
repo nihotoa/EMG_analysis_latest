@@ -137,7 +137,7 @@ for muscle_id = 1:EMG_num
     end
     
     % Process and store data for each timing event
-    processAndStoreData(temp_EMG_data, each_timing_cutout_EMG_struct, cutout_range_ratio_struct, average_trial_sample_num, focus_timing_num, muscle_id);
+    each_timing_cutout_EMG_struct = processAndStoreData(temp_EMG_data, each_timing_cutout_EMG_struct, cutout_range_ratio_struct, average_trial_sample_num, focus_timing_num, muscle_id);
 end
 end
 

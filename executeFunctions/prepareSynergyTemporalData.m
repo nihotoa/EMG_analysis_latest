@@ -24,7 +24,7 @@ In order to use the function 'resample', 'signal processing toolbox' must be ins
 clear;
 %% set param
 term_select_type = 'manual'; %'auto' / 'manual'
-term_type = 'all'; %(if term_select_type == 'auto') pre / post / all
+period_type = 'all'; %(if term_select_type == 'auto') pre / post / all
 monkey_prefix = 'Hu';
 use_EMG_type = 'only_task'; %' full' / 'only_task'
 synergy_num = 4; % number of synergy you want to analyze
@@ -62,7 +62,7 @@ synergy_detail_data_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type
 daily_synergy_data_dir = fullfile(base_dir_path, 'daily_synergy_analysis_results');
 extracted_synergy_data_dir = fullfile(base_dir_path, 'extracted_synergy', use_EMG_type);
 
-unique_name_cell = getGroupedDates(synergy_detail_data_dir, monkey_prefix, term_select_type, term_type);
+unique_name_cell = getGroupedDates(synergy_detail_data_dir, monkey_prefix, term_select_type, period_type);
 if isempty(unique_name_cell)
     disp('user pressed "cancel" button');
     return;

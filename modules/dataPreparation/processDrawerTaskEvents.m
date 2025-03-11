@@ -14,13 +14,13 @@ validate_file_range: [double array] Range of files to process
 common_sample_rate: [double] Common sampling rate for all signals
 success_button_count_threshold: [integer] Threshold for success button count
 time_restriction_enabled: [logical] Flag to enable time restriction
-time_restriction_limit: [double] Time limit for restriction (if enabled)
+trial_time_threshold: [double] Time limit for restriction (if enabled)
 
 [Output Arguments]
 transposed_success_timing: [double array] Timing data for successful trials with dimensions
     [trials x timing_events], containing sample indices for each timing event
 %}
-function [transposed_success_timing] = processDrawerTaskEvents(full_monkey_name, monkey_prefix, experiment_day, validate_file_range, common_sample_rate, success_button_count_threshold, time_restriction_enabled, time_restriction_limit)
+function [transposed_success_timing] = processDrawerTaskEvents(full_monkey_name, monkey_prefix, experiment_day, validate_file_range, common_sample_rate, success_button_count_threshold, time_restriction_enabled, trial_time_threshold)
 raw_data_file_path = fullfile(fileparts(pwd), 'useDataFold', full_monkey_name, [monkey_prefix experiment_day '-' sprintf('%04d', validate_file_range(1))]);
 timing_data_struct = load(raw_data_file_path, 'CAI*', 'CTTL*');
 timing_struct = struct();
@@ -118,7 +118,7 @@ transposed_success_timing = reshape(Timing(1, :), length(final_valid_event_seque
 
 if time_restriction_enabled
     trial_duration = (transposed_success_timing(:,end) - transposed_success_timing(:,1)) / common_sample_rate;
-    transposed_success_timing = transposed_success_timing(trial_duration(:, 1) < time_restriction_limit, :);
+    transposed_success_timing = transposed_success_timing(trial_duration(:, 1) < trial_time_threshold, :);
 end
 
 if has_sufficient_success_events

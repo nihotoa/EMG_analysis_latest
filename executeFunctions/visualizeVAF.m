@@ -26,21 +26,21 @@ clear;
 %% set param
 term_select_type = 'manual'; %'auto' / 'manual'
 use_EMG_type = 'only_task'; %' full' / 'only_task'
-term_type = 'post'; %(if term_select_type == 'auto') pre / post / all 
+period_type = 'post'; %(if term_select_type == 'auto') pre / post / all 
 monkey_prefix = 'Hu';
 use_style = 'test'; % test/train
 figure_type = 'VAF'; % 'VAF'/ dVAF
 VAF_plot_type = 'stack'; %'stack' or 'mean'
 VAF_threshold = 0.8; % param to draw threshold_line
 font_size = 20; % Font size of text in the figure
-TT_day = 20250120;
+TT_surgery_day = 20250120;
 
 %% code section
 full_monkey_name = getFullMonkeyName(monkey_prefix);
 root_dir_path = fileparts(pwd);
 base_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'Synergy');
 synergy_detail_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type);
-selected_file_name_list = getGroupedDates(synergy_detail_dir, monkey_prefix, term_select_type, term_type);
+selected_file_name_list = getGroupedDates(synergy_detail_dir, monkey_prefix, term_select_type, period_type);
 if isempty(selected_file_name_list)
     disp('user pressed "cancel" button');
     return;
@@ -51,7 +51,7 @@ day_num = length(selected_file_name_list);
 
 % create a flag to indicate whether or not to add  a color bar to thefigure
 colorbar_flag = 0;
-if and(exist("TT_day", "var"), not(day_num == 1))
+if and(exist("TT_surgery_day", "var"), not(day_num == 1))
     colorbar_flag = 1;
 end
 
@@ -110,8 +110,8 @@ switch VAF_plot_type
     case 'stack'
         if colorbar_flag == 1
             day_range = zeros(1,2);
-            day_range(1) = CountElapsedDate(AllDays{1}, TT_day);
-            day_range(2) = CountElapsedDate(AllDays{end}, TT_day);
+            day_range(1) = CountElapsedDate(AllDays{1}, TT_surgery_day);
+            day_range(2) = CountElapsedDate(AllDays{end}, TT_surgery_day);
 
             color_matrix = zeros(day_num, 3);
             color_vector = linspace(0.4, 1, day_num);
@@ -161,7 +161,7 @@ ylabel(['Value of ' figure_type], FontSize=font_size)
 legend('Location', legend_location)
 switch term_select_type
     case 'auto'
-        title([figure_type ' value of each session(' term_type '=' num2str(day_num) 'days)'], FontSize = font_size);
+        title([figure_type ' value of each session(' period_type '=' num2str(day_num) 'days)'], FontSize = font_size);
     case 'manual'
         title([figure_type ' value of each session'], FontSize = font_size);
 end
@@ -176,8 +176,8 @@ save_figure_fold_path = fullfile(save_figure_base_fold_path, 'VAF_result', figur
 makefold(save_figure_fold_path);
 switch term_select_type
     case 'auto'
-        saveas(gcf, fullfile(save_figure_fold_path, [figure_type '_result(' term_type '_' num2str(day_num) 'days_' VAF_plot_type ').png']))
-        saveas(gcf, fullfile(save_figure_fold_path, [figure_type '_result(' term_type '_' num2str(day_num) 'days_' VAF_plot_type ').fig']))
+        saveas(gcf, fullfile(save_figure_fold_path, [figure_type '_result(' period_type '_' num2str(day_num) 'days_' VAF_plot_type ').png']))
+        saveas(gcf, fullfile(save_figure_fold_path, [figure_type '_result(' period_type '_' num2str(day_num) 'days_' VAF_plot_type ').fig']))
     case 'manual'
         saveas(gcf, fullfile(save_figure_fold_path, [figure_type '_result(' AllDays{1} 'to' AllDays{end} '_' num2str(length(AllDays)) 'days_' VAF_plot_type ').png']));
         saveas(gcf, fullfile(save_figure_fold_path, [figure_type '_result(' AllDays{1} 'to' AllDays{end} '_' num2str(length(AllDays)) 'days_' VAF_plot_type ').fig']));

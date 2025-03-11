@@ -7,7 +7,7 @@ session_num: 47
 【以下、プロットするなら必要】
 plot_setting: 1
 labels: 1*188, cell array
-term_type: 'post' (図の保存の際に必要)
+period_type: 'post' (図の保存の際に必要)
 save_fold_path
 
 【注意点】
@@ -17,7 +17,7 @@ save_fold_path
 同一セッションの複数のシナジーを要素として持っていることになるので、これはうまくいっていないと言うことになる。
 %}
 
-function [sort_idx, k_arr, coffen_coefficient] = PerformClustering(condition_num, cosine_distance_matrix, syn_num, session_num, plot_setting, labels, term_type, save_fold_path)
+function [sort_idx, k_arr, coffen_coefficient] = PerformClustering(condition_num, cosine_distance_matrix, syn_num, session_num, plot_setting, labels, period_type, save_fold_path)
 % transform cosine_distance_matrix into pairwize_distance_vector (to use as input argument of 'linkage')
 pairwise_distance_vector = [];
 for row_id = 1:condition_num-1
@@ -74,13 +74,13 @@ if plot_setting == 1
     dendrogram_axes.XTickLabelRotation = 90;
     dendrogram_axes.FontSize = 25;
     ylabel('cosine distance');
-    title_str = sprintf(['cosine distance between synergies(' term_type ' ' num2str(session_num) 'sessions)(synNum = ' num2str(syn_num) ')' '\n' '(cophenetic correlation coefficient = ' num2str(coffen_coefficient) ')']);
+    title_str = sprintf(['cosine distance between synergies(' period_type ' ' num2str(session_num) 'sessions)(synNum = ' num2str(syn_num) ')' '\n' '(cophenetic correlation coefficient = ' num2str(coffen_coefficient) ')']);
     title(title_str, 'FontSize', 25);
 
     % save
     makefold(save_fold_path);
-    saveas(gcf, fullfile(save_fold_path, ['dendrogram(' term_type '-synNum=' num2str(syn_num) ').png']));
-    saveas(gcf, fullfile(save_fold_path, ['dendrogram(' term_type '-synNum=' num2str(syn_num) ').fig']));
+    saveas(gcf, fullfile(save_fold_path, ['dendrogram(' period_type '-synNum=' num2str(syn_num) ').png']));
+    saveas(gcf, fullfile(save_fold_path, ['dendrogram(' period_type '-synNum=' num2str(syn_num) ').fig']));
     close all;
 end
 end

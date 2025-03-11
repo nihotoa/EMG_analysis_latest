@@ -10,10 +10,10 @@
 
 [Saved data location]
     As for figure:
-        Yachimun/new_nmf_result/syn_figures/F170516to170526_4/      (if you selected 'pre' for 'term_type')
+        Yachimun/new_nmf_result/syn_figures/F170516to170526_4/      (if you selected 'pre' for 'period_type')
 
     As for synergy order data:
-        Yachimun/new_nmf_result/order_tim_list/F170516to170526_4/     (if you selected 'pre' for 'term_type')
+        Yachimun/new_nmf_result/order_tim_list/F170516to170526_4/     (if you selected 'pre' for 'period_type')
 
     As for synergy W data (for anova):
         Yachimun/new_nmf_result/W_synergy_data/
@@ -41,7 +41,7 @@ clear;
 
 %% set param
 term_select_type = 'manual'; %'auto' / 'manual'
-term_type = 'all'; %(if term_select_type == 'auto') pre / post / all 
+period_type = 'all'; %(if term_select_type == 'auto') pre / post / all 
 use_EMG_type = 'only_task'; %' full' / 'only_task'
 normalize_flag = true;
 monkey_prefix = 'Hu';
@@ -57,7 +57,7 @@ base_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'S
 synergy_detail_data_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type);
 daily_synergy_data_dir = fullfile(base_dir_path, 'daily_synergy_analysis_results');
 
-selected_file_name_list = getGroupedDates(synergy_detail_data_dir, monkey_prefix, term_select_type, term_type);
+selected_file_name_list = getGroupedDates(synergy_detail_data_dir, monkey_prefix, term_select_type, period_type);
 if isempty(selected_file_name_list)
     disp('user pressed "cancel" button');
     return;
@@ -66,7 +66,7 @@ end
 % extract only date portion from 'selected_file_name_list' and store it into a list
 selected_days = get_days(selected_file_name_list);
 day_num = length(selected_days);
-if and(strcmp(term_select_type, 'auto'), strcmp(term_type, 'post'))
+if and(strcmp(term_select_type, 'auto'), strcmp(period_type, 'post'))
     pre_file_list = getGroupedDates(base_dir_path, monkey_prefix, term_select_type, 'pre');
     pre_days = get_days(pre_file_list);
 end
@@ -134,7 +134,7 @@ else
 end
 
 %{
-if and(strcmp(term_select_type, 'auto'), strcmp(term_type, 'post'))
+if and(strcmp(term_select_type, 'auto'), strcmp(period_type, 'post'))
     % align the order of synergies with the 1st day of 'pre'
     compair_days = [pre_days(1); selected_days(1)];
     representative_data = cell(1, 2);

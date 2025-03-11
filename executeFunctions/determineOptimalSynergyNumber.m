@@ -25,7 +25,7 @@ post: compileSynergyData.m
 clear;
 %% set param
 term_select_type = 'manual'; %'auto' / 'manual'
-term_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
+period_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
 use_EMG_type = 'only_task'; %' full' / 'only_task'
 monkey_prefix = 'Hu';
 use_style = 'test'; % test/train
@@ -44,7 +44,7 @@ root_dir_path = fileparts(pwd);
 base_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'Synergy');
 synergy_detail_data_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type);
 extracted_synergy_data_dir = fullfile(base_dir_path, 'extracted_synergy', use_EMG_type);
-selected_file_name_list = getGroupedDates(synergy_detail_data_dir, monkey_prefix, term_select_type, term_type);
+selected_file_name_list = getGroupedDates(synergy_detail_data_dir, monkey_prefix, term_select_type, period_type);
 if isempty(selected_file_name_list)
     disp('user pressed "cancel" button');
     return;

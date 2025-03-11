@@ -1,4 +1,4 @@
-function [selected_file_name_list, TT_surgery_day] = getGroupedDates(base_dir_path, monkey_prefix, term_select_type, term_type)
+function [selected_file_name_list, TT_surgery_day] = getGroupedDates(base_dir_path, monkey_prefix, term_select_type, period_type)
 
 % define TT-syurgery date
 switch monkey_prefix
@@ -21,7 +21,7 @@ switch term_select_type
         
         [prev_last_idx, post_first_idx] = get_term_id(selected_file_name_list, 1, TT_surgery_day);
         
-        switch term_type
+        switch period_type
             case 'pre'
                 selected_file_name_list = selected_file_name_list(1:prev_last_idx);
             case 'post'

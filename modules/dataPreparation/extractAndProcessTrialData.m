@@ -14,14 +14,14 @@ validate_file_range: [double array] Range of files to process
 common_save_figure_path: [char] Path to save generated figures
 downsample_rate: [double] Rate for downsampling the data
 time_restriction_enabled: [logical] Flag to enable time restriction
-time_restriction_limit: [double] Time limit for restriction (if enabled)
+trial_time_threshold: [double] Time limit for restriction (if enabled)
 
 [Output Arguments]
 transposed_success_timing: [double array] Timing data for successful trials with dimensions
     [trials x timing_events], containing sample indices for each timing event
 %}
 
-function [transposed_success_timing] = extractAndProcessTrialData(monkey_prefix, full_monkey_name, experiment_day_num, EMG_name_list, validate_file_range, common_save_figure_path, downsample_rate, time_restriction_enabled, time_restriction_limit)
+function [transposed_success_timing] = extractAndProcessTrialData(monkey_prefix, full_monkey_name, experiment_day_num, EMG_name_list, validate_file_range, common_save_figure_path, downsample_rate, time_restriction_enabled, trial_time_threshold)
     experiment_day = sprintf('%d',experiment_day_num);
     EMG_num = length(EMG_name_list);
 
@@ -74,7 +74,7 @@ function [transposed_success_timing] = extractAndProcessTrialData(monkey_prefix,
             transposed_success_timing = processSimpleGraspTaskEvents(full_monkey_name, monkey_prefix, experiment_day, validate_file_range, downsample_rate);
         case 'Hu'
             success_button_count_threshold = 80;
-            transposed_success_timing = processDrawerTaskEvents(full_monkey_name, monkey_prefix, experiment_day, validate_file_range, downsample_rate, success_button_count_threshold, time_restriction_enabled, time_restriction_limit);
+            transposed_success_timing = processDrawerTaskEvents(full_monkey_name, monkey_prefix, experiment_day, validate_file_range, downsample_rate, success_button_count_threshold, time_restriction_enabled, trial_time_threshold);
     end
     success_timing = transpose(transposed_success_timing);
     success_timing = [success_timing; success_timing(end, :) - success_timing(1, :)];
@@ -90,7 +90,7 @@ function [transposed_success_timing] = extractAndProcessTrialData(monkey_prefix,
     makefold(success_timing_data_save_dir_path);
     success_timing_file_name = 'success_timing';
     if time_restriction_enabled
-        success_timing_file_name = [success_timing_file_name '(' num2str(time_restriction_limit) '[sec]_restriction)'];
+        success_timing_file_name = [success_timing_file_name '(' num2str(trial_time_threshold) '[sec]_restriction)'];
     end
     save(fullfile(success_timing_data_save_dir_path, [success_timing_file_name '.mat']), 'success_timing');
 end

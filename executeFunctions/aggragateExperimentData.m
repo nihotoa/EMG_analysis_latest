@@ -20,8 +20,7 @@ The location of the saved file is shown in the log when this function is execute
 - Post: saveLinkageInfo.m
 
 [Improvement point(Japanese)]
-(ok!) concatenateDataで、error入った時に、そこで処理終了するんじゃなくて、関数抜けてcontinueして次の日付のiterationへ行くようにする
-(ok!) error文を変えたほうがいい
++ log
 + CTTL002のUp,Downの数が異なる場合があるので、処理を追加(20250219がそれに対応している)
 + たまにCTTL関連のデータがセーブされない時があるので、原因を探る
 + データがデカすぎてセーブできないことがあるので、使ってないチャンネルを削るようにする(サルごとに設定)
@@ -30,7 +29,7 @@ The location of the saved file is shown in the log when this function is execute
 clear;
 %% set param
 monkey_prefix = 'Hu'; % prefix of recorded file name
-common_frequency = 1375; % which sampling rate do you want? (set this param below 1375)
+common_frequency = 1375; % [Hz]
 
 %% code section
 % get the real monkey name
