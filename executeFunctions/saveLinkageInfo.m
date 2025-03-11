@@ -6,7 +6,10 @@
 3. Please run this code
 
 [role of this code]
-This script extracts and saves linkage information for each experimental day, including monkey name, experiment date, and file numbers. This information is crucial for organizing and accessing experimental data efficiently.
+This script compiles and saves information necessary for concatenating multiple 
+AlphaOmega files from the same experimental day. It creates structured metadata 
+files that facilitate the integration of fragmented recordings into cohesive 
+datasets for subsequent analysis.
 
 [saved data location]
 The location of the saved file is shown in the log when this function is executed.
@@ -41,7 +44,7 @@ experiment_day_list = unique(experiment_day_list);
 day_num = length(experiment_day_list);
 
 % save each date's linkageInfo(including imformation on monkey_prefix, experiment_day, file_num) to a .mat file
-common_save_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG', 'linkageInfo_list');
+common_save_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'EMG_ECoG', 'linkageInfo');
 makefold(common_save_dir_path)
 linkageInfo.monkey_prefix = monkey_prefix;
 for day_id = 1:day_num

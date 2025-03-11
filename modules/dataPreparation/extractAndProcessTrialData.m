@@ -82,11 +82,11 @@ function [transposed_success_timing] = extractAndProcessTrialData(monkey_prefix,
     %% save data
     Unit = 'uV';
     common_sample_rate = downsample_rate;
-    cutout_EMG_data_save_dir_path = fullfile(common_save_figure_path, 'cutout_EMG_data_list');
+    cutout_EMG_data_save_dir_path = fullfile(common_save_figure_path, 'cutout_EMG_data');
     makefold(cutout_EMG_data_save_dir_path);
     save(fullfile(cutout_EMG_data_save_dir_path, [monkey_prefix experiment_day '_cutout_EMG_data.mat']), 'concatenated_EMG_data', 'common_sample_rate', 'EMG_name_list', 'TimeRange_EMG', 'transposed_success_timing', 'Unit');
 
-    success_timing_data_save_dir_path = fullfile(common_save_figure_path, 'success_timing_data_list', experiment_day);
+    success_timing_data_save_dir_path = fullfile(common_save_figure_path, 'success_timing', experiment_day);
     makefold(success_timing_data_save_dir_path);
     success_timing_file_name = 'success_timing';
     if time_restriction_enabled

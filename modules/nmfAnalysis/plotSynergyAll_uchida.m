@@ -196,7 +196,7 @@ end
 %% plot H (temporal pattern of synergy)
 % load timing data (which is created by )
 EMG_data_dir = strrep(base_dir_path, 'Synergy', 'EMG_ECoG');
-cutout_EMG_data_file_path = fullfile(EMG_data_dir, 'cutout_EMG_data_list', [unique_name '_cutout_EMG_data.mat']);
+cutout_EMG_data_file_path = fullfile(EMG_data_dir, 'cutout_EMG_data', [unique_name '_cutout_EMG_data.mat']);
 
 switch use_EMG_type
     % 'fullの対応まだしてない'

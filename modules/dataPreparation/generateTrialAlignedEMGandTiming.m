@@ -32,7 +32,7 @@ function [time_normalized_EMG_average, visualized_range, average_visualized_rang
 experiment_day = sprintf('%d',experiment_day_double);
 
 % get the path of save_fold
-load(fullfile(save_fold, 'cutout_EMG_data_list', [monkey_prefix experiment_day '_cutout_EMG_data.mat']), 'concatenated_EMG_data', 'transposed_success_timing', 'common_sample_rate', 'EMG_name_list'); 
+load(fullfile(save_fold, 'cutout_EMG_data', [monkey_prefix experiment_day '_cutout_EMG_data.mat']), 'concatenated_EMG_data', 'transposed_success_timing', 'common_sample_rate', 'EMG_name_list'); 
 EMG_num = length(EMG_name_list);
 [trial_num, ~] = size(transposed_success_timing);  
 

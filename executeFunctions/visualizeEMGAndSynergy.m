@@ -6,8 +6,9 @@
 3. Run this code
 
 [role of this code]
-This script visualizes EMG or muscle synergy data around specific timing events and for the whole task.
-It creates plots showing individual session data and/or mean with standard deviation, and saves the results as figures.
+This script visualizes EMG or muscle synergy data around specific timing events 
+and for the whole task. It creates plots showing individual session data and/or 
+mean with standard deviation, and saves the results as figures.
 
 [saved data location]
 Please refer to the log messages during execution for saved data locations.
