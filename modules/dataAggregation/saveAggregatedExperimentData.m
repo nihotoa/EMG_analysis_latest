@@ -18,6 +18,8 @@ None (saves data to file)
 %}
 
 function [] = saveAggregatedExperimentData(save_file_path, CEMG_struct, CAI_struct, CRAW_struct, CLFP_struct, CTTL_struct)
+fprintf ('\n');
+disp('<start saving aggregated data of EMG and ECoG>')
 necessary_data_struct_list = {CEMG_struct, CAI_struct, CRAW_struct, CLFP_struct, CTTL_struct};
 EMG_regexp_pattern = '^CEMG_\d{3}$';
 Begin_data_name = 'CAI_struct.CAI_001_TimeBegin';
@@ -44,6 +46,7 @@ clear CEMG_struct CAI_struct CRAW_struct CLFP_struct CTTL_struct;
 
 % save data
 save(save_file_path, 'CEMG*', 'CAI*', 'CRAW*', 'CLFP*', 'CTTL*');
-disp(['[saved]: ' save_file_path]);
+disp(['    [finish storing!] data is saved in: ' save_file_path]);
+disp('<end saving aggregated data of EMG and ECoG>')
 end
 

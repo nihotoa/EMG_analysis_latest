@@ -58,7 +58,7 @@ function [TimeRange, ref_signal_struct] = synchronizeAndConcatenateSignals(all_a
             % trash(align start)
             trash_data_time = record_start_time - all_alphaOmega_data_cell{file_idx}.([ref_data_file_name '_TimeBegin']);
             if strcmp(ref_signal_name, 'CAI')
-                disp([experiment_day_name ' TrashTime(before_start): ' num2str(trash_data_time) '[s]']);
+                disp(['    ' experiment_day_name ' trash time (before start): ' num2str(trash_data_time) '[s]']);
             end
             trash_sample_num = round(trash_data_time * common_frequency);
 
@@ -72,7 +72,7 @@ function [TimeRange, ref_signal_struct] = synchronizeAndConcatenateSignals(all_a
             % trash(align end)
             trash_data_time =  all_alphaOmega_data_cell{file_idx}.([ref_data_file_name '_TimeEnd']) - TimeRange(2); 
             if and(strcmp(ref_signal_name, 'CAI'), file_idx == AlphaOmega_file_num)
-                disp([experiment_day_name ' TrashTime(after_end): ' num2str(trash_data_time) '[s]']);
+                disp(['    ' experiment_day_name ' trash time (after end): ' num2str(trash_data_time) '[s]']);
             end
             trash_sample_num = round(common_frequency * trash_data_time);
             last_sample_idx = length(ref_data) - trash_sample_num;

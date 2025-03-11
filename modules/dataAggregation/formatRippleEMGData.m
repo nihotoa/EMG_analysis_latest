@@ -27,7 +27,7 @@ EMG_data_cell = cell(1, EMG_files_num);
 record_time_list = nan(1, EMG_files_num);
 CEMG_data_struct = struct;
 
-disp(['Processing EMG data from ' ref_experiment_day '...']);
+disp('<start processing EMG data>')
 
 if isempty(EMG_files)
     disp(['No EMG files found in ' ref_experiment_day]);
@@ -92,6 +92,6 @@ for EMG_id = 1:muscle_num
     CEMG_data_struct.(['CEMG_' sprintf('%03d', EMG_id)]) = cell2mat(ref_muscle_concatenaded_data);
 end
 
-disp(['[' ref_experiment_day ' validated files]: ' strjoin(validate_EMG_files_name, ' and ')]);
-disp(['Total recording time: ' num2str(record_time) ' seconds']);
+disp(['    total EMG recording time: ' num2str(record_time) ' [s]']);
+disp('<end processing EMG data>')
 end

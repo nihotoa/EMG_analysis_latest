@@ -47,9 +47,8 @@ timing_struct.task_end = [task_end_timing_candidates; task_end_id_array];
 
 % make 'drawer on', 'drawer off',  'food on', 'food off' timing.
 %1. assign timing data in each array
-touch_sensor_signal = sort([timing_data_struct.CTTL_002_Down; timing_data_struct.CTTL_002_Up], 1);
-touch_on_timing_array = touch_sensor_signal(1, :);
-touch_off_timing_array= touch_sensor_signal(2, :);
+touch_on_timing_array = timing_data_struct.CTTL_002_Down;
+touch_off_timing_array= timing_data_struct.CTTL_002_Up;
 
 success_button_timing_array = timing_data_struct.CTTL_003_Down;
 

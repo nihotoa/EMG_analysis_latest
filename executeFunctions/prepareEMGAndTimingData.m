@@ -137,7 +137,7 @@ for day_id = 1:day_num
     
     % Log success_timing.mat and EMG_data.mat files saved by extractAndProcessTrialData
     success_timing_file = 'success_timing.mat';
-    if time_restriction_enabled
+    if time_restriction_enabled == true
         success_timing_file = ['success_timing(' num2str(trial_time_threshold) '[sec]_restriction).mat'];
     end
     cutout_emg_file = [monkey_prefix num2str(experiment_day) '_cutout_EMG_data.mat'];

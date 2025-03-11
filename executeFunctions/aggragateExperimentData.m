@@ -20,8 +20,6 @@ The location of the saved file is shown in the log when this function is execute
 - Post: saveLinkageInfo.m
 
 [Improvement point(Japanese)]
-+ log
-+ CTTL002のUp,Downの数が異なる場合があるので、処理を追加(20250219がそれに対応している)
 + たまにCTTL関連のデータがセーブされない時があるので、原因を探る
 + データがデカすぎてセーブできないことがあるので、使ってないチャンネルを削るようにする(サルごとに設定)
 %}
@@ -37,7 +35,7 @@ full_monkey_name = getFullMonkeyName(monkey_prefix);
 root_dir_path = fileparts(pwd);
 base_dir_path = fullfile(root_dir_path, 'useDataFold', full_monkey_name);
 
-disp('Please select experiment date folders to process')
+disp('Please select experiment date folders for processing')
 selected_experiment_day_list = uiselect(dirdir(base_dir_path),1,'Please select experiment date folders (e.g., 20241205) to process');
 
 if isempty(selected_experiment_day_list)
@@ -47,16 +45,18 @@ end
 
 for idx = 1:length(selected_experiment_day_list)
     ref_experiment_day = selected_experiment_day_list{idx};
+    disp('-----------------------------------------------------------------------');
     disp(['Starting data processing for ' ref_experiment_day '...']);
+    disp('-----------------------------------------------------------------------');
 
     % generate EMG data
     [CEMG_data_struct, amplitude_unit, record_time] = formatRippleEMGData(base_dir_path, ref_experiment_day, common_frequency);
-    disp([ref_experiment_day ' EMG_RecordTime: ' num2str(record_time) '[s]']);
     
     try
         % generate(concatenate) ECoG & timing data.
         [CAI_struct, CLFP_struct, CRAW_struct, CTTL_struct] = integrateAlphaOmegaData(base_dir_path, ref_experiment_day, monkey_prefix, common_frequency, record_time);
     catch
+        disp('something wrong is happend')
         disp("skip to next day's data processing...")
         continue;
     end

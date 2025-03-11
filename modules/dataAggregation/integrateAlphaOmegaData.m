@@ -26,8 +26,8 @@ CTTL_struct: [struct] Contains formatted CTTL data with fields
 %}
 
 function [CAI_struct, CLFP_struct, CRAW_struct, CTTL_struct] = integrateAlphaOmegaData(base_dir_path, experiment_day_name, monkey_prefix, common_frequency, record_time)
-
-%% code section
+fprintf ('\n');
+disp('<start  AlphaOmega data format>')
 base_dir_path = fullfile(base_dir_path, experiment_day_name);
 alphaOmega_file_list = dirPlus(fullfile(base_dir_path, [monkey_prefix '*.mat'])); % get the name of files that are recorded by AlphaOmega
 alphaOmega_file_num = length(alphaOmega_file_list);
@@ -104,25 +104,25 @@ for file_id = 1:alphaOmega_file_num
         
         Up_data = ref_file_CTTL_ctruct.(Up_data_name);
         Down_data = ref_file_CTTL_ctruct.(Down_data_name);
-        if TTL_id == 2
-            % we need to consider the processing in this term.
-            a = 1;
-        % exclude timing data (which is so close to adjacent timing data)
-        elseif TTL_id == 3
-            if length(Up_data) == length(Down_data)
-                success_signal = [Up_data; Down_data];
-            elseif length(Up_data) > length(Down_data)
-                success_signal = [Up_data(1:length(Down_data)); Down_data];
-                surplus_data = Up_data(length(Down_data)+1:end);
-                pre_start = ref_file_CTTL_ctruct.(TimeBegin_name);
-            else
-                error_time = ref_file_CTTL_ctruct.(TimeBegin_name) - pre_start;
-                error_sample = round(error_time * (ref_file_CTTL_ctruct.(KHz_name) * 1000));
-                filled_data = surplus_data - error_sample;
-                success_signal = [[filled_data Up_data]; Down_data];
+        if length(Up_data) > length(Down_data)
+            if TTL_id == 2
+                % CTTL002_Downはfood onのタイミングなので、CTTL002_Up(food off)はCTTL_002_Downの後に来なければいけない
+                first_Down_data = Down_data(1);
+                Up_data = Up_data(Up_data > first_Down_data);
             end
+            Up_data = Up_data(1: length(Down_data));
+        elseif length(Up_data) < length(Down_data)
+            if TTL_id == 3
+                % CTTL003_Upはsuccess_timingを押したタイミングなので、CTTL003_Down(ボタンを話したタイミングは)はCTTL_003_Upの後に来なければいけない
+                first_Up_data = Up_data(1);
+                Down_data = Down_data(Down_data > first_Up_data);
+            end
+            Down_data = Down_data(1 : length(Up_data));
+        end
 
-            % find trial _id which is excluded & remove data by refering to this information
+        % CTTL_003 is unstable signals, so need filtering
+        if TTL_id == 3
+            success_signal = [Up_data; Down_data];
             exclude_data_id = [];
             for trial_id = 1:length(success_signal)
                 judge_frame = success_signal(2, trial_id) - success_signal(1, trial_id);
@@ -133,13 +133,13 @@ for file_id = 1:alphaOmega_file_num
             end
             % exclude
             success_signal(:, exclude_data_id) = [];
-            ref_file_CTTL_ctruct.(Up_data_name) = success_signal(1, :);
-            ref_file_CTTL_ctruct.(Down_data_name) = success_signal(2, :);
+            Up_data = success_signal(1, :);
+            Down_data = success_signal(2, :);
         end
 
         % resample & store this data into 'CTTL_struct' (this is cell array for concatenating)
-        CTTL_struct.(Up_data_name){1, file_id}= round(ref_file_CTTL_ctruct.(Up_data_name) * resampling_factor);
-        CTTL_struct.(Down_data_name){1, file_id}= round(ref_file_CTTL_ctruct.(Down_data_name) * resampling_factor);
+        CTTL_struct.(Up_data_name){1, file_id}= round(Up_data * resampling_factor);
+        CTTL_struct.(Down_data_name){1, file_id}= round(Down_data * resampling_factor);
         CTTL_struct.(TimeBegin_name){1, file_id}= ref_file_CTTL_ctruct.(TimeBegin_name);
         CTTL_struct.(TimeEnd_name){1, file_id}= ref_file_CTTL_ctruct.(TimeEnd_name);
     end
@@ -170,6 +170,7 @@ for TTL_id = 2:CTTL_signal_num
     CTTL_struct.(['CTTL_' sprintf('%03d', TTL_id) '_KHz']) = common_frequency / 1000;
     CTTL_struct.(['CTTL_' sprintf('%03d', TTL_id) '_KHz_Orig']) = common_frequency / 1000;
 end
+disp('<end  AlphaOmega data format>')
 end
 
 
