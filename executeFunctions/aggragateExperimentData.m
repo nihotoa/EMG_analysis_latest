@@ -18,10 +18,6 @@ The location of the saved file is shown in the log when this function is execute
 [execution procedure]
 - Pre: None
 - Post: saveLinkageInfo.m
-
-[Improvement point(Japanese)]
-+ たまにCTTL関連のデータがセーブされない時があるので、原因を探る
-+ データがデカすぎてセーブできないことがあるので、使ってないチャンネルを削るようにする(サルごとに設定)
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -55,9 +51,11 @@ for idx = 1:length(selected_experiment_day_list)
     try
         % generate(concatenate) ECoG & timing data.
         [CAI_struct, CLFP_struct, CRAW_struct, CTTL_struct] = integrateAlphaOmegaData(base_dir_path, ref_experiment_day, monkey_prefix, common_frequency, record_time);
-    catch
-        disp('something wrong is happend')
-        disp("skip to next day's data processing...")
+    catch ME
+        % Display more detailed error information
+        warning(['Error processing ' ref_experiment_day ': ' ME.message]);
+        disp(['Error details: ' ME.identifier]);
+        disp('Skipping to next day''s data processing...');
         continue;
     end
     
