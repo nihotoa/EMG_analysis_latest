@@ -30,7 +30,7 @@ clear;
 
 %% set param
 monkey_prefix = 'Hu'; % prefix of the recorded file
-extract_EMG_type = 'only_task'; % 'only_task', 'full'
+extract_EMG_type = 'only_trial'; % 'only_trial', 'full'
 
 % setting of filter 
 band_pass_on = false;

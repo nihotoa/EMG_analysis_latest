@@ -26,7 +26,7 @@ clear;
 term_select_type = 'manual'; %'auto' / 'manual'
 period_type = 'all'; %(if term_select_type == 'auto') pre / post / all
 monkey_prefix = 'Hu';
-use_EMG_type = 'only_task'; %' full' / 'only_task'
+use_EMG_type = 'only_trial'; %' full' / 'only_trial'
 synergy_num = 4; % number of synergy you want to analyze
 
 range_struct = struct();

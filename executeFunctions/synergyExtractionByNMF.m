@@ -27,7 +27,7 @@ if you want to find the optimal number of synergy from the synergy data of each 
 clear;
 %% set param
 monkey_prefix = 'Hu'; % prefix of recorded data
-use_EMG_type = 'only_task'; %' full' / 'only_task'
+use_EMG_type = 'only_trial'; %' full' / 'only_trial'
 
 % about algorithm & threshold
 kf = 4; % How many parts of data to divide in cross-validation

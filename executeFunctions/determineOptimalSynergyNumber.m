@@ -26,7 +26,7 @@ clear;
 %% set param
 term_select_type = 'manual'; %'auto' / 'manual'
 period_type = 'pre'; %(if term_select_type == 'auto') pre / post / all 
-use_EMG_type = 'only_task'; %' full' / 'only_task'
+use_EMG_type = 'only_trial'; %' full' / 'only_trial'
 monkey_prefix = 'Hu';
 use_style = 'test'; % test/train
 first_judge_type = 'dVAF'; % 'VAF' / 'dVAF'
