@@ -53,11 +53,14 @@ try
     CTTL_signal_num = length(CTTL_KHz_name);
     CTTL_original_SR = initial_file_data.(CTTL_KHz_name{1}) * 1000;
 
-    CLFP_common_string_pattern = '^CLFP.*_KHz$';
-    CLFP_signal_num = length(field_name_list(~cellfun('isempty', regexp(field_name_list, CLFP_common_string_pattern))));
+    % Obtain CLFP and CRAW signal numbers
+    CLFP_signal_names = field_name_list(~cellfun('isempty', regexp(field_name_list, '^CLFP.*_KHz$')));
+    CLFP_signal_num = length(CLFP_signal_names);
+    CLFP_signal_indices = cellfun(@(x) sscanf(x, 'CLFP_%d_KHz'), CLFP_signal_names);
 
-    CRAW_common_string_pattern = '^CRAW.*_KHz$';
-    CRAW_signal_num = length(field_name_list(~cellfun('isempty', regexp(field_name_list, CRAW_common_string_pattern))));
+    CRAW_signal_names = field_name_list(~cellfun('isempty', regexp(field_name_list, '^CRAW.*_KHz$')));
+    CRAW_signal_num = length(CRAW_signal_names);
+    CRAW_signal_indices = cellfun(@(x) sscanf(x, 'CRAW_%d_KHz'), CRAW_signal_names);
 
     CAI_common_string_pattern = '^CAI.*_KHz$';
     CAI_file_num = length(field_name_list(~cellfun('isempty', regexp(field_name_list, CAI_common_string_pattern))));
@@ -71,13 +74,17 @@ try
         [TimeRange,CAI_struct] = synchronizeAndConcatenateSignals(all_alphaOmega_data_cell, CAI_struct, common_frequency, record_time, experiment_day_name, 'CAI', channel_id, recording_start_time);
     end
 
+    % Process CLFP signals
     CLFP_struct = struct();
-    for channel_id = 1:CLFP_signal_num
+    for i = 1:CLFP_signal_num
+        channel_id = CLFP_signal_indices(i);
         [~, CLFP_struct] = synchronizeAndConcatenateSignals(all_alphaOmega_data_cell, CLFP_struct, common_frequency, record_time, experiment_day_name, 'CLFP', channel_id, recording_start_time);
     end
 
+    % Process CRAW signals
     CRAW_struct = struct();
-    for channel_id = 1:CRAW_signal_num
+    for i = 1:CRAW_signal_num
+        channel_id = CRAW_signal_indices(i);
         [~, CRAW_struct] = synchronizeAndConcatenateSignals(all_alphaOmega_data_cell, CRAW_struct, common_frequency, record_time, experiment_day_name, 'CRAW', channel_id, recording_start_time);
     end
 

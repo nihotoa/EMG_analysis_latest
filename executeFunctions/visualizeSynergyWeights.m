@@ -42,7 +42,7 @@ clear;
 %% set param
 term_select_type = 'manual'; %'auto' / 'manual'
 period_type = 'all'; %(if term_select_type == 'auto') pre / post / all 
-use_EMG_type = 'only_task'; %' full' / 'only_task'
+use_EMG_type = 'only_trial'; %' full' / 'only_trial'
 normalize_flag = true;
 monkey_prefix = 'Hu';
 syn_num = 4; % number of synergy you want to analyze

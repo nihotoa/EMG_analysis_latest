@@ -31,7 +31,7 @@ clear;
 %% set param
 monkey_prefix = 'Hu'; % prefix that each monkey has uniquery
 select_synergy_num_type = 'manual';  % 'manual' / 'auto'
-use_EMG_type = 'only_task'; %' full' / 'only_task'
+use_EMG_type = 'only_trial'; %' full' / 'only_trial'
 synergy_num_list = [4]; % (if select_synergy_num_type == 'manual')which synergy number of synergies to plot(Please decide based onf VAF results)
 plot_clustering_flag = true; % Whether you want to plot & save heatmap of cosine distance and the clustering result.
 each_plot_flag = false; % whether you want to plot spatial_pattern figure for each synergy

@@ -33,7 +33,7 @@ line_width_value = 1.5;                      % Line width for plots
 row_num = 4;                      % Number of rows in subplot figures
 
 % Synergy-specific parameters (used only when visualize_type = 'Synergy')
-use_EMG_type = 'only_task';    % EMG data type: 'full' or 'only_task'
+use_EMG_type = 'only_trial';    % EMG data type: 'full' or 'only_trial'
 synergy_num = 4;               % Number of synergies to analyze
 
 %% Initialize paths and settings
