@@ -1,80 +1,80 @@
-function Y  = makeContinuousChannel(Name, command, varargin)
-% Y   = makeContinuousChannel(Name, 'histogram', refchan(timestamp), sampling rate(Hz));
-% Y   = makeContinuousChannel(Name, 'spike kernel smoothing', refchan(timestamp), sample rate(Hz), gausian_sd(sec));
-% Y   = makeContinuousChannel(Name, 'unit conversion', refchan(continuous), gain, offset, unit);   gain＝1Vがいくつになるか(指定した単位による)を指定する。
-% Y   = makeContinuousChannel(Name, 'resample', refchan(continuous), sample rate(Hz), average_flag);
-% Y   = makeContinuousChannel(Name, 'linear smoothing', refchan(continuous), window(sec));
-% Y   = makeContinuousChannel(Name, 'kernel smoothing', refchan(continuous), gausian_sd(sec));
-% Y   = makeContinuousChannel(Name, 'butter', refchan(continuous),filter_type('low','high','stop'), filter_order, filter_w(Hz), filter_direction('normal','reverse','both');
-% Y   = makeContinuousChannel(Name, 'cheby2', refchan(continuous),filter_type('low','high','stop'), filter_order, filter_w(Hz), filter_R(dB), filter_direction('normal','reverse','both'));
-% Y   = makeContinuousChannel(Name, 'fir1', refchan(continuous),filter_type('low','high','stop','bandpass'), filter_order, filter_w(Hz), filter_direction('normal','reverse','both');
+function Y  = makeContinuousChannel(filter_detail_name, command, varargin)
+% Y   = makeContinuousChannel(filter_detail_name, 'histogram', refchan(timestamp), sampling rate(Hz));
+% Y   = makeContinuousChannel(filter_detail_name, 'spike kernel smoothing', refchan(timestamp), sample rate(Hz), gausian_sd(sec));
+% Y   = makeContinuousChannel(filter_detail_name, 'unit conversion', refchan(continuous), gain, offset, unit);   gain＝1Vがいくつになるか(指定した単位による)を指定する。
+% Y   = makeContinuousChannel(filter_detail_name, 'resample', refchan(continuous), sample rate(Hz), average_flag);
+% Y   = makeContinuousChannel(filter_detail_name, 'linear smoothing', refchan(continuous), window(sec));
+% Y   = makeContinuousChannel(filter_detail_name, 'kernel smoothing', refchan(continuous), gausian_sd(sec));
+% Y   = makeContinuousChannel(filter_detail_name, 'butter', refchan(continuous),filter_type('low','high','stop'), filter_order, filter_w(Hz), filter_direction('normal','reverse','both');
+% Y   = makeContinuousChannel(filter_detail_name, 'cheby2', refchan(continuous),filter_type('low','high','stop'), filter_order, filter_w(Hz), filter_R(dB), filter_direction('normal','reverse','both'));
+% Y   = makeContinuousChannel(filter_detail_name, 'fir1', refchan(continuous),filter_type('low','high','stop','bandpass'), filter_order, filter_w(Hz), filter_direction('normal','reverse','both');
 
-% Y   = makeContinuousChannel(Name, 'interspike interval', refchan(timestamp), sample rate(Hz));
-% Y   = makeContinuousChannel(Name, 'remove artifact', refchan(continuous), ArtifactTimes(timestamp chan), timewindow);
-% Y   = makeContinuousChannel(Name, 'detrend', refchan(continuous), varargin);
+% Y   = makeContinuousChannel(filter_detail_name, 'interspike interval', refchan(timestamp), sample rate(Hz));
+% Y   = makeContinuousChannel(filter_detail_name, 'remove artifact', refchan(continuous), ArtifactTimes(timestamp chan), timewindow);
+% Y   = makeContinuousChannel(filter_detail_name, 'detrend', refchan(continuous), varargin);
 %         ex1. S=makeContinuousChannel('New','detrend',s)
 %         ex1. S=makeContinuousChannel('New','detrend',s,'const')
 %         ex1. S=makeContinuousChannel('New','detrend',s,'linear',10)
 %         see also detrend
-% Y   = makeContinuousChannel(Name, 'rectify', refchan(continuous));
-% Y   = makeContinuousChannel(Name, 'conversion', refchan(timestamp or interval), sample rate(Hz));
-% Y   = makeContinuousChannel(Name, 'derivative', refchan(continuous), N(th));
-% Y   = makeContinuousChannel(Name, 'integral',   refchan(continuous), N(th));
+% Y   = makeContinuousChannel(filter_detail_name, 'rectify', refchan(continuous));
+% Y   = makeContinuousChannel(filter_detail_name, 'conversion', refchan(timestamp or interval), sample rate(Hz));
+% Y   = makeContinuousChannel(filter_detail_name, 'derivative', refchan(continuous), N(th));
+% Y   = makeContinuousChannel(filter_detail_name, 'integral',   refchan(continuous), N(th));
 
 switch command
-    case 'histogram' % Name, 'histogram', refchan(continuous), sampling rate
+    case 'histogram' % filter_detail_name, 'histogram', refchan(continuous), sampling rate
         ref = varargin{1};
-        SampleRate  = varargin{2};
+        common_sample_rate  = varargin{2};
         TotalTime   = ref.TimeRange(2)-ref.TimeRange(1);
         
-        XData       = linspace(0,TotalTime,TotalTime*SampleRate + 1);   % sec
+        XData       = linspace(0,TotalTime,TotalTime*common_sample_rate + 1);   % sec
         XData(end)  = [];
         
-        if(isempty(ref.Data))
+        if(isempty(ref.EMG_data))
             
             Y.TimeRange = ref.TimeRange;
-            Y.Name      = Name;
+            Y.filter_detail_name      = filter_detail_name;
             Y.Class     = 'continuous channel';
-            Y.SampleRate= SampleRate;
-            Y.Data      = zeros(size(XData));
+            Y.common_sample_rate= common_sample_rate;
+            Y.EMG_data      = zeros(size(XData));
             Y.Unit      = 'sps';
         else
 
             % output
             Y.TimeRange = ref.TimeRange;
-            Y.Name      = Name;
+            Y.filter_detail_name      = filter_detail_name;
             Y.Class     = 'continuous channel';
-            Y.SampleRate= SampleRate;
-            Y.Data      = ref.Data  / ref.SampleRate;  % sec
-            Y.Data      = hist(Y.Data,XData)*SampleRate;
+            Y.common_sample_rate= common_sample_rate;
+            Y.EMG_data      = ref.EMG_data  / ref.common_sample_rate;  % sec
+            Y.EMG_data      = hist(Y.EMG_data,XData)*common_sample_rate;
             Y.Unit      = 'sps';
             
         end
         
-    case 'spike kernel smoothing' % Name, 'threshold', refchan(continuous), rising th(V), falling th(V)
+    case 'spike kernel smoothing' % filter_detail_name, 'threshold', refchan(continuous), rising th(V), falling th(V)
         ref = varargin{1};
-        SampleRate  = varargin{2};
+        common_sample_rate  = varargin{2};
         sd  = varargin{3};
                 
         
-        Y   = makeContinuousChannel(Name,'histogram',ref,SampleRate);
-        Y   = makeContinuousChannel(Name,'kernel smoothing',Y,sd);
+        Y   = makeContinuousChannel(filter_detail_name,'histogram',ref,common_sample_rate);
+        Y   = makeContinuousChannel(filter_detail_name,'kernel smoothing',Y,sd);
         
         
-    case 'unit conversion' % Name, 'threshold', refchan(continuous), rising th(V), falling th(V)
+    case 'unit conversion' % filter_detail_name, 'threshold', refchan(continuous), rising th(V), falling th(V)
         Y       = varargin{1};
         gain    = varargin{2};
         offset  = varargin{3};
         unit    = varargin{4};
         cfactor    = 1;
-        Y.Name  = Name;
-        Y.Data  = (Y.Data + offset)*cfactor*gain;
+        Y.filter_detail_name  = filter_detail_name;
+        Y.EMG_data  = (Y.EMG_data + offset)*cfactor*gain;
         Y.Unit  = unit;
         
         
-    case 'resample' % Y   = makeContinuousChannel(Name, 'resample', refchan(continuous), sample rate(Hz), average_flag);
+    case 'resample' % Y   = makeContinuousChannel(filter_detail_name, 'resample', refchan(continuous), sample rate(Hz), average_flag);
         ref             = varargin{1};
-        SampleRate      = varargin{2};
+        common_sample_rate      = varargin{2};
         if(nargin<5)
             average_flag    = 0;
         else
@@ -82,65 +82,65 @@ switch command
         end
         
         
-        if(ref.SampleRate == SampleRate)
+        if(ref.common_sample_rate == common_sample_rate)
             Y       = ref;
-            Y.Name  = Name;
+            Y.filter_detail_name  = filter_detail_name;
             return;
         end
         Y           = ref;
-        Y.Name  = Name;
+        Y.filter_detail_name  = filter_detail_name;
         
-        Y.SampleRate  = SampleRate;
-        nData       = length(Y.Data);
-        XData       = ((1:nData)-1)./ref.SampleRate + ref.TimeRange(1); % sec
+        Y.resample_rate  = common_sample_rate;
+        nData       = length(Y.EMG_data);
+        XData       = ((1:nData)-1)./ref.common_sample_rate + ref.TimeRange(1); % sec
         TotalTime   = ref.TimeRange(2) - ref.TimeRange(1);
-        newnData    = floor(TotalTime*SampleRate);
-        newTotalTime    = newnData/SampleRate;
+        newnData    = floor(TotalTime*common_sample_rate);
+        newTotalTime    = newnData/common_sample_rate;
         newTimeRange   = [0 newTotalTime]+ref.TimeRange(1);
-        newXData    = ((1:newnData)-1)./SampleRate + newTimeRange(1);
+        newXData    = ((1:newnData)-1)./common_sample_rate + newTimeRange(1);
         Y.TimeRange = newTimeRange;
         
         if(average_flag==1)
             disp('resample: average')
-            ws      = 1./SampleRate;
-            ref     = makeContinuousChannel(ref.Name, 'linear smoothing', ref, ws);
+            ws      = 1./common_sample_rate;
+            ref     = makeContinuousChannel(ref.filter_detail_name, 'linear smoothing', ref, ws);
             
         end
         
-        if(ref.SampleRate > SampleRate)
+        if(ref.common_sample_rate > common_sample_rate)
             % downsample: "interp1" with 'nearest' method
             disp('resample: downsample')
             
-            Y.Data  = interp1(XData,ref.Data,newXData,'nearest');
+            Y.EMG_data  = interp1(XData,ref.EMG_data,newXData,'nearest');
             
-        elseif (ref.SampleRate < SampleRate)
+        elseif (ref.common_sample_rate < common_sample_rate)
             % upsample: "interp1" with 'spline' method
             disp('resample: upsample')
             
-            Y.Data  = interp1(XData,ref.Data,newXData,'spline');
+            Y.EMG_data  = interp1(XData,ref.EMG_data,newXData,'spline');
         end
         
         
         
         
-    case 'resampleold' % Y   = makeContinuousChannel(Name, 'resample', refchan(continuous), sample rate(Hz), average_flag);
+    case 'resampleold' % Y   = makeContinuousChannel(filter_detail_name, 'resample', refchan(continuous), sample rate(Hz), average_flag);
         ref             = varargin{1};
-        SampleRate      = varargin{2};
+        common_sample_rate      = varargin{2};
         if(nargin<5)
             average_flag    = 0;
         else
             average_flag    = varargin{3};
         end
         
-        if(ref.SampleRate > SampleRate)
+        if(ref.common_sample_rate > common_sample_rate)
             % downsample
             disp('resample: downsample')
             
             Y           = ref;
-            Y.Name      = Name;
+            Y.filter_detail_name      = filter_detail_name;
             
-            dind        = ceil(ref.SampleRate/SampleRate);
-            Y.SampleRate  = ref.SampleRate./dind;
+            dind        = ceil(ref.common_sample_rate/common_sample_rate);
+            Y.common_sample_rate  = ref.common_sample_rate./dind;
             
             if(average_flag==1)
                 disp('resample: average')
@@ -149,30 +149,30 @@ switch command
                 else
                     wn  = ones(1,dind)./dind;
                 end
-                Y.Data  = conv2(Y.Data,wn,'same');
-                %                 Y.Data  = smoothing(Y.Data,wn,'manual');
+                Y.EMG_data  = conv2(Y.EMG_data,wn,'same');
+                %                 Y.EMG_data  = smoothing(Y.EMG_data,wn,'manual');
             end
             
-            Y.Data  = Y.Data(1:dind:end);
+            Y.EMG_data  = Y.EMG_data(1:dind:end);
             
             
-        elseif(ref.SampleRate < SampleRate)
+        elseif(ref.common_sample_rate < common_sample_rate)
             disp('resample: upsample')
             
             Y       = ref;
-            Y.Name  = Name;
+            Y.filter_detail_name  = filter_detail_name;
             
             
             TotalTime   = ref.TimeRange(2) - ref.TimeRange(1);
-            XData       = linspace(0,TotalTime,TotalTime*ref.SampleRate+1);
+            XData       = linspace(0,TotalTime,TotalTime*ref.common_sample_rate+1);
             XData(end)  = [];
-            XDatai      = linspace(0,TotalTime,TotalTime*SampleRate+1);
+            XDatai      = linspace(0,TotalTime,TotalTime*common_sample_rate+1);
             XDatai(end) = [];
-            Y.Data      = interp1(XData,ref.Data,XDatai,'*spline');
-            Y.SampleRate= SampleRate;
+            Y.EMG_data      = interp1(XData,ref.EMG_data,XDatai,'*spline');
+            Y.common_sample_rate= common_sample_rate;
         else
             Y       = ref;
-            Y.Name  = Name;
+            Y.filter_detail_name  = filter_detail_name;
             
         end
         
@@ -181,31 +181,31 @@ switch command
         
         
 
-    case 'linear smoothing'        % (Name, 'linear smoothing', refchan(continuous), window(sec));
+    case 'linear smoothing'        % (filter_detail_name, 'linear smoothing', refchan(continuous), window(sec));
         Y      = varargin{1};
         window = varargin{2};  %sec
-        npnt   = round(window * Y.SampleRate);
+        npnt   = round(window * Y.common_sample_rate);
         
         kernel  = ones(1,npnt)/npnt;
-        Y.Name  = Name;
-        Y.Data  = conv2(Y.Data,kernel,'same');
+        Y.filter_detail_name  = filter_detail_name;
+        Y.EMG_data  = conv2(Y.EMG_data,kernel,'same');
         
-%         Y.Data  = smoothing(Y.Data,npnt,'boxcar');
+%         Y.EMG_data  = smoothing(Y.EMG_data,npnt,'boxcar');
 
         
-    case 'kernel smoothing' % Name, 'threshold', refchan(continuous), rising th(V), falling th(V)
+    case 'kernel smoothing' % filter_detail_name, 'threshold', refchan(continuous), rising th(V), falling th(V)
         ref = varargin{1};
         sd  = varargin{2};
                         
         
-        sd  = round(sd * ref.SampleRate);
+        sd  = round(sd * ref.common_sample_rate);
         kernel  = normpdf(-sd*5:sd*5,0,sd);
         
         Y       = ref;
-        Y.Name  = Name;
-        Y.Data  = conv2(ref.Data,kernel,'same');
+        Y.filter_detail_name  = filter_detail_name;
+        Y.EMG_data  = conv2(ref.EMG_data,kernel,'same');
         
-    case 'butter'           % Name, 'butter', refchan(continuous),,filter_type('low','high','stop'), filter_order, filter_w
+    case 'butter'           % filter_detail_name, 'butter', refchan(continuous),,filter_type('low','high','stop'), filter_order, filter_w
         
 %         lbuf            = 50000;
         Y               = varargin{1};
@@ -217,32 +217,32 @@ switch command
         else
             filter_direction    = 'normal';
         end
-        filter_w        = (filter_w .* 2) ./ Y.SampleRate;
-%         nData           = length(Y.Data);
+        filter_w        = (filter_w .* 2) ./ Y.common_sample_rate;
+%         nData           = length(Y.EMG_data);
 %         nbuf            = ceil(nData ./ lbuf);
         
         [B,A]   = butter(filter_order,filter_w,filter_type);
-        Y.Name  = Name;
+        Y.filter_detail_name  = filter_detail_name;
         
         switch lower(filter_direction)
             case 'normal'
-                Y.Data  = filter(B,A,Y.Data);
+                Y.EMG_data  = filter(B,A,Y.EMG_data);
             case 'reverse'
-                Y.Data  = filter(B,A,Y.Data(end:-1:1));
-                Y.Data  = Y.Data(end:-1:1);
+                Y.EMG_data  = filter(B,A,Y.EMG_data(end:-1:1));
+                Y.EMG_data  = Y.EMG_data(end:-1:1);
             case 'both'
-                Y.Data  = filtfilt(B,A,Y.Data);
+                Y.EMG_data  = filtfilt(B,A,Y.EMG_data);
         end
 
-    case 'band-pass'           % Name, 'butter', refchan(continuous),,filter_type('low','high','stop'), filter_order, filter_w
+    case 'band-pass'           % filter_detail_name, 'butter', refchan(continuous),,filter_type('low','high','stop'), filter_order, filter_w
         Y = varargin{1};
         band_pass_freq = varargin{2};
         
         % peform band-pass filter
-        Y.Data = bandpass(Y.Data, band_pass_freq, Y.SampleRate);
-        Y.Name  = Name; 
+        Y.EMG_data = bandpass(Y.EMG_data, band_pass_freq, Y.common_sample_rate);
+        Y.filter_detail_name  = filter_detail_name; 
 
-    case 'cheby2'           % Name, 'butter', refchan(continuous),,filter_type('low','high','stop'), filter_order, filter_w
+    case 'cheby2'           % filter_detail_name, 'butter', refchan(continuous),,filter_type('low','high','stop'), filter_order, filter_w
         Y               = varargin{1};
         filter_type     = varargin{2};
         filter_order    = varargin{3};
@@ -253,23 +253,23 @@ switch command
         else
             filter_direction    = 'normal';
         end
-        filter_w        = (filter_w .* 2) ./ Y.SampleRate;
+        filter_w        = (filter_w .* 2) ./ Y.common_sample_rate;
         
         [B,A]   = cheby2(filter_order,filter_R,filter_w,filter_type);
-        Y.Name  = Name;
+        Y.filter_detail_name  = filter_detail_name;
         
         switch lower(filter_direction)
             case 'normal'
-                Y.Data  = filter(B,A,Y.Data);
+                Y.EMG_data  = filter(B,A,Y.EMG_data);
             case 'reverse'
-                Y.Data  = filter(B,A,Y.Data(end:-1:1));
-                Y.Data  = Y.Data(end:-1:1);
+                Y.EMG_data  = filter(B,A,Y.EMG_data(end:-1:1));
+                Y.EMG_data  = Y.EMG_data(end:-1:1);
             case 'both'
-                Y.Data  = filtfilt(B,A,Y.Data);
+                Y.EMG_data  = filtfilt(B,A,Y.EMG_data);
         end
         
         
-    case 'fir1'           % Name, 'fir1', refchan(continuous),filter_type('low','high','stop','bandpass'), filter_order, filter_w
+    case 'fir1'           % filter_detail_name, 'fir1', refchan(continuous),filter_type('low','high','stop','bandpass'), filter_order, filter_w
         
         Y               = varargin{1};
         filter_type     = varargin{2};
@@ -280,86 +280,86 @@ switch command
         else
             filter_direction    = 'normal';
         end
-        filter_w        = (filter_w .* 2) ./ Y.SampleRate;
+        filter_w        = (filter_w .* 2) ./ Y.common_sample_rate;
         
         B   = fir1(filter_order,filter_w,filter_type);
-        Y.Name  = Name;
+        Y.filter_detail_name  = filter_detail_name;
         
         switch lower(filter_direction)
             case 'normal'
-                Y.Data  = filter(B,1,Y.Data);
+                Y.EMG_data  = filter(B,1,Y.EMG_data);
             case 'reverse'
-                Y.Data  = filter(B,1,Y.Data(end:-1:1));
-                Y.Data  = Y.Data(end:-1:1);
+                Y.EMG_data  = filter(B,1,Y.EMG_data(end:-1:1));
+                Y.EMG_data  = Y.EMG_data(end:-1:1);
             case 'both'
-                Y.Data  = filtfilt(B,1,Y.Data);
+                Y.EMG_data  = filtfilt(B,1,Y.EMG_data);
         end
 
 
 
-    case 'interspike interval'%Name, 'interspike interval',refchan(timestamp), SampleRate(Hz)
+    case 'interspike interval'%filter_detail_name, 'interspike interval',refchan(timestamp), common_sample_rate(Hz)
         
         ref = varargin{1};
-        SampleRate  = varargin{2};
-%         ref = makeTimestampChannel(Name,'resample',ref,SampleRate);
+        common_sample_rate  = varargin{2};
+%         ref = makeTimestampChannel(filter_detail_name,'resample',ref,common_sample_rate);
         
-        if(isempty(ref.Data))
+        if(isempty(ref.EMG_data))
             
             Y.TimeRange = ref.TimeRange;
-            Y.Name      = Name;
+            Y.filter_detail_name      = filter_detail_name;
             Y.Class     = 'continuous channel';
-            Y.SampleRate= ref.SampleRate;
-            Y.Data      = zeros(1,(ref.TimeRange(2)-ref.TimeRange(1))*ref.SampleRate);
+            Y.common_sample_rate= ref.common_sample_rate;
+            Y.EMG_data      = zeros(1,(ref.TimeRange(2)-ref.TimeRange(1))*ref.common_sample_rate);
             Y.Unit      = 'sps';
         else
 
             % output
             Y.TimeRange = ref.TimeRange;
-            Y.Name      = Name;
+            Y.filter_detail_name      = filter_detail_name;
             Y.Class     = 'continuous channel';
-            Y.SampleRate= ref.SampleRate;
-            Y.Data      = zeros(1,(ref.TimeRange(2)-ref.TimeRange(1))*ref.SampleRate);
-            nData       = length(ref.Data);
+            Y.common_sample_rate= ref.common_sample_rate;
+            Y.EMG_data      = zeros(1,(ref.TimeRange(2)-ref.TimeRange(1))*ref.common_sample_rate);
+            nData       = length(ref.EMG_data);
             
             for iData=2:nData
-                if( (ref.Data(iData) - ref.Data(iData-1))~=0)
+                if( (ref.EMG_data(iData) - ref.EMG_data(iData-1))~=0)
 
-                    ind = [ref.Data(iData-1) ref.Data(iData)];
+                    ind = [ref.EMG_data(iData-1) ref.EMG_data(iData)];
                     n   = ind(2) - ind(1) + 1;
-                    FR  = ref.SampleRate / (ind(2) - ind(1));
+                    FR  = ref.common_sample_rate / (ind(2) - ind(1));
                     
 %                     % method#1 scalar interpolation
-                    Y.Data((ind(1)+1):ind(2))   = FR; 
+                    Y.EMG_data((ind(1)+1):ind(2))   = FR; 
 
                     % method#2linear interpolation
-%                     Y.Data(ind(1):ind(2)) = linspace(Y.Data(ind(1)),FR,n);
+%                     Y.EMG_data(ind(1):ind(2)) = linspace(Y.EMG_data(ind(1)),FR,n);
                 end
             end
 
             Y.Unit      = 'sps';
         end
         
-        Y   = makeContinuousChannel(Y.Name, 'resample', Y, SampleRate, 1);  % resample (and average)
+        Y   = makeContinuousChannel(Y.filter_detail_name, 'resample', Y, common_sample_rate, 1);  % resample (and average)
         
     case 'remove artifact with noise'
         ref   = varargin{1};
         AT  = varargin{2};
         window  = varargin{3};
         
-        window  = round(window * ref.SampleRate);
+        window  = round(window * ref.common_sample_rate);
         windowlength    = window(2) - window(1) + 1;  
-        AT.Data = round(AT.Data * ref.SampleRate / AT.SampleRate);
-        nAT = length(AT.Data);
+        AT.EMG_data = round(AT.EMG_data * ref.common_sample_rate / AT.common_sample_rate);
+        nAT = length(AT.EMG_data);
         
-%         sd  = std(ref.Data,0);
+%         sd  = std(ref.EMG_data,0);
         
         Y   = ref;
-        Y.Name  = Name;
+        Y.filter_detail_name  = filter_detail_name;
         
         for iAT =1:nAT
-            ind = AT.Data(iAT) + window;
-            sd  = std(ref.Data(ind),0);
-            Y.Data(ind(1):ind(2))  = linspace(ref.Data(ind(1)),ref.Data(ind(2)),windowlength) + sd .* randn(1,windowlength);
+            ind = AT.EMG_data(iAT) + window;
+            sd  = std(ref.EMG_data(ind),0);
+            Y.EMG_data(ind(1):ind(2))  = linspace(ref.EMG_data(ind(1)),ref.EMG_data(ind(2)),windowlength) + sd .* randn(1,windowlength);
         end
         
         
@@ -368,23 +368,23 @@ switch command
         AT  = varargin{2};
         window  = varargin{3};
         
-        window  = (window * AT.SampleRate);
-%         AT.Data = round(AT.Data * ref.SampleRate / AT.SampleRate);
-        nAT = length(AT.Data);
-        nData   = length(ref.Data);
+        window  = (window * AT.common_sample_rate);
+%         AT.EMG_data = round(AT.EMG_data * ref.common_sample_rate / AT.common_sample_rate);
+        nAT = length(AT.EMG_data);
+        nData   = length(ref.EMG_data);
         
-%         sd  = std(ref.Data,0);
+%         sd  = std(ref.EMG_data,0);
         
         Y   = ref;
-        Y.Name  = Name;
+        Y.filter_detail_name  = filter_detail_name;
         
         for iAT =1:nAT
-            ind = ceil((AT.Data(iAT) + window)* ref.SampleRate / AT.SampleRate);
-%             ind = AT.Data(iAT) + window;
+            ind = ceil((AT.EMG_data(iAT) + window)* ref.common_sample_rate / AT.common_sample_rate);
+%             ind = AT.EMG_data(iAT) + window;
             ind = [max(1,ind(1)) min(nData,ind(2))];
             windowlength    = ind(2) - ind(1) + 1;
-%             sd  = std(ref.Data(ind),0);
-            Y.Data(ind(1):ind(2))  = linspace(Y.Data(ind(1)),Y.Data(ind(2)),windowlength);
+%             sd  = std(ref.EMG_data(ind),0);
+            Y.EMG_data(ind(1):ind(2))  = linspace(Y.EMG_data(ind(1)),Y.EMG_data(ind(2)),windowlength);
         end
         
     case 'detrend'
@@ -392,59 +392,59 @@ switch command
         varargin(1) =[];
         
         Y   = ref;
-        Y.Name  = Name;
+        Y.filter_detail_name  = filter_detail_name;
         if(isempty(varargin))
-            Y.Data  = detrend(Y.Data);
+            Y.EMG_data  = detrend(Y.EMG_data);
         else
-            Y.Data  = detrend(Y.Data,varargin{:});
+            Y.EMG_data  = detrend(Y.EMG_data,varargin{:});
         end
         
     case 'rectify'
         ref   = varargin{1};
                 
         Y   = ref;
-        Y.Name  = Name;
-        Y.Data  = abs(Y.Data);
+        Y.filter_detail_name  = filter_detail_name;
+        Y.EMG_data  = abs(Y.EMG_data);
         
     case 'conversion'
         ref         = varargin{1};
-        SampleRate  = varargin{2};
+        common_sample_rate  = varargin{2};
         
         switch ref.Class
             case 'interval channel'
                 
-                S   = makeTimestampChannel(Name,'regular',ref.TimeRange,SampleRate);
-                ref = filterTimestampChannel(Name,'within interval',S,ref);
+                S   = makeTimestampChannel(filter_detail_name,'regular',ref.TimeRange,common_sample_rate);
+                ref = filterTimestampChannel(filter_detail_name,'within interval',S,ref);
                 clear('S');
                 
             case 'timestamp channel'
-                ref = makeTimestampChannel(Name,'resample',ref,SampleRate);
+                ref = makeTimestampChannel(filter_detail_name,'resample',ref,common_sample_rate);
         end
         
         Y.TimeRange = ref.TimeRange;
-        Y.Name      = Name;
+        Y.filter_detail_name      = filter_detail_name;
         Y.Class     = 'continuous channel';
-        Y.SampleRate= SampleRate;
-        nData       = (Y.TimeRange(2)-Y.TimeRange(1))*Y.SampleRate;
-        Y.Data      = false(1,nData);
-        Y.Data(ref.Data+1)    = true;      
+        Y.common_sample_rate= common_sample_rate;
+        nData       = (Y.TimeRange(2)-Y.TimeRange(1))*Y.common_sample_rate;
+        Y.EMG_data      = false(1,nData);
+        Y.EMG_data(ref.EMG_data+1)    = true;      
     
-    case 'derivative'   % Y   = makeContinuousChannel(Name, 'derivative', refchan(continuous), N(th));
+    case 'derivative'   % Y   = makeContinuousChannel(filter_detail_name, 'derivative', refchan(continuous), N(th));
 
         ref     = varargin{1};
         N       = varargin{2};
         
         Y       = ref;
-        Y.Name  = Name;
-        Y.Data  = deriv(Y.Data,N);
+        Y.filter_detail_name  = filter_detail_name;
+        Y.EMG_data  = deriv(Y.EMG_data,N);
         
-    case 'integral'   % Y   = makeContinuousChannel(Name, 'derivative', refchan(continuous), N(th));
+    case 'integral'   % Y   = makeContinuousChannel(filter_detail_name, 'derivative', refchan(continuous), N(th));
 
         ref     = varargin{1};
         N       = varargin{2};
         
         Y       = ref;
-        Y.Name  = Name;
-        Y.Data  = integ(Y.Data,N);
+        Y.filter_detail_name  = filter_detail_name;
+        Y.EMG_data  = integ(Y.EMG_data,N);
 end
 end
