@@ -1,159 +1,154 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 [your operation]
-1. Change some parameters (please refer to 'set param' section)
-2. Please run this code & select data by following guidance (which is displayed in command window after Running this code)
+1. Navigate to the executeFunctions directory.
+2. Change some parameters (please refer to 'set param' section)
+3. Run this code and select data following the guidance displayed in the command window.
 
 [role of this code]
-Perform muscle synergy analysis and save the results (as .mat file)
+This script performs muscle synergy analysis using Non-negative Matrix Factorization (NMF)
+and saves the results as .mat files. It extracts synergy patterns from preprocessed EMG data
+and evaluates their quality through cross-validation.
 
-[Saved data location]
-location:
-EMG_analysis/data/Yachimun/new_nmf_result/selected_folder_name (ex.) F170516_standard
-file name: selected_folder_name + .mat (ex.)F170516_standard.mat => this file contains analysis conditions, VAF, and other data
-                t_ + selected_folder_name + .mat (ex.)t_F170516_standard.mat => this file contains synergy data
+[saved data location]
+The location of the saved file is shown in the log when this function is executed.
 
-[procedure]
-pre:filterEMGForNMF.m
-post:
-if you want to plot VAF value
-    => visualizeVAF.m
-if you want to find the optimal number of synergy from the synergy data of each session(day)
-    =>determineOptimalSynergyNumber.m
-
-[Improvement points(Japanaese)]
+[execution procedure]
+- Pre: filterEMGForNMF.m
+- Post: 
+  - To plot VAF value: visualizeVAF.m
+  - To find optimal synergy numbers: determineOptimalSynergyNumber.m
 %}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
-%% set param
-monkey_prefix = 'Hu'; % prefix of recorded data
-use_EMG_type = 'only_trial'; %' full' / 'only_trial'
 
-% about algorithm & threshold
-kf = 4; % How many parts of data to divide in cross-validation
-nrep = 20; % repetition number of synergy search
-nshuffle = 1; % whether you want to confirm shuffle
-alg = 'mult'; % algorism of nnmf (mult: Multiplicative Update formula, als: Alternating Least Squares formula)
+%% Set parameters
+% Subject information
+monkey_prefix = 'Hu';      % Prefix of recorded data (e.g., 'Hu')
+use_EMG_type = 'only_trial'; % Data extraction mode: 'full', 'only_trial', 'only_drawer', 'only_food'
 
-%% code section
+% NMF analysis parameters
+segment_num = 4;           % Number of parts for cross-validation
+search_iteration_num = 20;  % Number of repetitions for synergy search
+shuffle_flag = true;       % Whether to perform shuffle analysis (0: off, 1: number of shuffles)
+NMF_algorithm_type = 'mult'; % NMF algorithm ('mult': Multiplicative Update, 'als': Alternating Least Squares)
+
+%% Initialize paths and settings
 root_dir_path = fileparts(pwd);
 warning('off');
 
-% get the real monkey name
+% Get the full monkey name and set base directory
 full_monkey_name = getFullMonkeyName(monkey_prefix);
 base_dir_path = fullfile(root_dir_path, 'saveFold', full_monkey_name, 'data', 'Synergy', 'filtered_EMG_data', use_EMG_type);
 
-% get info about dates of analysis data and used EMG
-disp('�yPlease select all day folders you want to analyze (Multiple selections are possible)�z)')
-day_folder_list   = uiselect(dirdir(base_dir_path),1,'Please select folders which contains the data you want to analyze');
+%% Select folders and EMG data files
+% Select day folders for analysis
+disp('【Please select all day folders you want to analyze (Multiple selections are possible)】')
+day_folder_list = uiselect(dirdir(base_dir_path), 1, 'Please select folders containing the data you want to analyze');
 
 if isempty(day_folder_list)
-    disp('user pressed "cancel" button');
-    return
-end
-
-ref_day_folder = day_folder_list{1};
-
-% Assign all file names contained in day_folder_list{1} to filtered_EMG_file_list
-filtered_EMG_file_list = sortxls(dirmat(fullfile(base_dir_path,ref_day_folder)));
-disp('�yPlease select used EMG Data�z')
-filtered_EMG_file_list = uiselect(filtered_EMG_file_list,1,'Please select all filtered muscle data');
-
-% determine OutputDirs(where to save the result data)
-common_extracted_synergy_save_dir = strrep(base_dir_path, 'filtered_EMG_data', 'extracted_synergy');
-common_synergy_detail_save_dir = strrep(base_dir_path, 'filtered_EMG_data', 'synergy_detail');
-
-% prev_day = day_part{1};
-if isempty(filtered_EMG_file_list)
-    disp('User pressed cancel.')
+    disp('User pressed cancel. No folders selected. Exiting process.');
     return;
 end
 
+% Select EMG files to analyze
+ref_day_folder = day_folder_list{1};
+filtered_EMG_file_list = sortxls(dirmat(fullfile(base_dir_path, ref_day_folder)));
+disp('【Please select used EMG Data】')
+filtered_EMG_file_list = uiselect(filtered_EMG_file_list, 1, 'Please select all filtered muscle data');
 
-%% Extract synergies from each measurement data by daily iterations
+if isempty(filtered_EMG_file_list)
+    disp('User pressed cancel. No muscle data selected. Exiting process.');
+    return;
+end
+
+%% Set output directories
+use_EMG_num = length(filtered_EMG_file_list);
+common_synergy_detail_save_dir = fullfile(strrep(base_dir_path, 'filtered_EMG_data', 'synergy_detail'), ['use_EMG_num == ' num2str(use_EMG_num)]);
+common_extracted_synergy_save_dir = fullfile(strrep(base_dir_path, 'filtered_EMG_data', 'extracted_synergy'), ['use_EMG_num == ' num2str(use_EMG_num)]);
+
+%% Process each day folder and extract synergies
 day_num = length(day_folder_list);
 muscle_num = length(filtered_EMG_file_list);
 
-for day_id=1:day_num
-    ref_day_folder    = day_folder_list{day_id};
-    disp([num2str(day_id),'/',num2str(day_num),':  ',ref_day_folder])
-    trimmed_flag = 0;
+for day_id = 1:day_num
+    ref_day_folder = day_folder_list{day_id};
+    disp([num2str(day_id), '/', num2str(day_num), ': Processing day folder: ', ref_day_folder]);
 
-    % create matrix of EMG data(XData)
-    for muscle_id=1:muscle_num % each muscle
-        clear('ref_filtered_EMG_data_struct')
+    % Load and organize EMG data for all selected muscles
+    EMG_dataset = zeros(muscle_num, 0);  % Will be resized after loading first muscle
+    muscle_name = cell(muscle_num, 1);
+    
+    for muscle_id = 1:muscle_num
+        % Clear previous data and get file path
+        clear('ref_filtered_EMG_data_struct');
         ref_filtered_EMG_file = filtered_EMG_file_list{muscle_id};
-        ref_filtered_EMG_file_path = fullfile(base_dir_path,ref_day_folder,ref_filtered_EMG_file);
-        
-        if  muscle_id == 1
-            if contains(ref_filtered_EMG_file, '-trimmed')
-                trimmed_flag = 1;
-                load(ref_filtered_EMG_file_path, "event_timings_after_trimmed");
-            end
+        ref_filtered_EMG_file_path = fullfile(base_dir_path, ref_day_folder, ref_filtered_EMG_file);
+
+        % Load event timings from the first muscle file if needed
+        if muscle_id == 1 && ~strcmp(use_EMG_type, 'full')
+            load(ref_filtered_EMG_file_path, 'event_timings_after_trimmed');
         end
 
-        % load filtered EMG (and assign it to ref_filtered_EMG_data)
-        ref_filtered_EMG_data_struct     = load(ref_filtered_EMG_file_path);
-        ref_filtered_EMG = ref_filtered_EMG_data_struct.Data;
-        XData   = ((1:length(ref_filtered_EMG))-1)/ref_filtered_EMG_data_struct.SampleRate;
-        
-        % make the empty double matrix to store all selected EMG (which is filtered)
-        if(muscle_id==1)
-            X   = zeros(muscle_num,size(ref_filtered_EMG, 2));
-            Name = cell(muscle_num,1);
+        % Load EMG data
+        ref_filtered_EMG_data_struct = load(ref_filtered_EMG_file_path);
+        ref_filtered_EMG = ref_filtered_EMG_data_struct.EMG_data;
+
+        % Initialize data matrix after loading first muscle
+        if muscle_id == 1
+            EMG_dataset = zeros(muscle_num, size(ref_filtered_EMG, 2));
         end
-        X(muscle_id,:)   = ref_filtered_EMG;
-        Name{muscle_id}  = deext(ref_filtered_EMG_data_struct.Name);
+        
+        % Store EMG data and muscle name
+        EMG_dataset(muscle_id, :) = ref_filtered_EMG;
+        muscle_name{muscle_id} = ref_filtered_EMG_data_struct.muscle_name;
     end
 
-    % Preprocessing for matrix of EMG dataset (X)
-    % 1. offset so that the minimum value is 0
-    X   = offset(X,'min');
-    
-    % 2. Each EMG is normalized by the mean of each EMG
-    normalization_method    = 'mean';
-    X     = normalize(X,normalization_method);
-    
-    % 3. set negative values to 0 (to avoind taking negative values)
-    X(X<0)  = 0;
-    
-    % Perform NNMF(Non Negative Matrix Factorization) & extract muscle(it takes a lot of time!)
-    [Y,Y_dat] = makeEMGNMFOya(X, kf, nrep, nshuffle, alg);
+    % Preprocess EMG data
+    EMG_dataset = offset(EMG_dataset, 'min');    % Offset to make minimum value 0
+    EMG_dataset = normalize(EMG_dataset, 'mean'); % Normalize each EMG by its mean
+    EMG_dataset(EMG_dataset < 0) = 0;             % Set negative values to 0
 
-    % Postprocess
-    % Add various information to structure Y
-    Y.Name          = ref_day_folder;
-    Y.AnalysisType  = 'EMGNMF';
-    Y.TargetName    = Name;
-    Y.Info.Class        = ref_filtered_EMG_data_struct.Class;
-    Y.Info.SampleRate   = ref_filtered_EMG_data_struct.SampleRate;
-    Y.Info.Unit         = ref_filtered_EMG_data_struct.Unit;
+    % Extract muscle synergies using NMF
+    [synergy_detail_struct, extracted_synergy_struct] = performCustomNMF(EMG_dataset, segment_num, search_iteration_num, shuffle_flag, NMF_algorithm_type);
+
+    % Add metadata to the synergy structures
+    % Basic information
+    synergy_detail_struct.muscle_name = muscle_name;
+    synergy_detail_struct.AnalysisType = 'EMGNMF';
+    synergy_detail_struct.TargetName = muscle_name;
     
-    % create a full path of the file to save
-    temp = regexp(ref_day_folder, '\d+', 'match');
+    % Technical information from the first loaded EMG data
+    synergy_detail_struct.Info.Class = ref_filtered_EMG_data_struct.Class;
+    synergy_detail_struct.Info.resample_rate = ref_filtered_EMG_data_struct.resample_rate;
+    synergy_detail_struct.Info.Unit = ref_filtered_EMG_data_struct.Unit;
     
-    Y.use_EMG_type = 'full';
-    Y_dat.use_EMG_type = 'full';
-    if trimmed_flag
-        Y.use_EMG_type = 'trimmed';
-        Y_dat.use_EMG_type = 'trimmed';
-        Y.event_timings_after_trimmed = event_timings_after_trimmed;
-        Y_dat.event_timings_after_trimmed = event_timings_after_trimmed;
+    % EMG type information
+    synergy_detail_struct.use_EMG_type = use_EMG_type;
+    extracted_synergy_struct.use_EMG_type = use_EMG_type;
+    
+    % Add event timing information if available
+    if ~strcmp(use_EMG_type, 'full')
+        synergy_detail_struct.event_timings_after_trimmed = event_timings_after_trimmed;
+        extracted_synergy_struct.event_timings_after_trimmed = event_timings_after_trimmed;
     end
 
-    % save setting
-    extracted_synergy_save_dir = fullfile(common_extracted_synergy_save_dir, ref_day_folder);
-    synergy_detail_save_dir = fullfile(common_synergy_detail_save_dir, ref_day_folder);
-    makefold(extracted_synergy_save_dir)
-    makefold(synergy_detail_save_dir)
+    % Create directories and save results
+    extracted_synergy_save_dir = fullfile(common_extracted_synergy_save_dir);
+    synergy_detail_save_dir = fullfile(common_synergy_detail_save_dir);
+    makefold(extracted_synergy_save_dir);
+    makefold(synergy_detail_save_dir);
 
-    extracted_synergy_file_name = ['t_' ref_day_folder '.mat'];
-    synergy_detail_file_name = [ref_day_folder '.mat'];
+    % Define filenames
+    extracted_synergy_file_name = [ref_day_folder '_extracted_synergy_data.mat'];
+    synergy_detail_file_name = [ref_day_folder '_synergy_detail.mat'];
+
+    % Save the synergy data
+    save(fullfile(extracted_synergy_save_dir, extracted_synergy_file_name), '-struct', 'extracted_synergy_struct');
+    disp(['Saved synergy data to: ', fullfile(extracted_synergy_save_dir, extracted_synergy_file_name)]);
     
-    % save structure data to the specified path(contents of Outputfile & Outputfile_dat)
-    save(fullfile(extracted_synergy_save_dir, extracted_synergy_file_name), '-struct','Y_dat');
-    disp(fullfile(extracted_synergy_save_dir, extracted_synergy_file_name))
-    save(fullfile(synergy_detail_save_dir, synergy_detail_file_name), '-struct','Y');
-    disp(fullfile(synergy_detail_save_dir, synergy_detail_file_name))
+    save(fullfile(synergy_detail_save_dir, synergy_detail_file_name), '-struct', 'synergy_detail_struct');
+    disp(['Saved synergy details to: ', fullfile(synergy_detail_save_dir, synergy_detail_file_name)]);
 end
+
 warning('on');

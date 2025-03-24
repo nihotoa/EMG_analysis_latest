@@ -31,7 +31,7 @@ clear;
 
 %% Set parameters
 monkey_prefix = 'Hu'; % Prefix of the recorded file
-extract_EMG_type = 'only_trial'; % 'only_trial', 'full'
+extract_EMG_type = 'only_trial'; % Data extraction mode: 'full', 'only_trial', 'only_drawer', 'only_food'
 
 % Filter settings
 band_pass_flag = false;
