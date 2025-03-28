@@ -6,7 +6,7 @@
 analysis_data_days(Yachimun).csv
 !*.gitignore
 !*/
-!README.md
+!*.md
 !*.jpg
 !*.gif
 
