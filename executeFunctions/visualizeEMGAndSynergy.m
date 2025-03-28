@@ -61,7 +61,7 @@ switch full_monkey_name
         plot_window_cell{4} = [-5 25];
     case 'SesekiL'
         timing_name_list = ["Lever on ", "Lever off ", "Photo on", "Photo off"];
-        TT_surgery_day = 200121;
+        TT_surgery_day = 200120;
         plot_window_cell{1} = [-30 15];
         plot_window_cell{2} = [-10 15];
         plot_window_cell{3} = [-15 15];

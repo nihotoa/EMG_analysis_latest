@@ -22,7 +22,7 @@ please refer to the log displayed after running this function
 clear;
 %% set param
 monkey_prefix = 'Hu'; % Prefix of recorded file name
-extract_EMG_type = 'only_food'; % Data extraction mode: 'full', 'only_trial', 'only_drawer', 'only_food'
+extract_EMG_type = 'only_trial'; % Data extraction mode: 'full', 'only_trial', 'only_drawer', 'only_food'
 padding_time = 0.5; % Padding time in seconds added before and after each segment (used when extract_EMG_type is not 'full')
 
 %% code section

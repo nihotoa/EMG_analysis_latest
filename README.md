@@ -1,81 +1,127 @@
+# EMG Analysis and Muscle Synergy Framework
+
+![MATLAB R2022b+](https://img.shields.io/badge/MATLAB-R2022b%2B-blue.svg)
+
 ## Overview
-This repository provides codes and files for muscle synergy and EMG analysis.
-***
+This repository provides tools and scripts for electromyography (EMG) data analysis and muscle synergy extraction.
 
-## How to Analyze
+## Features and Capabilities
 
-  - <span style="font-size: 18px;">**Preliminary Preparations**</span>
+This framework enables you to:
 
-    - Please place all recorded data file directly under the monkey name folder.
+- **Data Integration:** Aggregate scattered data from different experimental days into unified files
+- **Signal Processing:** Filter EMG data with customizable parameters
+- **Event Timing Analysis:** Generate event timing data for behavioral synchronization
+- **Trial Segmentation:** Extract and save EMG data for individual trials
+- **Visualization:** Generate clear visualizations of muscle activity patterns for each experimental day
+- **Correlation Analysis:** Quantify and visualize similarities between EMG signals using cross-correlation analysis
+- **Synergy Extraction:** Extract muscle synergies from EMG datasets using Non-negative Matrix Factorization
+- **Synergy Visualization:** Create comprehensive visualizations of extracted muscle synergies
+- **Performance Metrics:** Visualize Variance Accounted For (VAF) and similarity measures between muscle synergies
 
-      (ex.) EMG_analysis_turorial/data/Yachimun/
+## Getting Started
 
-      - (To obtain the dataset, <strong>please contact the email address given in the contact section.</strong>)
+### Preliminary Preparations
 
-    <!-- insert image -->
-    <img src="explanation_materials/explanation1.jpg" alt="explanation1" width="100%" style="display: block; margin-left: auto; margin-right: auto; padding: 20px">
+Before starting the analysis, please complete the following setup steps:
 
-    - Please understand the directory structure of this repository
+#### 1. Environment Setup
 
-      Basically, the functions you need to execute in this analysis are stored in 'EMG_data_latest/data/'. All inner functions of these executed functions and packages of frequently used functions are contained in 'EMG_data_latest/code/'.</br>
-      The schematic below illustrates the structure of this repository.
+- **MATLAB Requirements:**
+  - MATLAB R2022b or later
+  - Signal Processing Toolbox
+  - Statistics and Machine Learning Toolbox
 
-      ```
-      .
-      └── EMG_analysis_latest
-          ├── README.md
-          ├── code
-          │   ├── codeForNibali
-          │   ├── codeForNMF
-          │   └── (other function packages)
-          ├── data
-          │   ├── prepareEMGAndTimingData.m
-          │   ├── visualizeEMGAndSynergy.m
-          │   ├── prepareRawEMGDataForNMF.m
-          │   └── (other functions you need to execute)
-          └── explanation_materials
-              └── (some images)
-      ```
+- **Add Required Paths:**
+  - Launch MATLAB
+  - Navigate to the repository root directory
+  - Add the repository root directory to MATLAB's path
+  - Right-click on the repository root folder and select "Add to Path" → "Selected Folders and Subfolders"
+  - Alternatively, run the following command:
+    ```matlab
+    % Replace with the actual path to your repository root
+    addpath(genpath('/path/to/EMG_analysis_latest'));
+    ```
 
-    - Please add 'code' and 'data' folder to PATH in MATLAB
+#### 2. Data Preparation
 
-    <!-- insert image -->
-    <img src="explanation_materials/explanation2.gif" alt="explanation1" width="100%" style="display: block; margin-left: auto; margin-right: auto; padding: 20px">
+- **Data Organization:**
+  - Create a `useDataFold` directory at the same level as `modules` and `executeFunctions` in the root of the repository
+  - Inside `useDataFold`, create a subdirectory with the monkey name (e.g., `useDataFold/Hugo`)
+  - Inside each monkey subdirectory, create folders named by experiment date (e.g., `20250311`)
+  - Place raw experimental data files in the appropriate date folders
 
-  - <span style="font-size: 18px;">**Sequence of Analysis**</span>
+#### 3. Repository Structure
 
-  The sequence of EMG analysis and muscle synergy analysis is shown in the figure below.<br>
-  For details on the usage and processing of each code, please refer to the description at the beginning of code.
+The repository is organized as follows:
 
-  <!-- insert image -->
-  <img src="explanation_materials/explanation3.jpg" alt="explanation3" width="80%" style="display: block; margin-left: auto; margin-right: auto; padding: 20px">
+```
+EMG_analysis_latest/
+├── README.md                # This documentation file
+├── executeFunctions/        # Main executable scripts 
+│   ├── saveLinkageInfo.m    
+│   ├── prepareEMGAndTimingData.m  
+│   └── ...                  
+├── modules/                 # Core functionality modules
+│   ├── dataPreparation/     
+│   ├── nmfAnalysis/         
+│   └── ...                  
+├── saveFold/                # Output directory (automatically created)
+│   └── [MonkeyName]/        # e.g., Hugo
+│       └── data/            # Contains processed results
+└── useDataFold/             # Input data directory (create manually)
+    └── [MonkeyName]/        # e.g., Hugo
+        └── [YYYYMMDD]/      # Folders by date (e.g., 20250311)
+            └── ...          # Raw data files
+```
 
-***
+> **Note:** The `saveFold` directory will be automatically created when you run the analysis scripts. You do not need to create it manually. Only the `useDataFold` directory and its subdirectories need to be created by the user.
 
-## Remarks
-  The following information is written at the beginning of each code. Please refer to them and proceed with the analysis.
-  - **Your operation**<br>
-    This describes what you need to do to perform each function.
+### Analysis Workflow
 
-  - **Role of this code**<br>
-    Details of the role each function plays in the overall analysis.
+The complete sequence of EMG analysis and muscle synergy extraction is illustrated below:
 
-  - **Saved data location**<br>
-    Details of the data saved when each function is executed and the location of this
+<div style="text-align: center; margin: 20px 0;">
+  <img src="https://private-user-images.githubusercontent.com/108604104/427816327-3ccecd42-707a-4bb0-aafe-4ac61672a230.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDMxMjk0ODksIm5iZiI6MTc0MzEyOTE4OSwicGF0aCI6Ii8xMDg2MDQxMDQvNDI3ODE2MzI3LTNjY2VjZDQyLTcwN2EtNGJiMC1hYWZlLTRhYzYxNjcyYTIzMC5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUwMzI4JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MDMyOFQwMjMzMDlaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1mYTEyMzIwN2NjNTc2YTI2ZTAxNjFlYmE4ZDM5NzBhOWM4NDQ5Mzc0YTYyMzk0NjNlY2JmMGI5NzgxMGYyODA5JlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.WJSmJ2MSiAMxCFqtvWPGmnr_7yQcU2dfRKyHSN1L1_I" alt="EMG Analysis Workflow" style="max-width: 100%; width: 70%; height: auto;">
+</div>
 
-  - **Procedure**<br>
-    This describes which code should be executed before and after this code.
+For detailed information about each script's usage and processing steps, please refer to the documentation at the beginning of each file.
 
-***
+## Code Documentation Standards
 
-## Other information
+Each script in this repository follows a standardized header format that varies slightly between directories:
 
-  - The dates adopted as experimental dates are summarized in 'analysis_data_days(Yachimun).csv'. This file is located at the top level of this repository.
+### Documentation in `executeFunctions` directory
 
-  - Details of the experiment and analysis outline are distributed separately. If you would like to get these information, <strong>please contact at the email address given in the contact section</strong>
+Files in the `executeFunctions` directory contain headers with these sections:
 
-***
+| Section | Description |
+|---------|-------------|
+| **your operation** | Steps required to execute the function |
+| **role of this code** | Purpose and function in the overall analysis pipeline |
+| **saved data location** | Where output data is stored when the function is executed |
+| **execution procedure** | Prerequisites and subsequent steps in the workflow |
+
+### Documentation in `modules` directory
+
+Files in the `modules` directory contain headers with these sections:
+
+| Section | Description |
+|---------|-------------|
+| **Function Description** | Detailed explanation of what the function does |
+| **Input Arguments** | Description of all parameters that the function accepts |
+| **Output Arguments** | Description of data returned by the function |
+| **Caution** | Important notes or warnings about function usage |
+
+## Additional Information
+
+- Detailed information about experiment protocols and analysis methods is available separately
+- To access additional documentation, **please contact the email address provided below**
+
+> ⚠️ **Note on disk space:** This analysis generates a significant amount of data. Please ensure you have sufficient free disk space when working with this repository.
 
 ## Contact
 
-  If you have any questions about this analysis, please feel free to contact me at nao-ota@ncnp.go.jp
+For questions, support, or to request access to datasets, please contact:
+
+**Email**: otanaohito1102@gmail.com

@@ -1,15 +1,16 @@
-function[wbest,hbest,normbest] = nnmf2(a,k,w0,h0,nrep,alg,target_param,pre_normalize,post_normalize)
 %{ 
+coded by Takei
+
 [explanation of this func]
 Perform NNMF according to multiplicative update rule.
 Also calculate values for SSE, SST, etc.
 
 [input arguments]:
-a:  matrix of EMG data ([mm,nn]=size(a) mm channels x nn data length)
-k:  number of synergies (factors in NNMF) to extract
-w0,h0: Initial values of W_matrix (spatial pattern. [mm, k] = size(W)) & H_matrix (temporal pattern. [k, nn] = size(H)) 
-target_param: which matrix should be updated? ('wh' or 'h'). basically 'wh' is fine
-post_normalize: whether to perform amplitude normalization of H_matrix after optimization of H. 'mean'or 'none'. (Default is 'none')
+EMG_dataset:  matrix of EMG data ([mm,nn]=size(a) mm channels x nn data length)
+synergy_num:  number of synergies (factors in NNMF) to extract
+initial_W,initial_H: Initial values of W_matrix (spatial pattern. [mm, synergy_num] = size(W)) & H_matrix (temporal pattern. [synergy_num, nn] = size(H)) 
+update_rule_type: which matrix should be updated? ('wh' or 'h'). basically 'wh' is fine
+post_normalize_flag: whether to perform amplitude normalization of H_matrix after optimization of H. 'mean'or 'none'. (Default is 'none')
 
 [explanation of output arguments]:
 wbest: return the matrix of spatial pattern (after nnmf optimization)
@@ -17,60 +18,61 @@ hbest: return the matrix of temporal pattern(after nnmf optimization)
 normbest: return the norm of the difference between reconstructed EMG and original EMG
 %}
 
+function[wbest,hbest,normbest] = nnmf2(EMG_dataset, synergy_num, initial_W, initial_H, num_iterations, NMF_algorithm_type, update_rule_type,pre_normalize_flag,post_normalize_flag)
 % set parameters (threshold setting in MU method of nnmf)
-maxiter = 1000; % maximum number of multiplicative updates
-tolx    = 10^-4; %threshold of dVAF
+max_iteration_num = 1000; % maximum number of multiplicative updates
+dVAF_threshold    = 10^-4; %threshold of dVAF
 
 if(nargin<3)
-    w0      = [];
-    h0      = [];
-    nrep    =1;
-    alg     = 'als';
-    target_param    = 'wh';
-    pre_normalize   = 'none';
-    post_normalize  = 'none';
+    initial_W      = [];
+    initial_H      = [];
+    num_iterations    =1;
+    NMF_algorithm_type     = 'als';
+    update_rule_type    = 'wh';
+    pre_normalize_flag   = 'none';
+    post_normalize_flag  = 'none';
 elseif(nargin<4)
-    h0      = [];
-    nrep    =1;
-    alg     = 'als';
-    target_param    = 'wh';
-    pre_normalize   = 'none';
-    post_normalize  = 'none';
+    initial_H      = [];
+    num_iterations    =1;
+    NMF_algorithm_type     = 'als';
+    update_rule_type    = 'wh';
+    pre_normalize_flag   = 'none';
+    post_normalize_flag  = 'none';
 elseif(nargin<5)
-    nrep    =1;
-    alg     = 'als';
-    target_param    = 'wh';
-    pre_normalize   = 'none';
-    post_normalize  = 'none';
+    num_iterations    =1;
+    NMF_algorithm_type     = 'als';
+    update_rule_type    = 'wh';
+    pre_normalize_flag   = 'none';
+    post_normalize_flag  = 'none';
    
 elseif(nargin<6)
-    alg     = 'als';
-    target_param    = 'wh';
-    pre_normalize   = 'none';
-    post_normalize  = 'none';
+    NMF_algorithm_type     = 'als';
+    update_rule_type    = 'wh';
+    pre_normalize_flag   = 'none';
+    post_normalize_flag  = 'none';
 elseif(nargin<7)
-    target_param    = 'wh';
-    pre_normalize   = 'none';
-    post_normalize  = 'none';
+    update_rule_type    = 'wh';
+    pre_normalize_flag   = 'none';
+    post_normalize_flag  = 'none';
 elseif(nargin<8)
-    pre_normalize   = 'none';
-    post_normalize  = 'none';
+    pre_normalize_flag   = 'none';
+    post_normalize_flag  = 'none';
 elseif(nargin<9)
-    post_normalize  = 'none';
+    post_normalize_flag  = 'none';
 end
 
-w0isempty   = isempty(w0); % wether the matrix is empty or not
-h0isempty   = isempty(h0);
+initial_W_isempty   = isempty(initial_W); % wether the matrix is empty or not
+initial_H_isempty   = isempty(initial_H);
 
 % Check required arguments
-[n,m] = size(a); %n: muscle num, m: length of data
-if ~isscalar(k) || ~isnumeric(k) || k<1 || k>min(m,n) || k~=round(k) 
+[muscle_num,sample_num] = size(EMG_dataset); 
+if ~isscalar(synergy_num) || ~isnumeric(synergy_num) || synergy_num<1 || synergy_num>min(sample_num,muscle_num) || synergy_num~=round(synergy_num) 
     error('stats:nnmf:BadK',...
         'K must be a positive integer no larger than the number of rows or columns in A.');
 end
 
 % create flag to identify differences in algorithm
-if(strcmp(alg,'mult')) 
+if(strcmp(NMF_algorithm_type,'mult')) 
     ismult  = true;
 else
     ismult  = false;
@@ -80,29 +82,28 @@ end
 S = RandStream.getGlobalStream; 
 fprintf('repetition\titeration\tSSE\tVAF\tdVAF\tAlgorithm\n');
 
-% pre_normalize
-switch pre_normalize
+% pre_normalize_flag
+switch pre_normalize_flag
     case 'mean'
-        a = normalize(a,'mean'); 
-        disp([mfilename,': pre_normalize = mean']);
+        EMG_dataset = normalize(EMG_dataset,'mean'); 
+        disp([mfilename,': pre_normalize_flag = mean']);
     case 'none'
-        disp([mfilename,': pre_normalize = none']);
+        disp([mfilename,': pre_normalize_flag = none']);
 end
 
 
-for irep=1:nrep
-    
-    if(w0isempty)
-        w0  = rand(S,n,k); % create a random number matrix of size n(muscle num)*k
+for irep=1:num_iterations
+    if(initial_W_isempty)
+        initial_W  = rand(S,muscle_num,synergy_num); % create a random number matrix of size n(muscle num)*synergy_num
     end
-    if(h0isempty)
-        h0  = rand(S,k,m); % create a random number matrix of size k*m(length of data)
+    if(initial_H_isempty)
+        initial_H  = rand(S,synergy_num,sample_num); % create a random number matrix of size synergy_num*sample_num(length of data)
     end
     
     % Perform a factorization
-    [w1,h1,norm1,iter1,SSE1,VAF1,dVAF1] =    nnmf1(a,w0,h0,ismult,target_param,maxiter,tolx);
+    [w1,h1,norm1,iter1,SSE1,VAF1,dVAF1] =    nnmf1(EMG_dataset,initial_W,initial_H,ismult,update_rule_type,max_iteration_num,dVAF_threshold);
     
-    fprintf('%7d\t%7d\t%12g\t%12g\t%12g\t%s\t%s\n',irep,iter1,SSE1,VAF1,dVAF1,alg,target_param);
+    fprintf('%7d\t%7d\t%12g\t%12g\t%12g\t%s\t%s\n',irep,iter1,SSE1,VAF1,dVAF1,NMF_algorithm_type,update_rule_type);
 
     % change parameters based on which initial random number matrix was the best
     if(irep==1) 
@@ -140,19 +141,19 @@ hlen = sqrt(sum(hbest.^2,2));
 if any(hlen==0)
     warning('stats:nnmf:LowRank',...
         'Algorithm converged to a solution of rank %d rather than %d as specified.',...
-        k-sum(hlen==0), k);
+        synergy_num-sum(hlen==0), synergy_num);
     hlen(hlen==0) = 1;
 end
 
 % amplitude normalizetion of H_matrix
-switch post_normalize
+switch post_normalize_flag
     case 'mean'
         A   = mean(hbest,2);
         wbest   = wbest .* repmat(A',size(wbest,1),1);
         hbest   = hbest ./ repmat(A ,1,size(hbest,2));
-        disp([mfilename,': post_normalize = mean']);
+        disp([mfilename,': post_normalize_flag = mean']);
     case 'none'
-        disp([mfilename,': post_normalize = none']);
+        disp([mfilename,': post_normalize_flag = none']);
 end
 
 % Then order by w
@@ -164,7 +165,7 @@ end
 
 %% define local function
 
-function [w,h,dnorm,iter,SSE,VAF,dVAF] = nnmf1(a,w0,h0,ismult,target_param,maxiter,tolx)
+function [w,h,dnorm,iter,SSE,VAF,dVAF] = nnmf1(EMG_dataset,initial_W,initial_H,ismult,update_rule_type,max_iteration_num,dVAF_threshold)
 %{ 
 explanation of output arguments:
 w:final version of spatial pattern after optimization 
@@ -178,36 +179,36 @@ dVAF: final version of dVAF
 
 % Single non-negative matrix factorization
 sqrteps = sqrt(eps); % define machine epsilon for less error in calculations
-for iter=1:maxiter 
+for iter=1:max_iteration_num 
     if ismult
         % Multiplicative update formula
-        switch lower(target_param)
+        switch lower(update_rule_type)
             case 'wh' 
-                numerator   = w0'*a; % 
-                h = h0 .* (numerator ./ ((w0'*w0)*h0 + eps(numerator)));
-                numerator   = a*h'; %XH^T
-                w = w0 .* (numerator ./ (w0*(h*h') + eps(numerator)));
+                numerator   = initial_W'*EMG_dataset; % 
+                h = initial_H .* (numerator ./ ((initial_W'*initial_W)*initial_H + eps(numerator)));
+                numerator   = EMG_dataset*h'; %XH^T
+                w = initial_W .* (numerator ./ (initial_W*(h*h') + eps(numerator)));
             case 'h' % update only h
-                numerator   = w0'*a;
-                h = h0 .* (numerator ./ ((w0'*w0)*h0 + eps(numerator)));
-                w = w0;
+                numerator   = initial_W'*EMG_dataset;
+                h = initial_H .* (numerator ./ ((initial_W'*initial_W)*initial_H + eps(numerator)));
+                w = initial_W;
         end
     else
         % Alternating least squares
-        switch lower(target_param)
+        switch lower(update_rule_type)
             case 'wh'
-                h = max(0, w0\a);
-                w = max(0, a/h);
+                h = max(0, initial_W\EMG_dataset);
+                w = max(0, EMG_dataset/h);
             case 'h'
-                h = max(0, w0\a);
-                w = w0;
+                h = max(0, initial_W\EMG_dataset);
+                w = initial_W;
         end
     end
     
     
     % Get norm, SSE, SST and VAF
     b = w*h; % reconstructed EMG (created from W, H after muluticative update)
-    A   = reshape(a,numel(a),1); % converts a (measured EMG) into a vector by reshape
+    A   = reshape(EMG_dataset,numel(EMG_dataset),1); % converts a (measured EMG) into a vector by reshape
     B   = reshape(b,numel(b),1); % converts b (reconstructed EMG) into a vector by reshape
     D   = A-B; %X-wh (difference between measured EMG and reconstructed EMG)
 
@@ -215,15 +216,15 @@ for iter=1:maxiter
     SSE = sum(D.^2);    % sum of squared residuals (errors)
     SST = sum((A-mean(A)).^2);  % sum of squared total?
 
-    dw = max(max(abs(w-w0) / (sqrteps+max(max(abs(w0))))));
-    dh = max(max(abs(h-h0) / (sqrteps+max(max(abs(h0))))));
+    dw = max(max(abs(w-initial_W) / (sqrteps+max(max(abs(initial_W))))));
+    dh = max(max(abs(h-initial_H) / (sqrteps+max(max(abs(initial_H))))));
     delta = max(dw,dh);
     
     % Check for convergence
     % create an array to record VAF and dVAF(differencce from previous iteration)
     if(iter==1) 
-        VAF     = nan(1,maxiter);
-        dVAF    = nan(1,maxiter);
+        VAF     = nan(1,max_iteration_num);
+        dVAF    = nan(1,max_iteration_num);
     end
     
     VAF(iter)  = 1 - SSE./SST;
@@ -238,16 +239,16 @@ for iter=1:maxiter
      if iter>20
         if delta <= 1e-4
             break; 
-        elseif dVAF(iter) <= tolx
+        elseif dVAF(iter) <= dVAF_threshold
             break;
-        elseif iter==maxiter
+        elseif iter==max_iteration_num
             break
         end
      end
 
     % Remember previous iteration results
-    w0 = w;
-    h0 = h;
+    initial_W = w;
+    initial_H = h;
 end
 VAF = VAF(iter);
 dVAF = dVAF(iter);
