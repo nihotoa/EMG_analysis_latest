@@ -28,11 +28,11 @@ use_EMG_type = 'only_trial';    % EMG data type ('full' or 'only_trial')
 monkey_prefix = 'Hu';           % Prefix of recorded data
 
 % Visualization parameters
-figure_type = 'dVAF';            % Type of plot ('VAF' or 'dVAF')
+figure_type = 'VAF';            % Type of plot ('VAF' or 'dVAF')
 VAF_plot_type = 'stack';        % Plot style ('stack' or 'mean')
 VAF_threshold = 0.8;            % Threshold line value for VAF plots
 font_size = 20;                 % Font size for figure text
-use_EMG_num = 16;               % Number of EMG channels used
+use_EMG_num = 16;               % Number of EMG used for NMF
 
 %% Select and load data files
 % Set up paths
@@ -56,7 +56,7 @@ synergy_detail_dir = fullfile(base_dir_path, 'synergy_detail', use_EMG_type, ['u
 disp('Please select all files you want to visualize')
 selected_file_name_list = uigetfile(synergy_detail_dir, MultiSelect="on");
 
-if isempty(selected_file_name_list)
+if not(iscell(selected_file_name_list))
     disp('User pressed "cancel" button.');
     return;
 end
