@@ -3,19 +3,19 @@
 ![MATLAB R2022b+](https://img.shields.io/badge/MATLAB-R2022b%2B-blue.svg)
 
 ## Overview
-This repository provides tools and scripts for electromyography (EMG) data analysis and muscle synergy extraction.
+This repository provides scripts for electromyography (EMG) data analysis and muscle synergy extraction.
 
 ## Features and Capabilities
 
 This framework enables you to:
 
-- **Data Integration:** Aggregate scattered data from different experimental days into unified files
+- **Data Integration:** Aggregate multiple data files from the same experimental day into a single data file
 - **Signal Processing:** Filter EMG data with customizable parameters
 - **Event Timing Analysis:** Generate event timing data for behavioral synchronization
 - **Trial Segmentation:** Extract and save EMG data for individual trials
 - **Visualization:** Generate clear visualizations of muscle activity patterns for each experimental day
 - **Correlation Analysis:** Quantify and visualize similarities between EMG signals using cross-correlation analysis
-- **Synergy Extraction:** Extract muscle synergies from EMG datasets using Non-negative Matrix Factorization
+- **Synergy Extraction:** Extract muscle synergies from EMG datasets using Non-negative Matrix Factorization (NMF)
 - **Synergy Visualization:** Create comprehensive visualizations of extracted muscle synergies
 - **Performance Metrics:** Visualize Variance Accounted For (VAF) and similarity measures between muscle synergies
 
@@ -58,20 +58,20 @@ The repository is organized as follows:
 ```
 EMG_analysis_latest/
 ├── README.md                # This documentation file
-├── executeFunctions/        # Main executable scripts 
+├── executeFunctions/        # Directory containing main executable scripts
 │   ├── saveLinkageInfo.m    
 │   ├── prepareEMGAndTimingData.m  
 │   └── ...                  
-├── modules/                 # Core functionality modules
+├── modules/                 # Directory containing custom functions
 │   ├── dataPreparation/     
 │   ├── nmfAnalysis/         
 │   └── ...                  
-├── saveFold/                # Output directory (automatically created)
+├── saveFold/                # Output directory for analysis results (automatically created)
 │   └── [MonkeyName]/        # e.g., Hugo
 │       └── data/            # Contains processed results
 └── useDataFold/             # Input data directory (create manually)
     └── [MonkeyName]/        # e.g., Hugo
-        └── [YYYYMMDD]/      # Folders by date (e.g., 20250311)
+        └── [YYYYMMDD]/      # Date-based directories (e.g., 20250311)
             └── ...          # Raw data files
 ```
 
@@ -100,7 +100,7 @@ Files in the `executeFunctions` directory contain headers with these sections:
 | **your operation** | Steps required to execute the function |
 | **role of this code** | Purpose and function in the overall analysis pipeline |
 | **saved data location** | Where output data is stored when the function is executed |
-| **execution procedure** | Prerequisites and subsequent steps in the workflow |
+| **execution procedure** | Names of functions to be executed before and after this one |
 
 ### Documentation in `modules` directory
 
