@@ -22,7 +22,7 @@ clear;
 
 %% set param
 % Basic configuration
-monkey_prefix = 'Hu';          % Prefix of raw data (e.g., 'Se', 'Ya', 'F', 'Ni', 'Hu')
+monkey_prefix = 'F';          % Prefix of raw data (e.g., 'Se', 'Ya', 'F', 'Ni', 'Hu')
 visualize_type = 'EMG';        % Data type to plot: 'EMG' or 'Synergy'
 
 % Plot formatting
@@ -35,6 +35,8 @@ row_num = 4;                      % Number of rows in subplot figures
 % Synergy-specific parameters (used only when visualize_type = 'Synergy')
 use_EMG_type = 'only_trial';    % EMG data type: 'full' or 'only_trial'
 synergy_num = 4;               % Number of synergies to analyze
+
+parse_each_timing_EMG_flag = true;
 
 %% Initialize paths and settings
 % Get full monkey name and root directory
@@ -508,3 +510,37 @@ end
 
 % Display completion message
 disp(['Visualization complete. Results saved to: ' save_figure_fold_path]);
+
+if parse_each_timing_EMG_flag
+    unique_save_dir_name = [unique_name_list{1} 'to' unique_name_list{end} '_' num2str(session_num)];
+    save_parse_data_dir_path = fullfile(base_dir_path, 'EMG_across_sessions', 'parse_each_timing_EMG', unique_save_dir_name);
+    makefold(save_parse_data_dir_path);
+
+     parsed_structure = makeParsedStructure();
+     timing_name_list = {'Pall', 'Ptrig2', 'Ptrig3'};
+     for timing_id = 1:length(timing_name_list)
+         ref_timing_name = timing_name_list{timing_id};
+         eval([ref_timing_name ' = parsed_structure;']);
+     end
+    
+
+     %visualized_each_timing_activity_pattern_cell{timing_id}.time_normalized_activity_pattern{day_id};
+     for day_id = 1:length(date_string_list)
+         for timing_id = 1:length(timing_name_list)
+             ref_day_ref_timing_EMG_data = visualized_each_timing_activity_pattern_cell{timing_id}.time_normalized_activity_pattern{day_id};
+             ref_timing_name = timing_name_list{timing_id};
+             eval([ref_timing_name '.x = visualized_each_timing_activity_pattern_cell{timing_id}.cutout_range;']);
+
+             if strcmp(ref_timing_name, 'Pall')
+                 for muscle_id = 1:length(EMG_name_list)
+                     Pall.plotData_sel{day_id, 1}{muscle_id, 1} = ref_day_ref_timing_EMG_data(muscle_id, :);
+                 end
+             else
+                 eval([ref_timing_name '.plotData_sel{day_id, 1} = ref_day_ref_timing_EMG_data;']);
+             end
+         end
+     end
+
+    save_data_file_name = 'alignedEMG_data.mat';
+    save(fullfile(save_parse_data_dir_path, save_data_file_name), 'Pall', 'Ptrig2', 'Ptrig3');
+end
