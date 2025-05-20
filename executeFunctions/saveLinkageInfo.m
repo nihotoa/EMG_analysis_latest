@@ -22,7 +22,7 @@ The location of the saved file is shown in the log when this function is execute
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-monkey_prefix = 'Hu' ; % prefix of recorded file(ex. F1710516-0002)
+monkey_prefix = 'F' ; % prefix of recorded file(ex. F1710516-0002)
 
 %% code section
 % get the real monkey name

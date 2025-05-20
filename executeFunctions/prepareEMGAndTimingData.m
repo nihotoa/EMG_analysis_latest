@@ -26,7 +26,7 @@ Sometimes the function 'uigetfile' is not executed and an error occurs. Please r
 clear
 %% set param
 % Basic configuration
-monkey_prefix = 'Hu';  % Monkey prefix (e.g., 'Ya', 'F', 'Se', 'Ni', 'Hu')
+monkey_prefix = 'F';  % Monkey prefix (e.g., 'Ya', 'F', 'Se', 'Ni', 'Hu')
 downsample_rate = 1375; 
 time_restriction_enabled = false; % Whether to restrict trials based on duration
 trial_time_threshold = 3;  % Trial duration threshold in seconds (used if time_restriction_enabled is true)
